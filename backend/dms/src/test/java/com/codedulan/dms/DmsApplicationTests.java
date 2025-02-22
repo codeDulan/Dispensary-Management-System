@@ -1,4 +1,4 @@
-package com.example.dms;
+package com.codedulan.dms;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
