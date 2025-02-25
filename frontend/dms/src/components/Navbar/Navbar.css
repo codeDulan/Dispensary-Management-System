@@ -4,7 +4,7 @@ nav{
   color: black;
   padding: 4px 0;
   position: fixed;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   top: 0;
   left: 0;
   display: flex;
@@ -44,4 +44,9 @@ nav ul li{
   margin-left: 15px;
   cursor: pointer;
 
+}
+
+.dark-nav{
+  background: #81cd7b;
+  transition: 0.5s;
 }
