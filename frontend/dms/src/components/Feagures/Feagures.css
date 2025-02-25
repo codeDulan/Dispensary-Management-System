@@ -1,0 +1,49 @@
+.feagures {
+  margin: 80px auto;
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feagure {
+  flex-basis: 31%;
+  background-color: #aedab3b1;
+  height: 350px;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 50px;
+}
+
+.feagure img {
+  display: block;
+}
+
+h2 {
+  font-size: 35px;
+  font-weight: 500;
+  margin: 0; /* Remove default margin */
+}
+
+p {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.feagure-title {
+  width: 100%; /* Ensure the container takes full width */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  text-align: center; /* Ensure text is centered */
+}
+
+.line {
+  width: 80%; /* 80% of the parent container */
+  height: 1px;
+  background-color: white;
+  margin-top: 10px; /* Push the line downward */
+}
