@@ -1,0 +1,44 @@
+nav{
+
+  width: 100%;
+  background: #CDE0C4;
+  color: black;
+  padding: 4px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+
+}
+
+.logo{
+  width: 35px;
+  height: 40px;
+  margin-bottom: 5px;
+  
+
+}
+
+nav ul li{
+  display: inline-block;
+  list-style: none;
+  margin: 5px 20px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.logo-div{
+  display: flex;
+  align-items: center;
+}
+
+.logo-text{
+
+  font-size: 20px;
+  font-weight: 700;
+  margin-left: 15px;
+
+}
