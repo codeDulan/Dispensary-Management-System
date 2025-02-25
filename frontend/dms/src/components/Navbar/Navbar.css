@@ -1,10 +1,10 @@
 nav{
 
   width: 100%;
-  background: #CDE0C4;
   color: black;
   padding: 4px 0;
   position: fixed;
+  margin-top: 10px;
   top: 0;
   left: 0;
   display: flex;
@@ -28,11 +28,13 @@ nav ul li{
   margin: 5px 20px;
   font-size: 16px;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .logo-div{
   display: flex;
   align-items: center;
+  cursor: pointer;
 }
 
 .logo-text{
@@ -40,5 +42,6 @@ nav ul li{
   font-size: 20px;
   font-weight: 700;
   margin-left: 15px;
+  cursor: pointer;
 
 }
