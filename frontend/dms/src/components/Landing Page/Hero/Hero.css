@@ -1,0 +1,34 @@
+.hero{
+  width: 100%;
+  min-height: 100vh;
+  background: url(../../../assets/hero-img.jpg);
+  background-size: cover;
+  background-position: center top 40%;
+  display: flex;
+  align-items: center;
+  
+}
+
+.hero-text{
+  text-align: left;
+  max-width: 800px;
+}
+
+.hero-text h1{
+  font-size: 64px;
+  font-weight: 700;
+}
+
+.hero-text p{
+  font-size: 20px;
+  max-width: 700px;
+  margin: 10px auto 20px;
+  line-height: 1.4;
+}
+
+.hero-text button{
+  width: 275px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: 500;
+}
