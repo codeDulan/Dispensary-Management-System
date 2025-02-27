@@ -20,7 +20,7 @@ const About = () => {
 
         <p>Our dedicated team of experienced doctors, skilled pharmacists, and caring healthcare professionals work together to ensure every patient receives personalized attention and the highest standard of care. From routine check-ups and diagnostic services to medication management and specialized treatments, we strive to create a healing environment where your well-being is our top priority.</p>
 
-        <p>With modern facilities, a patient-centered approach, and a focus on continuous improvement, Sahanaya Medical Center stands as a trusted partner in your healthcare journey. We aim not just to treat, but to listen, understand, and support you at every step—because your health and comfort truly matter to us.</p>
+        <p>With modern facilities, a patient-centered approach, and a focus on continuous improvement, Sahanaya Medical Center stands as a trusted partner in your healthcare journey. </p>
 
       </div>
 
