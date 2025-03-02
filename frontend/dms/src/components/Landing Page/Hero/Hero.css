@@ -32,3 +32,25 @@
   font-size: 20px;
   font-weight: 500;
 }
+
+/* Media query */
+
+@media (max-width: 870px){
+  .hero-text h1{
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 670px){
+  .hero-text h1{
+    font-size: 30px;
+    
+    margin: auto;
+  }
+
+  .hero-text p {
+    font-size: 14px;
+    margin: 15px auto 30px;
+  }
+
+}

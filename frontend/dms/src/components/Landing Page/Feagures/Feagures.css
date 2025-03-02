@@ -3,7 +3,7 @@
   width: 90%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  
 }
 
 .feagure {
@@ -34,7 +34,7 @@ p {
 }
 
 .feagure-title {
-  width: 100%; /* Ensure the container takes full width */
+  width: 90%; /* Ensure the container takes full width */
   display: flex;
   flex-direction: column;
   align-items: center; /* Center content horizontally */
@@ -46,4 +46,17 @@ p {
   height: 1px;
   background-color: white;
   margin-top: 10px; /* Push the line downward */
+}
+
+/* Media query */
+@media (max-width: 670px){
+  .feagures{
+    flex-direction: column;
+
+  }
+  .feagure{
+    flex-basis: 100%;
+    margin: 20px;
+
+  }
 }

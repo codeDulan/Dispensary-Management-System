@@ -75,3 +75,38 @@
   color: black;
   font-weight: 400;
 }
+
+/* Media query */
+@media (max-width: 800px){
+  .testimonials{
+    padding: 0 40px;
+
+  }
+
+  .back-btn, .next-btn{
+    padding: 10px;
+    width: 45px;
+  }
+  .testimonials ul li{
+    padding: 10px;
+  }
+  .slide{
+    padding: 10px;
+  }
+
+  .slide img{
+    width: 50px;
+  }
+}
+
+@media (max-width: 600px){
+  .user-info{
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+
+  .user-info h3{
+    font-size: 14px;
+  }
+}
