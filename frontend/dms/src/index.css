@@ -38,3 +38,17 @@ a{
   align-items: center;
   justify-content: center;
 }
+
+
+/* Media query */
+@media (max-width: 1215px){
+  .container{
+    padding-left: 5%;
+    padding-right: 2.5%;
+  }
+
+  .btn{
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
