@@ -68,3 +68,39 @@
   margin: 20px 0;
   font-size: 15px;
 }
+
+/* Media query */
+
+@media (max-width: 700px){
+  .contact{
+    display: block;
+  }
+
+  .contact-col{
+    padding: 20px;
+  }
+
+  .contact-form{
+    margin-top: 50px;
+  }
+
+  .contact-col h3{
+    font-size: 20px;
+  }
+
+  .contact-col p{
+    font-size: 14px;
+  }
+
+  .contact-col ul li{
+    margin: 10px 0;
+  }
+
+  .contact form input, .contact form textarea{
+    padding: 10px;
+  }
+
+  .contact-col span{
+    font-size: 14px;
+  }
+}
