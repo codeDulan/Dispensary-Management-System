@@ -1,6 +1,7 @@
 import React from "react";
 import "./Login.css"; // Import CSS file
 import Image from "../../../assets/login-logo.png"; // Import image file
+import { Link } from 'react-router-dom'
 
 const Login = () => {
   return (
@@ -18,8 +19,10 @@ const Login = () => {
           <input type="email" placeholder="Email" className="input-field" />
           <input type="password" placeholder="Password" className="input-field" />
 
-          <button className="login-button">Login</button>
-
+          <Link to="/dashboard">
+            <button className="login-button">Login</button>
+          </Link>
+          
           <p className="signup-text">
             Don’t have an account? <a href="#">Signup</a>
           </p>
