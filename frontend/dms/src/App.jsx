@@ -5,6 +5,8 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard.jsx';
 import Patient from './components/Dashboard/Doctor/Patient/Patient.jsx';
 import Medicine from './components/Dashboard/Doctor/Medicine/Medicine.jsx';
+import Prescription from './components/Dashboard/Doctor/Prescription/Prescription.jsx';
+import Payment from './components/Dashboard/Doctor/Payment/Payment.jsx';
 
 const App = () => {
   
@@ -19,6 +21,9 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/medicine" element={<Medicine />} />
               <Route path="/patients" element={<Patient />} />
+              <Route path="/prescriptions" element={<Prescription />} />
+              <Route path="/payments" element={<Payment />} />
+
 
             </Routes>
           </main>

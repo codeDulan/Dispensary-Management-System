@@ -4,7 +4,7 @@ import React from 'react'
 
 const DashboardTitle = () => {
   return (
-    <Title title={"Patient"} subtitle={"Manage your patients"} />
+    <Title title={"Prescription"} subtitle={"Manage your prescriptions"} />
   )
 }
 
