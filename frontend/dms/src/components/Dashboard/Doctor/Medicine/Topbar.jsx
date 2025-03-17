@@ -7,7 +7,7 @@ import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
-import DashboardTitle from "./DashboardTitle";
+import Medicinetitle from "./MedicineTitle";
 
 const Topbar = () => {
   const theme = useTheme();
@@ -18,7 +18,7 @@ const Topbar = () => {
     <Box display="flex" justifyContent="space-between" p={2}>
       {/* Title */} 
       <Box display="flex" alignItems="center">
-        <DashboardTitle />
+        <Medicinetitle />
       </Box>
 
       {/* Icons */}
