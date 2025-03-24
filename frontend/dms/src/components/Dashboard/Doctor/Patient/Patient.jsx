@@ -16,6 +16,7 @@ import { mockDataTeam } from "../../../../data/mockData";
 
 import Topbar from "./Topbar";
 import DoctorSidebar from "../Sidebar/DoctorSidebar";
+import { Link } from "react-router-dom";
 
 const Medicine = () => {
   const [theme, colorMode] = useMode();
@@ -105,9 +106,15 @@ const Medicine = () => {
               </Box>
 
               {/* Add Drug Button */}
-              <Button variant="contained" color="success" onClick={() => alert("Add Drug Form")} sx={{ width: "15%", padding: "8px 16px" }}>
+              <Link to="/addPatient" style={{ textDecoration: 'none', width: "15%" }}>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{ width: "100%", padding: "8px 16px" }}
+              >
                 Add Patient
               </Button>
+              </Link>
             </Box>
 
             {/* Medicine DataGrid */}
