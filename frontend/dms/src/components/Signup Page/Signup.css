@@ -1,0 +1,191 @@
+/* ===== CORE STRUCTURE ===== */
+.signup-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #b0ca83, #79ac5e); /* Set gradient as base */
+}
+
+h2{
+  font-weight: bold;
+}
+
+.signup-left {
+  flex: 1;
+  background: linear-gradient(to bottom, #b0ca83, #79ac5e);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  position: relative;
+}
+
+
+
+.signup-logo {
+  width: 100%;
+  width: 650px;
+  height: auto;
+  position: absolute;
+  right: -15%; /* Moves image into white area */
+  transform: translateX(30px); /* Fine-tune positioning */
+  z-index: 3; /* Ensure it appears above form */
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1)); /* Optional subtle shadow */
+}
+
+/* ===== FORM CONTAINER ===== */
+.form-outer-container {
+  flex: 1.5;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2rem 3rem 2rem 5rem; /* Increased left padding */
+  box-sizing: border-box;
+  border-top-left-radius: 50px;
+  border-bottom-left-radius: 50px;
+  margin-left: -30px;
+  box-shadow: -15px 0 15px -15px rgba(0, 0, 0, 0.1);
+  background: white;
+  z-index: 2;
+}
+
+.signup-box {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 1rem;
+}
+
+/* ===== FORM SECTIONS ===== */
+.form-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  color: #538e58;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+/* ===== INPUT STYLES ===== */
+.input-group {
+  margin-bottom: 1.25rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.input-field:focus {
+  border-color: #79ac5e;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(121, 172, 94, 0.2);
+}
+
+.textarea-field {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ===== LAYOUT HELPERS ===== */
+.name-fields {
+  display: flex;
+  gap: 1rem;
+}
+
+.half-width {
+  flex: 1;
+}
+
+/* ===== BUTTON & FOOTER ===== */
+.form-footer {
+  margin-top: 2rem;
+}
+
+.signup-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #538e58;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.signup-button:hover {
+  background-color: #3a6b3d;
+}
+
+.login-text {
+  text-align: left;
+  margin-top: 10px;
+  color: #666;
+  font-size: 15px;
+}
+
+.login-text a {
+  color: #538e58;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-text a:hover {
+  text-decoration: underline;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .signup-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .signup-logo {
+    position: relative;
+    right: auto;
+    transform: none;
+    width: 60%;
+    margin-bottom: 1rem;
+  }
+
+  .signup-left {
+    padding: 2rem 0;
+    min-height: auto;
+  }
+
+  .form-outer-container {
+    padding: 1.5rem;
+    margin-left: 0;
+  }
+
+  .name-fields {
+    flex-direction: column;
+    gap: 0;
+  }
+}

@@ -10,6 +10,7 @@ import Medicine from './components/Dashboard/Doctor/Medicine/Medicine.jsx';
 import Prescription from './components/Dashboard/Doctor/Prescription/Prescription.jsx';
 import Payment from './components/Dashboard/Doctor/Payment/Payment.jsx';
 import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription.jsx';
+import Signup from './components/Signup Page/SignupPage.jsx';
 
 const App = () => {
   
@@ -21,6 +22,7 @@ const App = () => {
             <Routes>
               <Route index element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/medicine" element={<Medicine />} />
               <Route path="/patients" element={<Patient />} />
