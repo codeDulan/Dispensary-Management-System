@@ -14,6 +14,13 @@ import { DataGrid } from "@mui/x-data-grid";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
 import { mockDataTeam } from "../../../../data/mockData";
 
+
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+
+
 import Topbar from "./Topbar";
 import DoctorSidebar from "../Sidebar/DoctorSidebar";
 
@@ -51,8 +58,22 @@ const Medicine = () => {
       width: 120,
       renderCell: () => (
         <Box display="flex" justifyContent="space-around">
-          <Button variant="text" color="primary">✏️</Button>
-          <Button variant="text" color="error">🗑️</Button>
+          <Tooltip title="Edit">
+            <IconButton color="primary" aria-label="edit" 
+            sx={{ 
+            color: theme.palette.mode === 'dark' 
+                  ? colors.grey[100]  // Use light grey in dark mode (from your tokens)
+                  : colors.primary[500] // Use primary[500] in light mode
+          }}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Delete">
+            <IconButton color="error" aria-label="delete">
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },
@@ -106,7 +127,7 @@ const Medicine = () => {
 
               {/* Add Drug Button */}
               <Button variant="contained" color="success" onClick={() => alert("Add Drug Form")} sx={{ width: "15%", padding: "8px 16px" }}>
-                Quick Prescription
+                Make a Payment
               </Button>
             </Box>
 

@@ -124,10 +124,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0", fontFamily: "Roboto, sans-serif" }}
                 >
-                  Dr. Samarasinghe
+                  Ms. Amasha
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  MBBS
+                  Dispenser
                 </Typography>
               </Box>
             </Box>
@@ -166,30 +166,18 @@ const Sidebar = () => {
               {/* Dashboard */}
               <Item
                 title="Dashboard"
-                to="/dashboard"
+                to="/dispenser/dashboard"
                 icon={<DashboardOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />
 
               
-              <Item
-                title="Medicine"
-                to="/medicine"
-                icon={<MedicationOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-              <Item
-                title="Patient"
-                to="/patients"
-                icon={<SickOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
+              
+              
               <Item
                 title="Prescriptions"
-                to="/prescriptions"
+                to="/dispenser/prescriptions"
                 icon={<NoteAddOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
@@ -198,14 +186,14 @@ const Sidebar = () => {
              
               <Item
                 title="Reports"
-                to="/reports"
+                to="/dispenser/reports"
                 icon={<PostAddOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />
               <Item
                 title="Payments"
-                to="/payments"
+                to="/dispenser/payments"
                 icon={<MonetizationOnOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
