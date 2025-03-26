@@ -9,10 +9,11 @@ import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
 import SickOutlinedIcon from '@mui/icons-material/SickOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import UserIcon from "../../../../assets/user.jpg";
+import UserIcon from "../../../../assets/customer.png";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -124,10 +125,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0", fontFamily: "Roboto, sans-serif" }}
                 >
-                  Dr. Samarasinghe
+                  Mr. Dulan
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  MBBS
+                  Customer
                 </Typography>
               </Box>
             </Box>
@@ -166,50 +167,23 @@ const Sidebar = () => {
               {/* Dashboard */}
               <Item
                 title="Dashboard"
-                to="/dashboard"
+                to="/customer/dashboard"
                 icon={<DashboardOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />
 
               
+              
               <Item
-                title="Medicine"
-                to="/medicine"
-                icon={<MedicationOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-              <Item
-                title="Patient"
-                to="/patients"
-                icon={<SickOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-              <Item
-                title="Prescriptions"
-                to="/prescriptions"
-                icon={<NoteAddOutlinedIcon />}
+                title="Appoinments"
+                to="/customer/appoinments"
+                icon={<PendingActionsIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />
 
              
-              <Item
-                title="Reports"
-                to="/reports"
-                icon={<PostAddOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-              <Item
-                title="Payments"
-                to="/payments"
-                icon={<MonetizationOnOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
               <Item
                 title="Logout"
                 to="/logout"

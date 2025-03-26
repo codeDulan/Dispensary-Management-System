@@ -2,7 +2,9 @@ import React from 'react';
 import Login from './components/Login Page/Doctor/Login.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import { Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard.jsx';
+import Dashboard_doctor from './pages/Doctor_Dashboard.jsx';
+import Dashboard_dispenser from './pages/Dispenser_Dashboard.jsx';
+import Dashboard_customer from './pages/Customer_Dashboard.jsx';
 import Patient from './components/Dashboard/Doctor/Patient/Patient.jsx';
 import AddPatient from './components/Dashboard/Doctor/Patient/AddPatient/AddPatient.jsx';
 import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription.jsx';
@@ -23,13 +25,16 @@ const App = () => {
               <Route index element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/doctor/dashboard" element={<Dashboard_doctor />} />
+              <Route path="/dispenser/dashboard" element={<Dashboard_dispenser />} />
+              <Route path="/customer/dashboard" element={<Dashboard_customer />} />
               <Route path="/medicine" element={<Medicine />} />
               <Route path="/patients" element={<Patient />} />
               <Route path="/prescriptions" element={<Prescription />} />
               <Route path="/payments" element={<Payment />} />
               <Route path="/addPatient" element={<AddPatient />} />
               <Route path="/quickPrescription" element={<QuickPrescription />} />
+              <Route path="/dispenser/prescriptions" element={<ViewPrescription />} />
 
 
 
