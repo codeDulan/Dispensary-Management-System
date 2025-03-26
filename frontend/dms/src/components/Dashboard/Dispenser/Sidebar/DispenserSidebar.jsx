@@ -12,7 +12,7 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import UserIcon from "../../../../assets/user.png";
+import UserIcon from "../../../../assets/dispenser.jpg";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
