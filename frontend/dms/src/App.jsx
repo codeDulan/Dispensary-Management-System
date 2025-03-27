@@ -12,6 +12,7 @@ import Medicine from './components/Dashboard/Doctor/Medicine/Medicine.jsx';
 import Prescription from './components/Dashboard/Doctor/Prescription/Prescription.jsx';
 import Payment from './components/Dashboard/Doctor/Payment/Payment.jsx';
 import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription.jsx';
+import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment.jsx';
 import Signup from './components/Signup Page/SignupPage.jsx';
 
 const App = () => {
@@ -25,9 +26,10 @@ const App = () => {
               <Route index element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/doctor/dashboard" element={<Dashboard_doctor />} />
+              <Route path="/dashboard" element={<Dashboard_doctor />} />
               <Route path="/dispenser/dashboard" element={<Dashboard_dispenser />} />
               <Route path="/customer/dashboard" element={<Dashboard_customer />} />
+              <Route path="/customer/appoinments" element={<Appoinment />} />
               <Route path="/medicine" element={<Medicine />} />
               <Route path="/patients" element={<Patient />} />
               <Route path="/prescriptions" element={<Prescription />} />
