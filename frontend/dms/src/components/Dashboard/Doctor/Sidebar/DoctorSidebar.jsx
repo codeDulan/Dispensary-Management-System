@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -14,9 +14,22 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import UserIcon from "../../../../assets/user.jpg";
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+import UserService from '../../../../services/UserService';
+
+
+const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
+
+
+
+
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+  const handleClick = () => {
+    setSelected(to);
+    if (onClick) onClick(); // Call onClick if provided
+  };
+
   return (
     <MenuItem
       active={selected === to}
@@ -26,17 +39,31 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
         width: "100%",
         boxSizing: "border-box",
       }}
-      onClick={() => setSelected(to)}
+      onClick={handleClick}
       icon={icon}
     >
+
+{to ? (
       <Link
         to={to}
         style={{ textDecoration: "none", color: "inherit", width: "100%" }}
+
+        onClick={(e) => {
+            if (onClick) {
+              e.preventDefault(); // Prevent navigation if onClick is provided
+            }
+          }}
+
       >
         <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
           {title}
         </Typography>
       </Link>
+    ) : (
+        <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
+          {title}
+        </Typography>
+      )}
     </MenuItem>
   );
 };
@@ -46,6 +73,16 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      UserService.logout();
+      navigate('/login');
+      window.location.reload(); // Redirect to login page after logout
+    }
+  };
 
   return (
     <Box
@@ -211,12 +248,12 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
               <Item
-                title="Logout"
-                to="/logout"
-                icon={<LogoutOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
+            title="Logout"
+            icon={<LogoutOutlinedIcon />}
+            selected={selected}
+            setSelected={setSelected}
+            onClick={handleLogout} // Pass the handler
+          />
 
             
               
