@@ -1,49 +1,122 @@
 import React from 'react';
-import Login from './components/Login Page/Doctor/Login.jsx';
-import LandingPage from './pages/LandingPage.jsx';
-import { Routes, Route } from 'react-router-dom';
-import Dashboard_doctor from './pages/Doctor_Dashboard.jsx';
-import Dashboard_dispenser from './pages/Dispenser_Dashboard.jsx';
-import Dashboard_customer from './pages/Customer_Dashboard.jsx';
-import Patient from './components/Dashboard/Doctor/Patient/Patient.jsx';
-import AddPatient from './components/Dashboard/Doctor/Patient/AddPatient/AddPatient.jsx';
-import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription.jsx';
-import Medicine from './components/Dashboard/Doctor/Medicine/Medicine.jsx';
-import Prescription from './components/Dashboard/Doctor/Prescription/Prescription.jsx';
-import Payment from './components/Dashboard/Doctor/Payment/Payment.jsx';
-import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription.jsx';
-import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment.jsx';
-import Signup from './components/Signup Page/SignupPage.jsx';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import UserService from './services/UserService';
+
+// Pages
+import LandingPage from './pages/LandingPage';
+import Login from './components/Login Page/Doctor/Login';
+import Signup from './components/Signup Page/SignupPage';
+
+// Doctor Routes
+import Dashboard_doctor from './pages/Doctor_Dashboard';
+import Patient from './components/Dashboard/Doctor/Patient/Patient';
+import AddPatient from './components/Dashboard/Doctor/Patient/AddPatient/AddPatient';
+import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription';
+import Medicine from './components/Dashboard/Doctor/Medicine/Medicine';
+import Prescription from './components/Dashboard/Doctor/Prescription/Prescription';
+import Payment from './components/Dashboard/Doctor/Payment/Payment';
+
+// Dispenser Routes
+import Dashboard_dispenser from './pages/Dispenser_Dashboard';
+import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription';
+
+// Customer Routes
+import Dashboard_customer from './pages/Customer_Dashboard';
+import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
 
 const App = () => {
-  
+  // Protected Route Components
+  const DoctorRoute = ({ element }) => {
+    return UserService.doctorOnly() ? element : <Navigate to="/login" replace />;
+  };
+
+  const DispenserRoute = ({ element }) => {
+    return UserService.isDispenser() ? element : <Navigate to="/login" replace />;
+  };
+
+  const CustomerRoute = ({ element }) => {
+    return UserService.isCustomer() ? element : <Navigate to="/login" replace />;
+  };
 
   return (
-    
-        <div className="app">
-          <main className="content">
-            <Routes>
-              <Route index element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={<Dashboard_doctor />} />
-              <Route path="/dispenser/dashboard" element={<Dashboard_dispenser />} />
-              <Route path="/customer/dashboard" element={<Dashboard_customer />} />
-              <Route path="/customer/appoinments" element={<Appoinment />} />
-              <Route path="/medicine" element={<Medicine />} />
-              <Route path="/patients" element={<Patient />} />
-              <Route path="/prescriptions" element={<Prescription />} />
-              <Route path="/payments" element={<Payment />} />
-              <Route path="/addPatient" element={<AddPatient />} />
-              <Route path="/quickPrescription" element={<QuickPrescription />} />
-              <Route path="/dispenser/prescriptions" element={<ViewPrescription />} />
+    <div className="app">
+      <main className="content">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
+          {/* Doctor Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={<DoctorRoute element={<Dashboard_doctor />} />}
+          />
+          <Route
+            path="/medicine"
+            element={<DoctorRoute element={<Medicine />} />}
+          />
+          <Route
+            path="/patients"
+            element={<DoctorRoute element={<Patient />} />}
+          />
+          <Route
+            path="/prescriptions"
+            element={<DoctorRoute element={<Prescription />} />}
+          />
+          <Route
+            path="/payments"
+            element={<DoctorRoute element={<Payment />} />}
+          />
+          <Route
+            path="/addPatient"
+            element={<DoctorRoute element={<AddPatient />} />}
+          />
+          <Route
+            path="/quickPrescription"
+            element={<DoctorRoute element={<QuickPrescription />} />}
+          />
 
+          {/* Dispenser Protected Routes */}
+          <Route
+            path="/dispenser/dashboard"
+            element={<DispenserRoute element={<Dashboard_dispenser />} />}
+          />
+          <Route
+            path="/dispenser/prescriptions"
+            element={<DispenserRoute element={<ViewPrescription />} />}
+          />
 
-            </Routes>
-          </main>
-        </div>
-      
+          {/* Customer Protected Routes */}
+          <Route
+            path="/customer/dashboard"
+            element={<CustomerRoute element={<Dashboard_customer />} />}
+          />
+          <Route
+            path="/customer/appointments"
+            element={<CustomerRoute element={<Appoinment />} />}
+          />
+
+          {/* Fallback Routes */}
+          <Route
+            path="*"
+            element={
+              UserService.isAuthenticated() ? (
+                UserService.isDoctor() ? (
+                  <Navigate to="/dashboard" replace />
+                ) : UserService.isDispenser() ? (
+                  <Navigate to="/dispenser/dashboard" replace />
+                ) : (
+                  <Navigate to="/customer/dashboard" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+        </Routes>
+      </main>
+    </div>
   );
 };
 
