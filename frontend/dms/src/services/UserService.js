@@ -145,6 +145,18 @@ class UserService{
     return this.isAuthenticated() && this.isDoctor();
   }
 
+
+  // Patient registration
+  static async registerPatient(patientData) {
+    try {
+      const response = await axios.post(`${UserService.BASE_URL}/api/patients/register`, patientData);
+      return response.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+
 }
 
 export default UserService;

@@ -158,6 +158,64 @@ h2{
   text-decoration: underline;
 }
 
+
+
+/* Password Fields */
+.password-field {
+  position: relative;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  font-size: 1rem; /* Ensure icon size matches input */
+  z-index: 2; /* Make sure it appears above the input */
+  pointer-events: auto;
+  height: 20px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle-icon:hover {
+  color: #333;
+}
+
+/* Make sure the password input has padding on the right to accommodate the icon */
+.password-field .input-field {
+  padding-right: 40px;
+  width: 100%;
+  height: 45px;
+  box-sizing: border-box;
+  /* Remove line-height as it can cause issues */
+  line-height: normal;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+
+.password-input-container input {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  /* Reset any unusual properties */
+  margin: 0;
+  vertical-align: middle;
+}
+
+
 /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
   .signup-container {

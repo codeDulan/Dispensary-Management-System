@@ -11,3 +11,15 @@ e
 5dms/src/main/java/com/codedulan/dms/entity/Users.java,d\d\dd2e188f3293f33cb3baf18cdc3ee68ab84362c7
 z
 Jdms/src/main/java/com/codedulan/dms/repository/PrescriptionRepository.java,9\1\91fab2e64485e25b5c3e915612932870d36d1b90
+g
+7dms/src/main/java/com/codedulan/dms/entity/Patient.java,b\9\b99bd13274bba4688a454d01bcefa4dfbae241a2
+u
+Edms/src/main/java/com/codedulan/dms/repository/PatientRepository.java,2\d\2d07691fcca7919e5e6e66ca13c5d9ef31d33dfe
+s
+Cdms/src/main/java/com/codedulan/dms/repository/UsersRepository.java,d\b\db7f2b30d7e540878fe7fc112f61815c98ae3c35
+;
+dms/pom.xml,1\b\1b81631ae94ff2258f146cc8834490e6904c6219
+j
+:dms/src/main/java/com/codedulan/dms/config/CorsConfig.java,e\a\ead1e811f82c708ce4af688acd6f22cd6fbd5356
+m
+=dms/src/main/java/com/codedulan/dms/config/JWTAuthFilter.java,c\7\c7e4a5c61ae92e86aade4988c63c4a0611af5cc9
