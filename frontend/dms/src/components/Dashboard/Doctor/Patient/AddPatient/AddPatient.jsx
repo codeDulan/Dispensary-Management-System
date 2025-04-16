@@ -22,6 +22,9 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 
+
+import UserService from "../../../../../services/UserService";
+
 const initialValues = {
   firstName: "",
   lastName: "",
@@ -31,7 +34,7 @@ const initialValues = {
   weight: "",
   dateOfBirth: "",
   gender: "",
-  specialNotes: "",
+  medicalNotes: "",
 };
 
 const phoneRegExp =
@@ -49,7 +52,7 @@ const userSchema = yup.object().shape({
   weight: yup.string().required("required"),
   dateOfBirth: yup.string().required("required"),
   gender: yup.string().required("required"),
-  specialNotes: yup.string().required("required"),
+  medicalNotes: yup.string().required("required"),
 });
 
 const AddPatient = () => {
@@ -59,9 +62,50 @@ const AddPatient = () => {
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
-  const handleFormSubmit = (values) => {
-    console.log(values);
+  const handleFormSubmit = async (values) => {
+    console.log("Form submitted with values:", values);
+    if (!UserService.doctorOnly()) {
+      alert("You must be logged in as a doctor to perform this action");
+      return;
+    }
+  
+    try {
+      // Calculate age from dateOfBirth
+      const age = calculateAge(values.dateOfBirth);
+      
+      const patientData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        address: values.address || values.city, // Combine or separate as needed
+        contact: values.contact,
+        email: values.email,
+        gender: values.gender,
+        age: age, // Calculated age
+        weight: parseFloat(values.weight) || 0, // Convert to number
+        medicalNotes: values.medicalNotes // Field name must match
+      };
+  
+      await UserService.doctorRegisterPatient(patientData);
+      alert("Patient registered successfully!");
+    } catch (error) {
+      console.error("Registration Error:", error);
+      alert(error.response?.data?.message || "Failed to register patient");
+    }
   };
+  
+  // Add this helper function
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birthDateObj = new Date(birthDate);
+    let age = today.getFullYear() - birthDateObj.getFullYear();
+    const monthDiff = today.getMonth() - birthDateObj.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -258,13 +302,13 @@ const AddPatient = () => {
                         fullWidth
                         variant="filled"
                         type="text"
-                        label="Special Notes"
+                        label="Medical Notes"
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        value={values.specialNotes}
-                        name="specialNotes"
-                        error={!!touched.specialNotes && !!errors.specialNotes}
-                        helperText={touched.specialNotes && errors.specialNotes}
+                        value={values.medicalNotes}
+                        name="medicalNotes"
+                        error={!!touched.medicalNotes && !!errors.medicalNotes}
+                        helperText={touched.medicalNotes && errors.medicalNotes}
                         sx={{ gridColumn: "span 4 " }}
                       />
                     </Box>

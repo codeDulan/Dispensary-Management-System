@@ -156,6 +156,39 @@ class UserService{
     }
   }
 
+  // Register patient by doctor
+  static async doctorRegisterPatient(patientData) {
+    try {
+      const token = localStorage.getItem("token"); // ✅ get the token
+  
+      const response = await axios.post(
+        `${UserService.BASE_URL}/api/patients/doctor-register`,
+        patientData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ attach token
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      if (err.response) {
+        throw new Error(
+          err.response.data.message ||
+            err.response.data.error ||
+            "Registration failed"
+        );
+      } else if (err.request) {
+        throw new Error("No response from server");
+      } else {
+        throw new Error("Request setup error");
+      }
+    }
+  }
+  
+
+
 
 }
 

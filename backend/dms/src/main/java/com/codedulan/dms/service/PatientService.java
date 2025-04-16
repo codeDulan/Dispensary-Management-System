@@ -1,9 +1,11 @@
 package com.codedulan.dms.service;
 
+import com.codedulan.dms.dto.DoctorRegisterPatientDto;
 import com.codedulan.dms.dto.PatientDto;
 import com.codedulan.dms.entity.Patient;
 import com.codedulan.dms.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,6 +57,76 @@ public class PatientService {
 
         return savedPatient;
     }
+
+
+
+
+
+    @Transactional
+    public Patient doctorRegisterPatient(DoctorRegisterPatientDto request) {
+        if (patientRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already taken");
+        }
+
+        // 1. Generate random password
+        String tempPassword = RandomStringUtils.randomAlphanumeric(8);
+
+        // 2. Generate barcode from email
+        String barcodeBase64 = barcodeService.generateBarcode(request.getEmail());
+
+        // 3. Create and save patient
+        Patient patient = Patient.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .nic(request.getNic())
+                .address(request.getAddress())
+                .contact(request.getContact())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(tempPassword))
+                .gender(request.getGender())
+                .age(request.getAge())
+                .weight(request.getWeight())
+                .medicalNotes(request.getMedicalNotes())
+                .barcode(barcodeBase64)
+                .build();
+
+        Patient savedPatient = patientRepository.save(patient);
+
+        // 4. Send email with barcode and temp password
+        sendBarcodeAndPasswordEmail(savedPatient.getEmail(), barcodeBase64, tempPassword);
+
+        return savedPatient;
+    }
+
+    private void sendBarcodeAndPasswordEmail(String toEmail, String barcodeBase64, String tempPassword) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(toEmail);
+            helper.setSubject("Your Temporary Login for Sahanaya Medical Center");
+
+            String htmlContent = "<p>You have been registered by a doctor at Sahanaya Medical Center.</p>" +
+                    "<p><b>Temporary Password:</b> " + tempPassword + "</p>" +
+                    "<p><b>Barcode:</b></p>" +
+                    "<img src='cid:barcodeImage' />" +
+                    "<p>Please login using this password and change it as soon as possible.</p>";
+
+            helper.setText(htmlContent, true);
+
+            byte[] imageBytes = Base64.getDecoder().decode(barcodeBase64);
+            helper.addInline("barcodeImage", new org.springframework.core.io.ByteArrayResource(imageBytes), "image/png");
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send registration email", e);
+        }
+    }
+
+
+
+
+
 
     private void sendBarcodeEmail(String toEmail, String barcodeBase64) {
         try {

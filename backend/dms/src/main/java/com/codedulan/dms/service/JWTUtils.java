@@ -1,5 +1,6 @@
 package com.codedulan.dms.service;
 
+import com.codedulan.dms.entity.Users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,15 +28,19 @@ public class JWTUtils {
         this.Key = new SecretKeySpec(keyBytes, "HmacSHA256");
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(Users user) {
+        HashMap<String, Object> claims = new HashMap<>();
+        claims.put("authorities", "ROLE_" + user.getRole());
+
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .claims(claims)
+                .subject(user.getUsername()) // use user.getUsername() if applicable
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(Key)
                 .compact();
-
     }
+
 
     public String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails) {
 
