@@ -11,29 +11,38 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [userType, setUserType] = useState("DOCTOR"); // default role
+
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
+  
     try {
-      const userData = await UserService.login(email, password);
-      
+      let userData;
+  
+      // Call the appropriate login function
+      if (userType === "PATIENT") {
+        userData = await UserService.patientLogin(email, password);
+      } else {
+        userData = await UserService.login(email, password);
+      }
+  
       if (userData.token) {
         localStorage.setItem("token", userData.token);
-        localStorage.setItem("role", userData.role);
-        
-        // Redirect based on role
-        if (userData.role === "DOCTOR") {
-          navigate("/dashboard");  // Doctor dashboard
-        } else if (userData.role === "DISPENSER") {
+        localStorage.setItem("role", userType);
+  
+        if (userType === "DOCTOR") {
+          navigate("/dashboard");
+        } else if (userType === "DISPENSER") {
           navigate("/dispenser/dashboard");
-        } else if (userData.role === "CUSTOMER") {  // Fix typo if needed
+        } else if (userType === "PATIENT") {
           navigate("/customer/dashboard");
         } else {
-          navigate("/");  // Fallback
+          navigate("/");
         }
       } else {
         setError(userData.message || "Login failed");
@@ -45,6 +54,8 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
+  
 
   return (
     <div className="login-container">
@@ -57,6 +68,18 @@ const Login = () => {
           <h2>Login</h2>
           
           {error && <div className="error-message">{error}</div>}
+
+
+          <select
+  className="input-field"
+  value={userType}
+  onChange={(e) => setUserType(e.target.value)}
+>
+  <option value="DOCTOR">Doctor</option>
+  <option value="DISPENSER">Dispenser</option>
+  <option value="PATIENT">Patient</option>
+</select>
+
           
           <input
             type="email"

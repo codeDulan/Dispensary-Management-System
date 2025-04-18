@@ -1,10 +1,15 @@
 package com.codedulan.dms.service;
 
+import com.codedulan.dms.entity.Patient;
 import com.codedulan.dms.entity.Users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -16,9 +21,12 @@ import java.util.function.Function;
 
 
 @Component
+
 public class JWTUtils {
 
     private SecretKey Key;
+
+
 
     private static final long EXPIRATION_TIME = 86400000; // 24 hours
 
@@ -54,6 +62,24 @@ public class JWTUtils {
 
     }
 
+    public String generateTokenForPatient(Patient patient) {
+        HashMap<String, Object> claims = new HashMap<>();
+        claims.put("authorities", "ROLE_PATIENT"); // This is important for Spring Security
+        claims.put("role", "PATIENT");             // Used in your filter
+        claims.put("name", patient.getFirstName());     // 👈 Add this so frontend can use it
+        claims.put("email", patient.getEmail());   // Optional
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(patient.getEmail())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(Key)
+                .compact();
+    }
+
+
+
     public String extractUsername(String token) {
         return extractClaims(token, Claims::getSubject);
     }
@@ -70,5 +96,13 @@ public class JWTUtils {
     public boolean isTokenExpired(String token) {
         return extractClaims(token, Claims::getExpiration).before(new Date());
     }
+
+    public String extractRole(String token) {
+        return extractClaims(token, claims -> claims.get("role", String.class));
+    }
+
+
+
+
 
 }

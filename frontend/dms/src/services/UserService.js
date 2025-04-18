@@ -186,6 +186,49 @@ class UserService{
       }
     }
   }
+
+
+  // Patient Login
+static async patientLogin(email, password) {
+  try {
+    const response = await axios.post(`${UserService.BASE_URL}/api/patients/login`, {
+      email,
+      password
+    });
+
+    // Save token and role to localStorage
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("role", "PATIENT"); // or use response.data.role if available
+
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+static isCustomer() {
+  const role = localStorage.getItem("role");
+  return role === "PATIENT";
+}
+
+
+// Fetch patient profile info (e.g., name)
+static async getPatientProfile() {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${UserService.BASE_URL}/api/patients/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data; // should contain { name: "..." }
+  } catch (err) {
+    throw err;
+  }
+}
+
+
   
 
 

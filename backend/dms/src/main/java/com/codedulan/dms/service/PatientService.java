@@ -2,12 +2,16 @@ package com.codedulan.dms.service;
 
 import com.codedulan.dms.dto.DoctorRegisterPatientDto;
 import com.codedulan.dms.dto.PatientDto;
+import com.codedulan.dms.dto.PatientLoginDto;
 import com.codedulan.dms.entity.Patient;
+import com.codedulan.dms.entity.Users;
 import com.codedulan.dms.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,8 @@ public class PatientService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final BarcodeService barcodeService;
+
+    private final JWTUtils jwtUtils;
 
     @Transactional
     public Patient registerPatient(PatientDto request) {
@@ -152,5 +158,34 @@ public class PatientService {
             throw new RuntimeException("Failed to send barcode email", e);
         }
     }
+
+
+
+//    Patinet Login
+public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
+    Patient patient = patientRepository.findByEmail(loginDto.getEmail())
+            .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+    if (!passwordEncoder.matches(loginDto.getPassword(), patient.getPassword())) {
+        throw new RuntimeException("Invalid credentials");
+    }
+
+    return jwtUtils.generateTokenForPatient(patient);
+}
+
+
+
+    public PatientDto getPatientByEmail(String email) {
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Patient not found"));
+
+        return PatientDto.builder()
+                .firstName(patient.getFirstName())
+                .email(patient.getEmail())
+                .build();
+    }
+
+
+
 
 }

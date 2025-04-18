@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JWTAuthFilter extends OncePerRequestFilter {
@@ -31,6 +32,16 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+
+
+        // Skip the filter if the request is for login endpoint
+        if (request.getRequestURI().equals("/api/patients/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
 
         final String authHeader = request.getHeader("Authorization");
         final String jwtToken;
@@ -46,19 +57,31 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
 
-            UserDetails userDetails = ourUserDetailsService.loadUserByUsername(userEmail);
+            String role = jwtUtils.extractRole(jwtToken); // You’ll need to add this method to JWTUtils
 
-            if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
-
-                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            if ("PATIENT".equals(role)) {
+                // Trust token and set authentication manually
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
+                        userEmail, null, List.of(() -> "PATIENT") // or use AuthorityUtils.createAuthorityList("PATIENT")
                 );
                 token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                securityContext.setAuthentication(token);
-                SecurityContextHolder.setContext(securityContext);
-                
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(token);
+                SecurityContextHolder.setContext(context);
+            } else {
+                // Existing behavior for DOCTOR, DISPENSER, etc.
+                UserDetails userDetails = ourUserDetailsService.loadUserByUsername(userEmail);
+                if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
+                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
+                    token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
+                    context.setAuthentication(token);
+                    SecurityContextHolder.setContext(context);
+                }
             }
+
         }
 
         filterChain.doFilter(request, response);

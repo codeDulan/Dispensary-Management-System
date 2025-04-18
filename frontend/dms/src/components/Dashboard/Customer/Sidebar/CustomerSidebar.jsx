@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -15,9 +16,15 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import UserIcon from "../../../../assets/customer.png";
 
+import UserService from "../../../../services/UserService";
+
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+
+
+
+
   return (
     <MenuItem
       active={selected === to}
@@ -47,6 +54,22 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
+  const [patientName, setPatientName] = useState("");
+
+
+  useEffect(() => {
+    const fetchName = async () => {
+      try {
+        const data = await UserService.getPatientProfile();
+        setPatientName(data.firstName); // ✅ Or data.name depending on your response
+      } catch (err) {
+        console.error("Failed to fetch patient profile", err);
+      }
+    };
+
+    fetchName();
+  }, []);
+
 
   return (
     <Box
@@ -125,10 +148,10 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0", fontFamily: "Roboto, sans-serif" }}
                 >
-                  Mr. Dulan
+                  {patientName || "Patient"}
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Customer
+                  Patient
                 </Typography>
               </Box>
             </Box>
