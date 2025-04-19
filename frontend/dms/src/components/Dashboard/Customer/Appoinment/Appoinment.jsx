@@ -49,107 +49,131 @@ const Appointment = () => {
 
   // Fetch all appointments on component mount
   // Updated fetchAppointments function
-const fetchAppointments = useCallback(async (startDate, endDate) => {
-  const token = localStorage.getItem("token");
-  const currentUserId = getCurrentUserId();
+  const fetchAppointments = useCallback(async (startDate, endDate) => {
+    const token = localStorage.getItem("token");
+    const currentUserId = getCurrentUserId();
 
-  try {
-    const response = await axios.get("http://localhost:8080/api/appointments", {
-      params: {
-        startDate,
-        endDate,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    // Check if response.data is an array
-    const appointmentsArray = Array.isArray(response.data) ? response.data : [];
-    
-    // Debug the raw data
-    console.log('Raw appointments data:', appointmentsArray);
-    
-    const events = appointmentsArray.map((appt) => {
-      // Get patient email with better fallback logic
-      let patientEmail = null;
-      
-      // Try different ways to access the email
-      if (appt.patient && appt.patient.email) {
-        patientEmail = appt.patient.email;
-      } else if (getCurrentUserId() && appt.patient) {
-        // If we have current user and this is their appointment
-        patientEmail = getCurrentUserId();
-      }
-      
-      // Normalize both values before comparing
-      const normalizedPatientEmail = patientEmail ? patientEmail.toLowerCase().trim() : null;
-      const normalizedCurrentUserId = currentUserId ? currentUserId.toLowerCase().trim() : null;
-      
-      // Check if this appointment belongs to the current user
-      const isCurrentUserAppointment = normalizedPatientEmail === normalizedCurrentUserId;
-      
-      console.log(`Appointment ID ${appt.id} patient email:`, patientEmail);
-      console.log(`Normalized patient email: "${normalizedPatientEmail}"`);
-      console.log(`Normalized current user ID: "${normalizedCurrentUserId}"`);
-      console.log(`Appointment ID ${appt.id} is current user:`, isCurrentUserAppointment);
-      
-      return {
-        id: appt.id,
-        title: appt.notes,
-        start: `${appt.date}T${appt.time}`,
-        end: `${appt.date}T${appt.time}`,
-        allDay: false,
-        extendedProps: {
-          userId: patientEmail,
-          isCurrentUser: isCurrentUserAppointment
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/appointments",
+        {
+          params: {
+            startDate,
+            endDate,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      };
-    });
-    
-    // Split events into my events and other events
-    // Make sure we're not duplicating events between the two arrays
-    const myEvents = events.filter(event => event.extendedProps.isCurrentUser === true);
-    const otherEvents = events.filter(event => event.extendedProps.isCurrentUser === false);
-    
-    setCurrentEvents(events);
-    setMyEvents(myEvents);
-    setOtherEvents(otherEvents);
-    
-    console.log(`Total events: ${events.length}`);
-    console.log(`My events: ${myEvents.length}`, myEvents);
-    console.log(`Other events: ${otherEvents.length}`, otherEvents);
-  } catch (error) {
-    console.error("Error fetching appointments:", error);
-    toast.error(error.response?.data?.message || "Failed to fetch appointments");
-  }
-}, []);
-  
+      );
+
+      // Check if response.data is an array
+      const appointmentsArray = Array.isArray(response.data)
+        ? response.data
+        : [];
+
+      // Debug the raw data
+      console.log("Raw appointments data:", appointmentsArray);
+
+      const events = appointmentsArray.map((appt) => {
+        // Get patient email with better fallback logic
+        let patientEmail = null;
+
+        // Try different ways to access the email
+        if (appt.patient && appt.patient.email) {
+          patientEmail = appt.patient.email;
+        } else if (getCurrentUserId() && appt.patient) {
+          // If we have current user and this is their appointment
+          patientEmail = getCurrentUserId();
+        }
+
+        // Normalize both values before comparing
+        const normalizedPatientEmail = patientEmail
+          ? patientEmail.toLowerCase().trim()
+          : null;
+        const normalizedCurrentUserId = currentUserId
+          ? currentUserId.toLowerCase().trim()
+          : null;
+
+        // Check if this appointment belongs to the current user
+        const isCurrentUserAppointment =
+          normalizedPatientEmail === normalizedCurrentUserId;
+
+        console.log(`Appointment ID ${appt.id} patient email:`, patientEmail);
+        console.log(`Normalized patient email: "${normalizedPatientEmail}"`);
+        console.log(`Normalized current user ID: "${normalizedCurrentUserId}"`);
+        console.log(
+          `Appointment ID ${appt.id} is current user:`,
+          isCurrentUserAppointment
+        );
+
+        return {
+          id: appt.id,
+          title: appt.notes,
+          start: `${appt.date}T${appt.time}`,
+          end: `${appt.date}T${appt.time}`,
+          allDay: false,
+          extendedProps: {
+            userId: patientEmail,
+            isCurrentUser: isCurrentUserAppointment,
+          },
+        };
+      });
+
+      // Split events into my events and other events
+      // Make sure we're not duplicating events between the two arrays
+      const myEvents = events.filter(
+        (event) => event.extendedProps.isCurrentUser === true
+      );
+      const otherEvents = events.filter(
+        (event) => event.extendedProps.isCurrentUser === false
+      );
+
+      setCurrentEvents(events);
+      setMyEvents(myEvents);
+      setOtherEvents(otherEvents);
+
+      console.log(`Total events: ${events.length}`);
+      console.log(`My events: ${myEvents.length}`, myEvents);
+      console.log(`Other events: ${otherEvents.length}`, otherEvents);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to fetch appointments"
+      );
+    }
+  }, []);
+
   // Updated getCurrentUserId function
-const getCurrentUserId = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  
-  try {
-    // For JWT decoding without a library
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    
-    const payload = JSON.parse(jsonPayload);
-    
-    // Extract the email which is the user identifier
-    // Try multiple possible fields where the email might be stored
-    const userId = payload.sub || payload.email || payload.username;
-    // Return userId in lowercase for consistent comparison
-    return userId ? userId.toLowerCase().trim() : null;
-  } catch (error) {
-    console.error("Error parsing token:", error);
-    return null;
-  }
-};
+  const getCurrentUserId = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      // For JWT decoding without a library
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+
+      const payload = JSON.parse(jsonPayload);
+
+      // Extract the email which is the user identifier
+      // Try multiple possible fields where the email might be stored
+      const userId = payload.sub || payload.email || payload.username;
+      // Return userId in lowercase for consistent comparison
+      return userId ? userId.toLowerCase().trim() : null;
+    } catch (error) {
+      console.error("Error parsing token:", error);
+      return null;
+    }
+  };
 
   const handleDateSelect = async (selectInfo) => {
     const startTime = new Date(selectInfo.startStr);
@@ -163,7 +187,9 @@ const getCurrentUserId = () => {
     }
 
     if (hours < 9 || (hours === 15 && minutes > 0) || hours > 15) {
-      toast.error("Appointments can only be booked between 9:00 AM and 3:00 PM");
+      toast.error(
+        "Appointments can only be booked between 9:00 AM and 3:00 PM"
+      );
       return;
     }
 
@@ -180,19 +206,19 @@ const getCurrentUserId = () => {
     const eventUserId = event.extendedProps.userId;
     const currentUserId = getCurrentUserId();
     const isCurrentUserEvent = event.extendedProps.isCurrentUser;
-    
+
     // Debug output
-    console.log('Event clicked:', event);
-    console.log('Is current user event:', isCurrentUserEvent);
-    console.log('Event user ID:', eventUserId);
-    console.log('Current user ID:', currentUserId);
-  
+    console.log("Event clicked:", event);
+    console.log("Is current user event:", isCurrentUserEvent);
+    console.log("Event user ID:", eventUserId);
+    console.log("Current user ID:", currentUserId);
+
     // If not current user's event, show info toast and return
     if (!isCurrentUserEvent && eventUserId !== null) {
       toast.info(`This appointment is booked by another patient.`);
       return;
     }
-  
+
     // If we get here, the event belongs to the current user
     setCurrentAppointment({
       id: event.id,
@@ -210,11 +236,11 @@ const getCurrentUserId = () => {
       toast.error("Please enter appointment notes");
       return;
     }
-  
+
     const token = localStorage.getItem("token");
     const date = currentAppointment.start.split("T")[0];
     const time = currentAppointment.start.split("T")[1].substring(0, 5);
-  
+
     try {
       if (currentAppointment.action === "create") {
         const response = await axios.post(
@@ -222,9 +248,9 @@ const getCurrentUserId = () => {
           { date, time, notes },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-  
+
         const currentUserId = getCurrentUserId();
-        
+
         // Add new event to calendar
         const newEvent = {
           id: response.data.id,
@@ -235,14 +261,14 @@ const getCurrentUserId = () => {
           extendedProps: {
             userId: currentUserId,
             isCurrentUser: true,
-            patientId: response.data.patient?.id
-          }
+            patientId: response.data.patient?.id,
+          },
         };
-  
+
         // Update both the main events list and my events list
         setCurrentEvents([...currentEvents, newEvent]);
         setMyEvents([...myEvents, newEvent]);
-        
+
         calendarApi.addEvent(newEvent);
         toast.success("Appointment created!");
       } else {
@@ -251,41 +277,45 @@ const getCurrentUserId = () => {
           { date, time, notes },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-  
+
         // Update existing event
-        const updatedEvent = { 
+        const updatedEvent = {
           id: currentAppointment.id,
-          title: notes, 
-          start: `${date}T${time}`, 
+          title: notes,
+          start: `${date}T${time}`,
           end: `${date}T${time}`,
           extendedProps: {
             userId: getCurrentUserId(),
-            isCurrentUser: true
-          }
+            isCurrentUser: true,
+          },
         };
-        
+
         // Update in all relevant state arrays
-        setCurrentEvents(currentEvents.map(event => 
-          event.id === currentAppointment.id ? updatedEvent : event
-        ));
-        
-        setMyEvents(myEvents.map(event => 
-          event.id === currentAppointment.id ? updatedEvent : event
-        ));
-        
+        setCurrentEvents(
+          currentEvents.map((event) =>
+            event.id === currentAppointment.id ? updatedEvent : event
+          )
+        );
+
+        setMyEvents(
+          myEvents.map((event) =>
+            event.id === currentAppointment.id ? updatedEvent : event
+          )
+        );
+
         // Update the calendar event
         const event = calendarApi.getEventById(currentAppointment.id);
         if (event) {
           event.setProp("title", notes);
           event.setDates(`${date}T${time}`, `${date}T${time}`);
         }
-        
+
         toast.success("Appointment updated!");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Operation failed");
     }
-  
+
     setOpenDialog(false);
     setNotes("");
   };
@@ -303,13 +333,15 @@ const getCurrentUserId = () => {
       );
 
       // Remove event from all state arrays
-      setCurrentEvents(currentEvents.filter(e => e.id !== currentAppointment.id));
-      setMyEvents(myEvents.filter(e => e.id !== currentAppointment.id));
-      
+      setCurrentEvents(
+        currentEvents.filter((e) => e.id !== currentAppointment.id)
+      );
+      setMyEvents(myEvents.filter((e) => e.id !== currentAppointment.id));
+
       // Remove from calendar
       const event = calendarApi.getEventById(currentAppointment.id);
       if (event) event.remove();
-      
+
       toast.success("Appointment deleted!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Deletion failed");
@@ -318,7 +350,7 @@ const getCurrentUserId = () => {
     setOpenDialog(false);
     setNotes("");
   };
-  
+
   // Handle tab change in sidebar
   const handleTabChange = (event, newValue) => {
     setSidebarTab(newValue);
@@ -369,11 +401,11 @@ const getCurrentUserId = () => {
                     maxWidth: { md: "300px" },
                     overflow: "auto",
                     display: "flex",
-                    flexDirection: "column"
+                    flexDirection: "column",
                   }}
                 >
-                  <Tabs 
-                    value={sidebarTab} 
+                  <Tabs
+                    value={sidebarTab}
                     onChange={handleTabChange}
                     variant="fullWidth"
                     sx={{ mb: 2 }}
@@ -381,17 +413,22 @@ const getCurrentUserId = () => {
                     <Tab label="My Appointments" />
                     <Tab label="All Appointments" />
                   </Tabs>
-                  
+
                   {sidebarTab === 0 ? (
                     /* My Appointments Tab */
                     <>
-                      <Typography variant="h5" mb="15px" display="flex" alignItems="center">
+                      <Typography
+                        variant="h5"
+                        mb="15px"
+                        display="flex"
+                        alignItems="center"
+                      >
                         My Appointments
-                        <Chip 
-                          label={myEvents.length} 
-                          size="small" 
-                          color="primary" 
-                          sx={{ ml: 1 }} 
+                        <Chip
+                          label={myEvents.length}
+                          size="small"
+                          color="primary"
+                          sx={{ ml: 1 }}
                         />
                       </Typography>
                       <List sx={{ maxHeight: "100%", overflow: "auto" }}>
@@ -415,7 +452,10 @@ const getCurrentUserId = () => {
                                   </Typography>
                                 }
                                 secondary={
-                                  <Typography variant="body2" color={colors.grey[100]}>
+                                  <Typography
+                                    variant="body2"
+                                    color={colors.grey[100]}
+                                  >
                                     {formatDate(event.start, {
                                       year: "numeric",
                                       month: "short",
@@ -426,10 +466,11 @@ const getCurrentUserId = () => {
                                   </Typography>
                                 }
                               />
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 onClick={() => {
-                                  const calendarEvent = calendarApi.getEventById(event.id);
+                                  const calendarEvent =
+                                    calendarApi.getEventById(event.id);
                                   if (calendarEvent) {
                                     calendarEvent.select();
                                     handleEventClick({ event: calendarEvent });
@@ -441,7 +482,11 @@ const getCurrentUserId = () => {
                             </ListItem>
                           ))
                         ) : (
-                          <Typography variant="body2" color={colors.grey[100]} sx={{ textAlign: 'center', mt: 2 }}>
+                          <Typography
+                            variant="body2"
+                            color={colors.grey[100]}
+                            sx={{ textAlign: "center", mt: 2 }}
+                          >
                             You have no appointments scheduled
                           </Typography>
                         )}
@@ -450,13 +495,18 @@ const getCurrentUserId = () => {
                   ) : (
                     /* All Appointments Tab */
                     <>
-                      <Typography variant="h5" mb="15px" display="flex" alignItems="center">
+                      <Typography
+                        variant="h5"
+                        mb="15px"
+                        display="flex"
+                        alignItems="center"
+                      >
                         All Appointments
-                        <Chip 
-                          label={currentEvents.length} 
-                          size="small" 
-                          color="primary" 
-                          sx={{ ml: 1 }} 
+                        <Chip
+                          label={currentEvents.length}
+                          size="small"
+                          color="primary"
+                          sx={{ ml: 1 }}
                         />
                       </Typography>
                       <List sx={{ maxHeight: "100%", overflow: "auto" }}>
@@ -464,14 +514,15 @@ const getCurrentUserId = () => {
                           <ListItem
                             key={event.id}
                             sx={{
-                              backgroundColor: event.extendedProps.isCurrentUser 
-                                ? colors.greenAccent[500] 
+                              backgroundColor: event.extendedProps.isCurrentUser
+                                ? colors.greenAccent[500]
                                 : colors.grey[700],
                               margin: "8px 0",
                               borderRadius: "4px",
                               "&:hover": {
-                                backgroundColor: event.extendedProps.isCurrentUser 
-                                  ? colors.greenAccent[600] 
+                                backgroundColor: event.extendedProps
+                                  .isCurrentUser
+                                  ? colors.greenAccent[600]
                                   : colors.grey[800],
                               },
                             }}
@@ -483,17 +534,24 @@ const getCurrentUserId = () => {
                                     {event.title}
                                   </Typography>
                                   {event.extendedProps.isCurrentUser && (
-                                    <Chip 
-                                      label="Mine" 
-                                      size="small" 
-                                      color="primary" 
-                                      sx={{ ml: 1, height: '16px', fontSize: '10px' }} 
+                                    <Chip
+                                      label="Mine"
+                                      size="small"
+                                      color="primary"
+                                      sx={{
+                                        ml: 1,
+                                        height: "16px",
+                                        fontSize: "10px",
+                                      }}
                                     />
                                   )}
                                 </Box>
                               }
                               secondary={
-                                <Typography variant="body2" color={colors.grey[100]}>
+                                <Typography
+                                  variant="body2"
+                                  color={colors.grey[100]}
+                                >
                                   {formatDate(event.start, {
                                     year: "numeric",
                                     month: "short",
@@ -505,10 +563,11 @@ const getCurrentUserId = () => {
                               }
                             />
                             {event.extendedProps.isCurrentUser && (
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 onClick={() => {
-                                  const calendarEvent = calendarApi.getEventById(event.id);
+                                  const calendarEvent =
+                                    calendarApi.getEventById(event.id);
                                   if (calendarEvent) {
                                     calendarEvent.select();
                                     handleEventClick({ event: calendarEvent });
@@ -540,38 +599,46 @@ const getCurrentUserId = () => {
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="h4">Appointment Calendar</Typography>
                     <Box display="flex" gap={1} mt={1}>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        backgroundColor: colors.greenAccent[500],
-                        p: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem'
-                      }}>
-                        <Box sx={{ 
-                          width: 12, 
-                          height: 12, 
-                          borderRadius: '50%', 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
                           backgroundColor: colors.greenAccent[500],
-                          mr: 1
-                        }} />
+                          p: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            backgroundColor: colors.greenAccent[500],
+                            mr: 1,
+                          }}
+                        />
                         My Appointments
                       </Box>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        backgroundColor: colors.grey[700],
-                        p: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem'
-                      }}>
-                        <Box sx={{ 
-                          width: 12, 
-                          height: 12, 
-                          borderRadius: '50%', 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
                           backgroundColor: colors.grey[700],
-                          mr: 1
-                        }} />
+                          p: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: "50%",
+                            backgroundColor: colors.grey[700],
+                            mr: 1,
+                          }}
+                        />
                         Other Appointments
                       </Box>
                     </Box>
@@ -615,24 +682,39 @@ const getCurrentUserId = () => {
                     eventClick={handleEventClick}
                     events={currentEvents}
                     eventContent={(eventInfo) => {
-                      const isCurrentUserEvent = eventInfo.event.extendedProps.isCurrentUser;
+                      const isCurrentUserEvent =
+                        eventInfo.event.extendedProps.isCurrentUser;
                       return (
-                        <Box sx={{ 
-                          p: "2px 4px",
-                          borderRadius: "2px",
-                          width: "100%",
-                          display: "flex",
-                          flexDirection: "column"
-                        }}>
+                        <Box
+                          sx={{
+                            p: "2px 4px",
+                            borderRadius: "2px",
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
                           <Typography variant="caption" fontWeight="bold">
                             {eventInfo.timeText}
                           </Typography>
-                          <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontSize: "0.85rem" }}
+                          >
                             {eventInfo.event.title}
                           </Typography>
                           {!isCurrentUserEvent && (
-                            <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center' }}>
-                              <Person fontSize="small" sx={{ fontSize: '0.75rem', mr: 0.5 }} />
+                            <Box
+                              sx={{
+                                mt: 0.5,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Person
+                                fontSize="small"
+                                sx={{ fontSize: "0.75rem", mr: 0.5 }}
+                              />
                               <Typography variant="caption">Booked</Typography>
                             </Box>
                           )}
@@ -646,7 +728,8 @@ const getCurrentUserId = () => {
                     }}
                     eventDidMount={(arg) => {
                       // Style events differently based on ownership
-                      const isCurrentUserEvent = arg.event.extendedProps.isCurrentUser;
+                      const isCurrentUserEvent =
+                        arg.event.extendedProps.isCurrentUser;
                       if (!isCurrentUserEvent) {
                         arg.el.style.backgroundColor = colors.grey[700];
                         arg.el.style.borderColor = colors.grey[600];

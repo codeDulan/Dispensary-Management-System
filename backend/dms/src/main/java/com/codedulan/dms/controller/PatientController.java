@@ -4,6 +4,7 @@ import com.codedulan.dms.dto.DoctorRegisterPatientDto;
 import com.codedulan.dms.dto.PatientDto;
 import com.codedulan.dms.dto.PatientLoginDto;
 import com.codedulan.dms.entity.Patient;
+import com.codedulan.dms.repository.PatientRepository;
 import com.codedulan.dms.service.PatientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -55,5 +58,14 @@ public class PatientController {
         PatientDto patientDto = patientService.getPatientByEmail(email);
         return ResponseEntity.ok(patientDto);
     }
+
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('DOCTOR')") // Optional: restrict to doctor role
+    public ResponseEntity<List<PatientDto>> getAllPatients() {
+        List<PatientDto> patients = patientService.getAllPatients();
+        return ResponseEntity.ok(patients);
+    }
+
 
 }

@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class PatientDto {
 
+    private Long id;
+
     @NotBlank
     private String firstName;
 

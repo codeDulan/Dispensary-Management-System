@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**", "/public/**", "/api/patients/register", "/api/patients/login").permitAll()
                         .requestMatchers("/api/patients/me").hasAuthority("PATIENT")
+                        .requestMatchers("/api/patients/**").hasAuthority("DOCTOR")
                         .requestMatchers("/api/appointments/**").hasAnyAuthority("PATIENT")
                         .requestMatchers("/doctor/**").hasAnyAuthority("DOCTOR")
                         .requestMatchers("/dispenser/**").hasAnyAuthority("DISPENSER")

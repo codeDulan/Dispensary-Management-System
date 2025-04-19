@@ -20,6 +20,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -184,6 +186,22 @@ public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
                 .email(patient.getEmail())
                 .build();
     }
+
+
+    public List<PatientDto> getAllPatients() {
+        return patientRepository.findAll().stream()
+                .map(patient -> PatientDto.builder()
+                        .id(patient.getPatientId())
+                        .firstName(patient.getFirstName())
+                        .email(patient.getEmail())
+                        .gender(patient.getGender())
+                        .age(patient.getAge())
+                        .contact(patient.getContact())
+                        .address(patient.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 
 
 
