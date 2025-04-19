@@ -64,7 +64,7 @@ public class JWTUtils {
 
     public String generateTokenForPatient(Patient patient) {
         HashMap<String, Object> claims = new HashMap<>();
-        claims.put("authorities", "ROLE_PATIENT"); // This is important for Spring Security
+        
         claims.put("role", "PATIENT");             // Used in your filter
         claims.put("name", patient.getFirstName());     // 👈 Add this so frontend can use it
         claims.put("email", patient.getEmail());   // Optional

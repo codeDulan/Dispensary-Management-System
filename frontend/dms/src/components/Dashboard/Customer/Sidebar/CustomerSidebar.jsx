@@ -200,7 +200,7 @@ const Sidebar = () => {
               
               <Item
                 title="Appoinments"
-                to="/customer/appoinments"
+                to="/customer/appointments"
                 icon={<PendingActionsIcon />}
                 selected={selected}
                 setSelected={setSelected}

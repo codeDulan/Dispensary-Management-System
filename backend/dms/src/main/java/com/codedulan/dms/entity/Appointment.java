@@ -1,5 +1,6 @@
 package com.codedulan.dms.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Data
@@ -17,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Table(name = "tbl_appointment")
-public class Appoinment {
+public class Appointment {
 
     @Id
     @SequenceGenerator(
@@ -30,10 +32,22 @@ public class Appoinment {
             generator = "appointment_sequence"
     )
 
-    private Long appointmentId;
-    private String appointmentStatus;
-    private String notes;
+    @Column(name = "appointment_id")
+    private Long id;
     private LocalDate date;
+
+    private LocalTime time;
+
+    private String notes;
+
+
+    private String appointmentStatus;
+
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
+
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

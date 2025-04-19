@@ -1,0 +1,13 @@
+
+~
+java:S13195"cThe type of "claims" should be an interface such as "Map" rather than the implementation "HashMap".(¼þï™ýÿÿÿÿ
+b	java:S116"NRename this field "Key" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(À³…
+]
+java:S1128";Remove this unused import 'lombok.RequiredArgsConstructor'.(ÑØŽúøÿÿÿÿ8ªÜå¶ä2
+d
+java:S1128	"HRemove this unused import 'org.springframework.security.oauth2.jwt.Jwt'.(’¹•98ªÜå¶ä2
+l
+java:S1128
+"ORemove this unused import 'org.springframework.security.oauth2.jwt.JwtDecoder'.(¸½œÚ8ªÜå¶ä2
+`
+java:S1128"CRemove this unused import 'org.springframework.stereotype.Service'.(¼º¡Ú8ªÜå¶ä2

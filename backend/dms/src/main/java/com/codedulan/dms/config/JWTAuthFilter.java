@@ -3,6 +3,7 @@ package com.codedulan.dms.config;
 
 
 
+import com.codedulan.dms.repository.PatientRepository;
 import com.codedulan.dms.service.JWTUtils;
 import com.codedulan.dms.service.OurUserDetailsService;
 import jakarta.servlet.FilterChain;
@@ -29,6 +30,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private OurUserDetailsService ourUserDetailsService;
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
