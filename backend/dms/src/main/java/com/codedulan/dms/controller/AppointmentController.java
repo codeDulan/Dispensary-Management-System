@@ -75,4 +75,16 @@ public class AppointmentController {
 
         return ResponseEntity.ok(appointmentService.getAllAppointments());
     }
+
+    @PreAuthorize("@accessControl.isPatient(#authHeader)")
+    @GetMapping("/my-appointments")
+    public ResponseEntity<List<Appointment>> getMyAppointments(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+        return ResponseEntity.ok(appointmentService.getPatientAppointmentsInRange(startDate, endDate, token));
+    }
+
 }
