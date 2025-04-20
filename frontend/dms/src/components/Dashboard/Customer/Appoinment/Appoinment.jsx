@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import "./Appointment.css";
 import axios from "axios";
 import { ColorModeContext, useMode } from "../../../../theme.js";
 import { ToastContainer, toast } from "react-toastify";
@@ -47,95 +48,69 @@ const Appointment = () => {
   const [calendarApi, setCalendarApi] = useState(null);
   const [sidebarTab, setSidebarTab] = useState(0);
 
-  // Fetch all appointments on component mount
-  // Updated fetchAppointments function
   const fetchAppointments = useCallback(async (startDate, endDate) => {
     const token = localStorage.getItem("token");
-    const currentUserId = getCurrentUserId();
 
     try {
-      const response = await axios.get(
+      const allAppointmentsResponse = await axios.get(
         "http://localhost:8080/api/appointments",
         {
-          params: {
-            startDate,
-            endDate,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { startDate, endDate },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      // Check if response.data is an array
-      const appointmentsArray = Array.isArray(response.data)
-        ? response.data
+      const myAppointmentsResponse = await axios.get(
+        "http://localhost:8080/api/appointments/my-appointments",
+        {
+          params: { startDate, endDate },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const allAppointments = Array.isArray(allAppointmentsResponse.data)
+        ? allAppointmentsResponse.data
         : [];
 
-      // Debug the raw data
-      console.log("Raw appointments data:", appointmentsArray);
+      const myAppointments = Array.isArray(myAppointmentsResponse.data)
+        ? myAppointmentsResponse.data
+        : [];
 
-      const events = appointmentsArray.map((appt) => {
-        // Get patient email with better fallback logic
-        let patientEmail = null;
+      const myAppointmentIds = new Set(myAppointments.map((appt) => appt.id));
 
-        // Try different ways to access the email
-        if (appt.patient && appt.patient.email) {
-          patientEmail = appt.patient.email;
-        } else if (getCurrentUserId() && appt.patient) {
-          // If we have current user and this is their appointment
-          patientEmail = getCurrentUserId();
-        }
-
-        // Normalize both values before comparing
-        const normalizedPatientEmail = patientEmail
-          ? patientEmail.toLowerCase().trim()
-          : null;
-        const normalizedCurrentUserId = currentUserId
-          ? currentUserId.toLowerCase().trim()
-          : null;
-
-        // Check if this appointment belongs to the current user
-        const isCurrentUserAppointment =
-          normalizedPatientEmail === normalizedCurrentUserId;
-
-        console.log(`Appointment ID ${appt.id} patient email:`, patientEmail);
-        console.log(`Normalized patient email: "${normalizedPatientEmail}"`);
-        console.log(`Normalized current user ID: "${normalizedCurrentUserId}"`);
-        console.log(
-          `Appointment ID ${appt.id} is current user:`,
-          isCurrentUserAppointment
-        );
-
+      const formattedEvents = allAppointments.map((appt) => {
         return {
           id: appt.id,
-          title: appt.notes,
+          title: appt.notes || "No notes",
           start: `${appt.date}T${appt.time}`,
           end: `${appt.date}T${appt.time}`,
           allDay: false,
           extendedProps: {
-            userId: patientEmail,
-            isCurrentUser: isCurrentUserAppointment,
+            isCurrentUser: myAppointmentIds.has(appt.id),
+            patientId: appt.patient?.id,
           },
         };
       });
 
-      // Split events into my events and other events
-      // Make sure we're not duplicating events between the two arrays
-      const myEvents = events.filter(
-        (event) => event.extendedProps.isCurrentUser === true
-      );
-      const otherEvents = events.filter(
-        (event) => event.extendedProps.isCurrentUser === false
+      const myFormattedEvents = myAppointments.map((appt) => ({
+        id: appt.id,
+        title: appt.notes || "No notes",
+        start: `${appt.date}T${appt.time}`,
+        end: `${appt.date}T${appt.time}`,
+        allDay: false,
+        extendedProps: {
+          isCurrentUser: true,
+          patientId: appt.patient?.id,
+        },
+      }));
+
+      const otherFormattedEvents = formattedEvents.filter(
+        (event) => !myAppointmentIds.has(event.id)
       );
 
-      setCurrentEvents(events);
-      setMyEvents(myEvents);
-      setOtherEvents(otherEvents);
-
-      console.log(`Total events: ${events.length}`);
-      console.log(`My events: ${myEvents.length}`, myEvents);
-      console.log(`Other events: ${otherEvents.length}`, otherEvents);
+      setCurrentEvents(formattedEvents);
+      setMyEvents(myFormattedEvents);
+      setOtherEvents(otherFormattedEvents);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       toast.error(
@@ -143,37 +118,6 @@ const Appointment = () => {
       );
     }
   }, []);
-
-  // Updated getCurrentUserId function
-  const getCurrentUserId = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-
-    try {
-      // For JWT decoding without a library
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map(function (c) {
-            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-          })
-          .join("")
-      );
-
-      const payload = JSON.parse(jsonPayload);
-
-      // Extract the email which is the user identifier
-      // Try multiple possible fields where the email might be stored
-      const userId = payload.sub || payload.email || payload.username;
-      // Return userId in lowercase for consistent comparison
-      return userId ? userId.toLowerCase().trim() : null;
-    } catch (error) {
-      console.error("Error parsing token:", error);
-      return null;
-    }
-  };
 
   const handleDateSelect = async (selectInfo) => {
     const startTime = new Date(selectInfo.startStr);
@@ -203,23 +147,13 @@ const Appointment = () => {
 
   const handleEventClick = (clickInfo) => {
     const event = clickInfo.event;
-    const eventUserId = event.extendedProps.userId;
-    const currentUserId = getCurrentUserId();
     const isCurrentUserEvent = event.extendedProps.isCurrentUser;
 
-    // Debug output
-    console.log("Event clicked:", event);
-    console.log("Is current user event:", isCurrentUserEvent);
-    console.log("Event user ID:", eventUserId);
-    console.log("Current user ID:", currentUserId);
-
-    // If not current user's event, show info toast and return
-    if (!isCurrentUserEvent && eventUserId !== null) {
+    if (!isCurrentUserEvent) {
       toast.info(`This appointment is booked by another patient.`);
       return;
     }
 
-    // If we get here, the event belongs to the current user
     setCurrentAppointment({
       id: event.id,
       start: event.startStr,
@@ -243,34 +177,20 @@ const Appointment = () => {
 
     try {
       if (currentAppointment.action === "create") {
-        const response = await axios.post(
+        await axios.post(
           `http://localhost:8080/api/appointments`,
           { date, time, notes },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const currentUserId = getCurrentUserId();
-
-        // Add new event to calendar
-        const newEvent = {
-          id: response.data.id,
-          title: notes,
-          start: `${date}T${time}`,
-          end: `${date}T${time}`,
-          allDay: false,
-          extendedProps: {
-            userId: currentUserId,
-            isCurrentUser: true,
-            patientId: response.data.patient?.id,
-          },
-        };
-
-        // Update both the main events list and my events list
-        setCurrentEvents([...currentEvents, newEvent]);
-        setMyEvents([...myEvents, newEvent]);
-
-        calendarApi.addEvent(newEvent);
         toast.success("Appointment created!");
+
+        if (calendarApi) {
+          const view = calendarApi.view;
+          const startDate = view.activeStart.toISOString().split("T")[0];
+          const endDate = view.activeEnd.toISOString().split("T")[0];
+          fetchAppointments(startDate, endDate);
+        }
       } else {
         await axios.put(
           `http://localhost:8080/api/appointments/${currentAppointment.id}`,
@@ -278,39 +198,14 @@ const Appointment = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Update existing event
-        const updatedEvent = {
-          id: currentAppointment.id,
-          title: notes,
-          start: `${date}T${time}`,
-          end: `${date}T${time}`,
-          extendedProps: {
-            userId: getCurrentUserId(),
-            isCurrentUser: true,
-          },
-        };
-
-        // Update in all relevant state arrays
-        setCurrentEvents(
-          currentEvents.map((event) =>
-            event.id === currentAppointment.id ? updatedEvent : event
-          )
-        );
-
-        setMyEvents(
-          myEvents.map((event) =>
-            event.id === currentAppointment.id ? updatedEvent : event
-          )
-        );
-
-        // Update the calendar event
-        const event = calendarApi.getEventById(currentAppointment.id);
-        if (event) {
-          event.setProp("title", notes);
-          event.setDates(`${date}T${time}`, `${date}T${time}`);
-        }
-
         toast.success("Appointment updated!");
+
+        if (calendarApi) {
+          const view = calendarApi.view;
+          const startDate = view.activeStart.toISOString().split("T")[0];
+          const endDate = view.activeEnd.toISOString().split("T")[0];
+          fetchAppointments(startDate, endDate);
+        }
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Operation failed");
@@ -332,17 +227,14 @@ const Appointment = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Remove event from all state arrays
-      setCurrentEvents(
-        currentEvents.filter((e) => e.id !== currentAppointment.id)
-      );
-      setMyEvents(myEvents.filter((e) => e.id !== currentAppointment.id));
-
-      // Remove from calendar
-      const event = calendarApi.getEventById(currentAppointment.id);
-      if (event) event.remove();
-
       toast.success("Appointment deleted!");
+
+      if (calendarApi) {
+        const view = calendarApi.view;
+        const startDate = view.activeStart.toISOString().split("T")[0];
+        const endDate = view.activeEnd.toISOString().split("T")[0];
+        fetchAppointments(startDate, endDate);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Deletion failed");
     }
@@ -351,27 +243,32 @@ const Appointment = () => {
     setNotes("");
   };
 
-  // Handle tab change in sidebar
   const handleTabChange = (event, newValue) => {
     setSidebarTab(newValue);
   };
+
+  useEffect(() => {
+    if (calendarApi) {
+      const view = calendarApi.view;
+      const startDate = view.activeStart.toISOString().split("T")[0];
+      const endDate = view.activeEnd.toISOString().split("T")[0];
+      fetchAppointments(startDate, endDate);
+    }
+  }, [calendarApi, fetchAppointments]);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Box display="flex" height="100vh" overflow="hidden">
-          {/* Sidebar */}
           <CustomerSidebar
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
           />
 
-          {/* Main Content Area */}
           <Box display="flex" flexDirection="column" flex="1" overflow="hidden">
             <Topbar style={{ zIndex: 1000 }} />
 
-            {/* Main Container */}
             <Box
               p={{ xs: "10px", md: "20px 30px" }}
               height="100%"
@@ -382,7 +279,6 @@ const Appointment = () => {
                 flexDirection: "column",
               }}
             >
-              {/* Calendar and Events Container */}
               <Box
                 display="flex"
                 flexDirection={{ xs: "column", md: "row" }}
@@ -390,7 +286,6 @@ const Appointment = () => {
                 height="100%"
                 overflow="hidden"
               >
-                {/* Events Sidebar */}
                 <Box
                   flex={{ xs: "0 0 auto", md: "1 1 25%" }}
                   backgroundColor={colors.primary[400]}
@@ -415,7 +310,6 @@ const Appointment = () => {
                   </Tabs>
 
                   {sidebarTab === 0 ? (
-                    /* My Appointments Tab */
                     <>
                       <Typography
                         variant="h5"
@@ -493,7 +387,6 @@ const Appointment = () => {
                       </List>
                     </>
                   ) : (
-                    /* All Appointments Tab */
                     <>
                       <Typography
                         variant="h5"
@@ -584,7 +477,6 @@ const Appointment = () => {
                   )}
                 </Box>
 
-                {/* Calendar */}
                 <Box
                   flex={{ xs: "1 1 auto", md: "1 1 75%" }}
                   sx={{
@@ -678,6 +570,13 @@ const Appointment = () => {
                       endTime: "15:00",
                     }}
                     height="100%"
+                    eventMinHeight="20px"
+                    slotHeight="20px"
+                    eventTimeFormat={{
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    }}
                     select={handleDateSelect}
                     eventClick={handleEventClick}
                     events={currentEvents}
@@ -687,36 +586,45 @@ const Appointment = () => {
                       return (
                         <Box
                           sx={{
-                            p: "2px 4px",
-                            borderRadius: "2px",
-                            width: "100%",
+                            p: "0 2px",
+                            fontSize: "0.7rem",
+                            lineHeight: "1.2",
                             display: "flex",
-                            flexDirection: "column",
+                            alignItems: "center",
+                            overflow: "hidden",
                           }}
                         >
-                          <Typography variant="caption" fontWeight="bold">
+                          <span
+                            style={{
+                              fontWeight: "bold",
+                              marginRight: "4px",
+                              minWidth: "40px",
+                            }}
+                          >
                             {eventInfo.timeText}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{ fontSize: "0.85rem" }}
+                          </span>
+                          <span
+                            style={{
+                              whiteSpace: "nowrap",
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              flex: 1,
+                            }}
                           >
                             {eventInfo.event.title}
-                          </Typography>
+                          </span>
                           {!isCurrentUserEvent && (
-                            <Box
-                              sx={{
-                                mt: 0.5,
+                            <span
+                              style={{
                                 display: "flex",
                                 alignItems: "center",
+                                marginLeft: "4px",
+                                fontSize: "0.6rem",
                               }}
                             >
-                              <Person
-                                fontSize="small"
-                                sx={{ fontSize: "0.75rem", mr: 0.5 }}
-                              />
-                              <Typography variant="caption">Booked</Typography>
-                            </Box>
+                              <Person sx={{ fontSize: "0.6rem", mr: "2px" }} />
+                              Booked
+                            </span>
                           )}
                         </Box>
                       );
@@ -727,7 +635,6 @@ const Appointment = () => {
                       fetchAppointments(startDate, endDate);
                     }}
                     eventDidMount={(arg) => {
-                      // Style events differently based on ownership
                       const isCurrentUserEvent =
                         arg.event.extendedProps.isCurrentUser;
                       if (!isCurrentUserEvent) {
@@ -752,7 +659,6 @@ const Appointment = () => {
           </Box>
         </Box>
 
-        {/* Appointment Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>
             {currentAppointment?.action === "create"
@@ -773,10 +679,10 @@ const Appointment = () => {
               rows={4}
             />
             <Typography variant="body2" mt={2}>
-              Date: {currentAppointment?.start.split("T")[0]}
+              Date: {currentAppointment?.start?.split("T")[0]}
             </Typography>
             <Typography variant="body2">
-              Time: {currentAppointment?.start.split("T")[1].substring(0, 5)}
+              Time: {currentAppointment?.start?.split("T")[1]?.substring(0, 5)}
             </Typography>
           </DialogContent>
           <DialogActions>

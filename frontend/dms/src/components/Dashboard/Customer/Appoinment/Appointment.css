@@ -1,0 +1,48 @@
+/* FullCalendar Time Grid Fixes */
+.fc-timegrid-slots tr {
+  height: 20px !important;
+}
+
+.fc-timegrid-slot {
+  height: 20px !important;
+  border-bottom: none !important;
+}
+
+.fc-timegrid-event-harness {
+  height: 20px !important;
+  margin-bottom: 1px !important;
+}
+
+.fc-timegrid-event {
+  height: 20px !important;
+  min-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+}
+
+.fc-event-main {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.fc-event-time {
+  display: none !important;
+}
+
+.fc-event-title {
+  font-size: 0.7rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.fc-timegrid-axis {
+  height: 20px !important;
+}
+
+.fc-timegrid-axis-frame {
+  height: 20px !important;
+}
