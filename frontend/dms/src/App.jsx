@@ -13,6 +13,7 @@ import Patient from './components/Dashboard/Doctor/Patient/Patient';
 import AddPatient from './components/Dashboard/Doctor/Patient/AddPatient/AddPatient';
 import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription';
 import Medicine from './components/Dashboard/Doctor/Medicine/Medicine';
+import Inventory from './components/Dashboard/Doctor/Inventory/Inventory';
 import Prescription from './components/Dashboard/Doctor/Prescription/Prescription';
 import Payment from './components/Dashboard/Doctor/Payment/Payment';
 
@@ -24,6 +25,7 @@ import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/
 import Dashboard_customer from './pages/Customer_Dashboard';
 import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
 import AddMedicine from './components/Dashboard/Doctor/Medicine/AddMedicine/AddMedicine';
+import AddInventory from './components/Dashboard/Doctor/Inventory/AddInventory/AddInventory';
 
 const App = () => {
   // Protected Route Components
@@ -58,6 +60,10 @@ const App = () => {
             element={<DoctorRoute element={<Medicine />} />}
           />
           <Route
+            path="/inventory"
+            element={<DoctorRoute element={<Inventory />} />}
+          />
+          <Route
             path="/patients"
             element={<DoctorRoute element={<Patient />} />}
           />
@@ -76,6 +82,10 @@ const App = () => {
           <Route
             path="/addMedicine"
             element={<DoctorRoute element={<AddMedicine />} />}
+          />
+          <Route
+            path="/addInventory"
+            element={<DoctorRoute element={<AddInventory />} />}
           />
           <Route
             path="/quickPrescription"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -9,24 +9,28 @@ import {
   Button,
   MenuItem,
   Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Tooltip,
+  CircularProgress
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { ColorModeContext, useMode, tokens } from "../../../../theme";
-import { mockDataTeam } from "../../../../data/mockData";
-
 
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
-
+import { ColorModeContext, useMode, tokens } from "../../../../theme";
 import Topbar from "./Topbar";
 import DoctorSidebar from "../Sidebar/DoctorSidebar";
-
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-const Medicine = () => {
+const Prescription = () => {
   const [theme, colorMode] = useMode();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,56 +39,102 @@ const Medicine = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("");
 
-  // Mock Filter Options
-  const filterOptions = ["All", "Low Stock", "Expired", "High Price"];
+  // Filter Options
+  const filterOptions = ["All", "Today", "This Week", "This Month"];
 
-  // Mock Data (Replace with real data from backend)
-  const mockMedicineData = [
-    { id: 1, name: "Paracetamol", description: "Pain relief", quantity: 50, expiry: "2025-12-01", price: 10 },
-    { id: 2, name: "Amoxicillin", description: "Antibiotic", quantity: 30, expiry: "2024-08-15", price: 15 },
-    { id: 3, name: "Ibuprofen", description: "Anti-inflammatory", quantity: 40, expiry: "2026-02-10", price: 20 },
-    { id: 4, name: "Cetrizine", description: "Allergy relief", quantity: 20, expiry: "2023-10-05", price: 8 },
-  ];
+  // Prescriptions state
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Columns Configuration
-  const columns = [
-    { field: "id", headerName: "Drug ID", width: 100 },
-    { field: "name", headerName: "Name", flex: 1 },
-    { field: "description", headerName: "Description", flex: 1 },
-    { field: "quantity", headerName: "Quantity", width: 120 },
-    { field: "expiry", headerName: "Expiry Date", width: 150 },
-    { field: "price", headerName: "Price", width: 120 },
-    {
-      field: "actions",
-      headerName: "Action",
-      width: 120,
-      renderCell: () => (
-        <Box display="flex" justifyContent="space-around">
-          <Tooltip title="Edit">
-            <IconButton color="primary" aria-label="edit" 
-            sx={{ 
-            color: theme.palette.mode === 'dark' 
-                  ? colors.grey[100]  // Use light grey in dark mode (from your tokens)
-                  : colors.primary[500] // Use primary[500] in light mode
-          }}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
+  // API base URL - adjust according to your backend configuration
+  const API_BASE_URL = "http://localhost:8080/api";
 
-          <Tooltip title="Delete">
-            <IconButton color="error" aria-label="delete">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ];
+  // Fetch prescriptions on component mount
+  useEffect(() => {
+    fetchPrescriptions();
+  }, []);
 
-  // Filtering Logic
-  const filteredRows = mockMedicineData.filter((row) =>
-    row.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Function to fetch all prescriptions
+  const fetchPrescriptions = async () => {
+    setLoading(true);
+    try {
+      // Get auth token from localStorage or your auth context
+      const token = localStorage.getItem("token");
+      
+      const response = await axios.get(`${API_BASE_URL}/prescriptions`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      console.log("API Response:", response.data);
+      setPrescriptions(response.data);
+    } catch (error) {
+      console.error("Error fetching prescriptions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = async (value) => {
+    setFilterValue(value);
+    setLoading(true);
+    
+    try {
+      const token = localStorage.getItem("token");
+      let url = `${API_BASE_URL}/prescriptions`;
+      
+      // Apply date filters based on selection
+      if (value === "Today") {
+        const today = new Date().toISOString().split('T')[0];
+        url = `${API_BASE_URL}/prescriptions/by-date?date=${today}`;
+      } else if (value === "This Week") {
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        
+        url = `${API_BASE_URL}/prescriptions/by-date-range?startDate=${startOfWeek.toISOString().split('T')[0]}`;
+      } else if (value === "This Month") {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        url = `${API_BASE_URL}/prescriptions/by-date-range?startDate=${startOfMonth.toISOString().split('T')[0]}`;
+      }
+      
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setPrescriptions(response.data);
+    } catch (error) {
+      console.error("Error applying filter:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format date function
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  // Filtering Logic based on search query
+  const filteredPrescriptions = prescriptions.filter((prescription) => {
+    const patientName = (prescription.patientName || "").toLowerCase();
+    const notes = (prescription.prescriptionNotes || "").toLowerCase();
+    
+    return patientName.includes(searchQuery.toLowerCase()) || 
+           notes.includes(searchQuery.toLowerCase());
+  });
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -100,25 +150,28 @@ const Medicine = () => {
             {/* Topbar */}
             <Topbar />
 
+            
+
             {/* Search, Filter, and Add Button */}
             <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
               {/* Search Input and Filter Dropdown */}
               <Box display="flex" alignItems="center" gap={2} sx={{ width: "40%" }}>
                 <TextField
                   variant="outlined"
-                  placeholder="Search Prescrption"
+                  placeholder="Search by patient name or notes"
                   size="small"
+                  value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{ flex: 1 }}
                 />
                 <Select
                   value={filterValue}
-                  onChange={(e) => setFilterValue(e.target.value)}
+                  onChange={(e) => handleFilterChange(e.target.value)}
                   displayEmpty
                   size="small"
                   sx={{ width: "40%" }}
                 >
-                  <MenuItem value="">Filter</MenuItem>
+                  <MenuItem value="">Filter by Date</MenuItem>
                   {filterOptions.map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
@@ -127,7 +180,7 @@ const Medicine = () => {
                 </Select>
               </Box>
 
-              {/* Add Drug Button */}
+              {/* Add Prescription Button */}
               <Link
                 to="/quickPrescription"
                 style={{ textDecoration: "none", width: "15%" }}
@@ -137,14 +190,81 @@ const Medicine = () => {
                   color="success"
                   sx={{ width: "100%", padding: "8px 16px" }}
                 >
-                  Quick Prescription
+                  New Prescription
                 </Button>
               </Link>
             </Box>
 
-            {/* Medicine DataGrid */}
+            {/* Prescriptions Table */}
             <Box flex="1" p={2} bgcolor={theme.palette.background.default} overflow="auto">
-              <DataGrid rows={filteredRows} columns={columns} />
+              {loading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+                  <CircularProgress />
+                </Box>
+              ) : prescriptions.length === 0 ? (
+                <Typography align="center" py={4}>No prescriptions found</Typography>
+              ) : (
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 650 }} aria-label="prescriptions table">
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: colors.primary[400] }}>
+                        <TableCell>ID</TableCell>
+                        <TableCell>Patient Name</TableCell>
+                        <TableCell>Issue Date</TableCell>
+                        <TableCell>Medicines</TableCell>
+                        <TableCell>Notes</TableCell>
+                        <TableCell align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredPrescriptions.map((prescription) => (
+                        <TableRow key={prescription.id} hover>
+                          <TableCell>{prescription.id}</TableCell>
+                          <TableCell>{prescription.patientName}</TableCell>
+                          <TableCell>{formatDate(prescription.issueDate)}</TableCell>
+                          <TableCell>{prescription.items ? prescription.items.length : 0}</TableCell>
+                          <TableCell>
+                            {prescription.prescriptionNotes?.length > 50
+                              ? `${prescription.prescriptionNotes.substring(0, 50)}...`
+                              : prescription.prescriptionNotes}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Box display="flex" justifyContent="center">
+                              <Tooltip title="View Details">
+                                <IconButton 
+                                  component={Link} 
+                                  to={`/prescriptions/${prescription.id}`}
+                                  sx={{ 
+                                    color: theme.palette.mode === 'dark' 
+                                          ? colors.grey[100]
+                                          : colors.primary[500]
+                                  }}
+                                >
+                                  <VisibilityIcon />
+                                </IconButton>
+                              </Tooltip>
+
+                              <Tooltip title="Edit">
+                                <IconButton 
+                                  component={Link} 
+                                  to={`/prescriptions/edit/${prescription.id}`}
+                                  sx={{ 
+                                    color: theme.palette.mode === 'dark' 
+                                          ? colors.grey[100]
+                                          : colors.primary[500]
+                                  }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Box>
           </Box>
         </Box>
@@ -153,4 +273,4 @@ const Medicine = () => {
   );
 };
 
-export default Medicine;
+export default Prescription;

@@ -4,13 +4,14 @@ import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import MedicationOutlinedIcon from '@mui/icons-material/MedicationOutlined';
-import SickOutlinedIcon from '@mui/icons-material/SickOutlined';
-import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
-import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
-import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import MedicationOutlinedIcon from "@mui/icons-material/MedicationOutlined";
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import SickOutlinedIcon from "@mui/icons-material/SickOutlined";
+import NoteAddOutlinedIcon from "@mui/icons-material/NoteAddOutlined";
+import PostAddOutlinedIcon from "@mui/icons-material/PostAddOutlined";
+import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import UserIcon from "../../../../assets/user.jpg";
 
@@ -21,7 +22,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
     <MenuItem
       active={selected === to}
       style={{
-        color: selected === to ? colors.greenAccent[500] : colors.grey[100], 
+        color: selected === to ? colors.greenAccent[500] : colors.grey[100],
         display: "block",
         width: "100%",
         boxSizing: "border-box",
@@ -50,16 +51,14 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-
-        "& .pro-sidebar-layout nav":{
-            width: 0,
+        "& .pro-sidebar-layout nav": {
+          width: 0,
         },
-        
 
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
           height: "100% !important",
-          zIndex: 1, 
+          zIndex: 1,
         },
         "& .pro-icon-wrapper": {
           backgroundColor: "transparent !important",
@@ -77,7 +76,10 @@ const Sidebar = () => {
         },
       }}
     >
-      <ProSidebar collapsed={isCollapsed} style={{ width: isCollapsed ? "80px" : "250px", position: "relative", }}>
+      <ProSidebar
+        collapsed={isCollapsed}
+        style={{ width: isCollapsed ? "80px" : "250px", position: "relative" }}
+      >
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -142,7 +144,7 @@ const Sidebar = () => {
                 overflowX: "hidden",
                 height: "calc(100vh - 300px)",
                 paddingLeft: "5px",
-                 
+
                 // Custom Scrollbar Styles
                 "&::-webkit-scrollbar": {
                   width: "8px", // Width of the scrollbar
@@ -172,7 +174,6 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
 
-              
               <Item
                 title="Medicine"
                 to="/medicine"
@@ -180,6 +181,15 @@ const Sidebar = () => {
                 selected={selected}
                 setSelected={setSelected}
               />
+
+              <Item
+                title="Inventory"
+                to="/inventory"
+                icon={<Inventory2OutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+
               <Item
                 title="Patient"
                 to="/patients"
@@ -195,7 +205,6 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
 
-             
               <Item
                 title="Reports"
                 to="/reports"
@@ -217,9 +226,6 @@ const Sidebar = () => {
                 selected={selected}
                 setSelected={setSelected}
               />
-
-            
-              
             </Box>
           )}
         </Menu>

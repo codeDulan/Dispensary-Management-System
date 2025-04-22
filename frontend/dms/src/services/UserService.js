@@ -141,6 +141,27 @@ static async createMedicine(medicineData) {
 }
 
 
+// INVENTORY RELATED SERVICES
+static async addInventoryItem(inventoryData) {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.post(
+      `${UserService.BASE_URL}/api/inventory`,
+      inventoryData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+
 
 
   // AUTHENTICATION CHECKER

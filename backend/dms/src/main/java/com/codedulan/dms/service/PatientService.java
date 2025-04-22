@@ -66,10 +66,6 @@ public class PatientService {
         return savedPatient;
     }
 
-
-
-
-
     @Transactional
     public Patient doctorRegisterPatient(DoctorRegisterPatientDto request) {
         if (patientRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -131,11 +127,6 @@ public class PatientService {
         }
     }
 
-
-
-
-
-
     private void sendBarcodeEmail(String toEmail, String barcodeBase64) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -161,21 +152,17 @@ public class PatientService {
         }
     }
 
+    // Patient Login
+    public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
+        Patient patient = patientRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
 
+        if (!passwordEncoder.matches(loginDto.getPassword(), patient.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
 
-//    Patinet Login
-public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
-    Patient patient = patientRepository.findByEmail(loginDto.getEmail())
-            .orElseThrow(() -> new RuntimeException("Patient not found"));
-
-    if (!passwordEncoder.matches(loginDto.getPassword(), patient.getPassword())) {
-        throw new RuntimeException("Invalid credentials");
+        return jwtUtils.generateTokenForPatient(patient);
     }
-
-    return jwtUtils.generateTokenForPatient(patient);
-}
-
-
 
     public PatientDto getPatientByEmail(String email) {
         Patient patient = patientRepository.findByEmail(email)
@@ -183,16 +170,17 @@ public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
 
         return PatientDto.builder()
                 .firstName(patient.getFirstName())
+                .lastName(patient.getLastName() != null ? patient.getLastName() : "") // Handle null lastName
                 .email(patient.getEmail())
                 .build();
     }
-
 
     public List<PatientDto> getAllPatients() {
         return patientRepository.findAll().stream()
                 .map(patient -> PatientDto.builder()
                         .id(patient.getPatientId())
                         .firstName(patient.getFirstName())
+                        .lastName(patient.getLastName() != null ? patient.getLastName() : "") // Handle null lastName
                         .email(patient.getEmail())
                         .gender(patient.getGender())
                         .age(patient.getAge())
@@ -201,9 +189,4 @@ public String authenticateAndGenerateToken(PatientLoginDto loginDto) {
                         .build())
                 .collect(Collectors.toList());
     }
-
-
-
-
-
 }
