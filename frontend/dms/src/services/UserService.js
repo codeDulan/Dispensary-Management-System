@@ -118,6 +118,31 @@ class UserService{
 
   }
 
+
+
+  //MEDICINE RELATED SERVICES
+  // Create a new medicine (doctor only)
+static async createMedicine(medicineData) {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.post(
+      `${UserService.BASE_URL}/api/medicines`,
+      medicineData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+
+
   // AUTHENTICATION CHECKER
 
   static logout(){

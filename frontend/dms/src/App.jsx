@@ -23,6 +23,7 @@ import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/
 // Customer Routes
 import Dashboard_customer from './pages/Customer_Dashboard';
 import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
+import AddMedicine from './components/Dashboard/Doctor/Medicine/AddMedicine/AddMedicine';
 
 const App = () => {
   // Protected Route Components
@@ -71,6 +72,10 @@ const App = () => {
           <Route
             path="/addPatient"
             element={<DoctorRoute element={<AddPatient />} />}
+          />
+          <Route
+            path="/addMedicine"
+            element={<DoctorRoute element={<AddMedicine />} />}
           />
           <Route
             path="/quickPrescription"
