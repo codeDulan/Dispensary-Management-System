@@ -106,6 +106,22 @@ public class JWTUtils {
     }
 
 
+    public String extractEmail(String token) {
+        // First, try to get email from claims if it exists
+        try {
+            String email = extractClaims(token, claims -> claims.get("email", String.class));
+            if (email != null && !email.isEmpty()) {
+                return email;
+            }
+        } catch (Exception ignored) {
+            // If email claim doesn't exist, fall back to subject
+        }
+
+        // Fall back to subject which should contain the email for patient tokens
+        return extractUsername(token);
+    }
+
+
 
 
 

@@ -1,21 +1,18 @@
 package com.codedulan.dms.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Table(name = "prescriptions")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +22,6 @@ public class Prescription {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-
     @Column(name = "issue_date", nullable = false)
     private LocalDateTime issueDate;
 
@@ -33,9 +29,9 @@ public class Prescription {
     private String prescriptionNotes;
 
     // Relationships
-    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<PrescriptionItem> prescriptionItems = new ArrayList<>();
-
-    // Getters and setters
-    // ...
 }
+

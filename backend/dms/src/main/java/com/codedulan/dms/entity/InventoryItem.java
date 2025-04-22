@@ -1,10 +1,7 @@
 package com.codedulan.dms.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,11 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Table(name = "inventory_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class InventoryItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,8 +46,7 @@ public class InventoryItem {
 
     // Relationships
     @OneToMany(mappedBy = "inventoryItem")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<PrescriptionItem> prescriptionItems = new ArrayList<>();
-
-    // Getters and setters
-    // ...
 }
