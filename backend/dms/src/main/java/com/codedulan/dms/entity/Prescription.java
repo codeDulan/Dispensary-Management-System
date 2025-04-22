@@ -5,42 +5,37 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "tbl_prescription")
+@Table(name = "prescriptions")
 public class Prescription {
-
     @Id
-    @SequenceGenerator(
-            name = "prescription_sequence",
-            sequenceName = "prescription_sequence",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "prescription_sequence"
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
 
 
-    private Long prescriptionId;
-    private LocalDate date;
-    private double totalPrice;
+    @Column(name = "issue_date", nullable = false)
+    private LocalDateTime issueDate;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "prescription_notes")
+    private String prescriptionNotes;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    // Relationships
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
+    private List<PrescriptionItem> prescriptionItems = new ArrayList<>();
 
+    // Getters and setters
+    // ...
 }

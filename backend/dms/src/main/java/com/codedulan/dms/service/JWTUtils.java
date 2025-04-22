@@ -98,8 +98,13 @@ public class JWTUtils {
     }
 
     public String extractRole(String token) {
-        return extractClaims(token, claims -> claims.get("role", String.class));
+        return extractClaims(token, claims -> {
+            String role = claims.get("role", String.class);
+            if (role != null) return role;
+            return claims.get("authorities", String.class);
+        });
     }
+
 
 
 

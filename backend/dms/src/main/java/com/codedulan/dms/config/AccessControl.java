@@ -14,4 +14,14 @@ public class AccessControl {
         String token = authHeader.substring(7);
         return "PATIENT".equals(jwtUtils.extractRole(token));
     }
+
+    public boolean isDoctor(String authHeader) {
+        String token = authHeader.substring(7);
+        return "ROLE_DOCTOR".equals(jwtUtils.extractRole(token));
+    }
+
+    public boolean isDispenser(String authHeader) {
+        String token = authHeader.substring(7);
+        return "DISPENSER".equals(jwtUtils.extractRole(token));
+    }
 }
