@@ -1,5 +1,7 @@
 package com.codedulan.dms.entity;
 
+import com.codedulan.dms.entity.InventoryItem;
+import com.codedulan.dms.entity.Prescription;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,11 +9,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Table(name = "prescription_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PrescriptionItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +35,4 @@ public class PrescriptionItem {
 
     @Column(name = "days_supply")
     private Integer daysSupply;
-
-
 }
