@@ -22,6 +22,6 @@ public class AccessControl {
 
     public boolean isDispenser(String authHeader) {
         String token = authHeader.substring(7);
-        return "DISPENSER".equals(jwtUtils.extractRole(token));
+        return "ROLE_DISPENSER".equals(jwtUtils.extractRole(token));
     }
 }

@@ -183,14 +183,6 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
 
-             
-              <Item
-                title="Reports"
-                to="/dispenser/reports"
-                icon={<PostAddOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
               <Item
                 title="Payments"
                 to="/dispenser/payments"

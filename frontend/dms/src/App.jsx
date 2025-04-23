@@ -26,6 +26,7 @@ import Dashboard_customer from './pages/Customer_Dashboard';
 import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
 import AddMedicine from './components/Dashboard/Doctor/Medicine/AddMedicine/AddMedicine';
 import AddInventory from './components/Dashboard/Doctor/Inventory/AddInventory/AddInventory';
+import PaymentList from './components/Dashboard/Dispenser/Payment/PaymentList';
 
 const App = () => {
   // Protected Route Components
@@ -100,6 +101,10 @@ const App = () => {
           <Route
             path="/dispenser/prescriptions"
             element={<DispenserRoute element={<ViewPrescription />} />}
+          />
+          <Route
+            path="/dispenser/payments"
+            element={<DispenserRoute element={<PaymentList />} />}
           />
 
           {/* Customer Protected Routes */}

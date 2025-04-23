@@ -136,6 +136,7 @@ const PrescriptionView = () => {
   };
 
   // Handle prescription completion
+  // Modified markAsDone function to create a payment record
   const markAsDone = async () => {
     if (!currentPrescription) return;
     
@@ -143,51 +144,72 @@ const PrescriptionView = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Update the prescription status
-      await axios.put(
-        `${API_BASE_URL}/prescriptions/${currentPrescription.id}`,
-        { 
-          prescriptionNotes: currentPrescription.prescriptionNotes + "\n\nDispensed: " + new Date().toLocaleString() 
-        },
+      // Skip prescription update for now due to permissions
+      // Create payment record directly
+      const medicinesCost = calculateTotalPrice() - DOCTOR_FEE;
+      const totalAmount = calculateTotalPrice();
+      
+      const paymentData = {
+        patientId: currentPrescription.patientId,
+        prescriptionId: currentPrescription.id,
+        medicinesCost: medicinesCost,
+        doctorFee: DOCTOR_FEE,
+        totalAmount: totalAmount,
+        paymentMethod: "CASH",
+        transactionReference: `PRESC-${currentPrescription.id}`,
+        notes: "Payment recorded by dispenser"
+      };
+      
+      await axios.post(
+        `${API_BASE_URL}/payments`,
+        paymentData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      showNotification("Prescription marked as dispensed");
-      
-      // Refresh prescriptions
+      showNotification("Payment recorded successfully");
       fetchPrescriptions();
     } catch (error) {
-      console.error("Error marking prescription as done:", error);
-      showNotification("Failed to update prescription", "error");
+      console.error("Error processing payment:", error);
+      showNotification("Failed to create payment", "error");
     } finally {
       setLoading(false);
     }
   };
 
   // Handle prescription rejection
+  // Modified rejectPrescription function
   const rejectPrescription = async () => {
+    console.log("rejectPrescription called", currentPrescription);
     if (!currentPrescription) return;
     
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Update the prescription status
-      await axios.put(
-        `${API_BASE_URL}/prescriptions/${currentPrescription.id}`,
-        { 
-          prescriptionNotes: currentPrescription.prescriptionNotes + "\n\nRejected: " + new Date().toLocaleString() 
-        },
+      // Skip prescription update and create a cancelled payment record
+      const paymentData = {
+        patientId: currentPrescription.patientId,
+        prescriptionId: currentPrescription.id,
+        medicinesCost: 0,
+        doctorFee: 0,
+        totalAmount: 0,
+        paymentMethod: "CASH",
+        status: "CANCELLED",
+        transactionReference: `REJECTED-${currentPrescription.id}`,
+        notes: "Prescription rejected by dispenser - no payment collected"
+      };
+      
+      await axios.post(
+        `${API_BASE_URL}/payments`,
+        paymentData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      showNotification("Prescription marked as rejected");
-      
-      // Refresh prescriptions
+      showNotification("Prescription marked as rejected in payment records");
       fetchPrescriptions();
     } catch (error) {
-      console.error("Error rejecting prescription:", error);
-      showNotification("Failed to update prescription", "error");
+      console.error("Error processing rejection:", error);
+      showNotification("Failed to record prescription rejection", "error");
     } finally {
       setLoading(false);
     }
