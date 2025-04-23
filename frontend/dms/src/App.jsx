@@ -15,7 +15,7 @@ import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickP
 import Medicine from './components/Dashboard/Doctor/Medicine/Medicine';
 import Inventory from './components/Dashboard/Doctor/Inventory/Inventory';
 import Prescription from './components/Dashboard/Doctor/Prescription/Prescription';
-import Payment from './components/Dashboard/Doctor/Payment/Payment';
+import Payment from './components/Dashboard/Doctor/Payment/PaymentList';
 
 // Dispenser Routes
 import Dashboard_dispenser from './pages/Dispenser_Dashboard';

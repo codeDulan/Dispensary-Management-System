@@ -1,12 +1,220 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ColorModeContext, useMode } from "../theme.js";
-import { ThemeProvider, CssBaseline, Box } from "@mui/material";
+import { ThemeProvider, CssBaseline, Box, Grid, Paper, Typography, useTheme, CircularProgress, Alert, IconButton } from "@mui/material";
 import Topbar from "../components/Dashboard/Doctor/Topbar/Topbar.jsx";
 import DoctorSidebar from "../components/Dashboard/Doctor/Sidebar/DoctorSidebar.jsx";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
+// Import custom hooks for data fetching
+import { useDashboardData, useInventoryStatus, useUpcomingAppointments } from "../hooks/useDashboardData";
+import UserService from "../services/UserService"; // Import your existing UserService
+
+// Dashboard widget components
+const RevenueChart = ({ data = [] }) => {
+  const theme = useTheme();
+  
+  return (
+    <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+      <Typography variant="h6" mb={2}>Monthly Revenue</Typography>
+      {data.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="250px">
+          <Typography color="textSecondary">No revenue data available</Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey="revenue" 
+              name="Revenue" 
+              stroke={theme.palette.primary.main} 
+              activeDot={{ r: 8 }} 
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </Paper>
+  );
+};
+
+const PaymentDistribution = ({ data = [] }) => {
+  const theme = useTheme();
+  const COLORS = [
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+    theme.palette.info.main,
+    theme.palette.success.main,
+    theme.palette.warning.main
+  ];
+  
+  return (
+    <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+      <Typography variant="h6" mb={2}>Payment Distribution</Typography>
+      {data.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="250px">
+          <Typography color="textSecondary">No payment data available</Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height={250}>
+          <PieChart>
+            <Pie 
+              data={data} 
+              cx="50%" 
+              cy="50%" 
+              labelLine={false}
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              outerRadius={80} 
+              fill="#8884d8" 
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      )}
+    </Paper>
+  );
+};
+
+const InventoryStats = ({ data = [] }) => {
+  const theme = useTheme();
+  
+  return (
+    <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+      <Typography variant="h6" mb={2}>Inventory Status</Typography>
+      {data.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="250px">
+          <Typography color="textSecondary">No inventory data available</Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="category" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="count" name="Quantity" fill={theme.palette.info.main} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </Paper>
+  );
+};
+
+const PatientTrends = ({ data = [] }) => {
+  const theme = useTheme();
+  
+  return (
+    <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+      <Typography variant="h6" mb={2}>Patient Trends</Typography>
+      {data.length === 0 ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="250px">
+          <Typography color="textSecondary">No patient data available</Typography>
+        </Box>
+      ) : (
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="new" name="New Patients" fill={theme.palette.primary.main} />
+            <Bar dataKey="returning" name="Returning Patients" fill={theme.palette.secondary.main} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </Paper>
+  );
+};
+
+// Stats Card Component
+const StatsCard = ({ title, value, subtitle, icon, loading = false }) => {
+  return (
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: 3, 
+        display: 'flex', 
+        flexDirection: 'column',
+        height: "100%"
+      }}
+    >
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Box>
+          <Typography variant="h6" color="textSecondary">{title}</Typography>
+          {loading ? (
+            <CircularProgress size={20} />
+          ) : (
+            <>
+              <Typography variant="h4" fontWeight="bold">{value}</Typography>
+              <Typography variant="body2" color="textSecondary">{subtitle}</Typography>
+            </>
+          )}
+        </Box>
+        <Box color="primary.main">
+          {icon}
+        </Box>
+      </Box>
+    </Paper>
+  );
+};
+
+// Loading Component
+const LoadingIndicator = () => {
+  return (
+    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+      <CircularProgress />
+    </Box>
+  );
+};
 
 const Dashboard = () => {
   const [theme, colorMode] = useMode();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Force refresh function
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+  
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Check if user is authenticated and is a doctor using your UserService
+      const authenticated = UserService.isAuthenticated();
+      const doctorRole = UserService.isDoctor();
+      
+      setIsAuthorized(authenticated && doctorRole);
+      setAuthChecked(true);
+    };
+    
+    checkAuth();
+  }, [refreshKey]);
+  
+  // Fetch dashboard data
+  const { loading, error, dashboardData } = useDashboardData(refreshKey);
+  const { 
+    revenueData, 
+    paymentDistribution, 
+    inventoryStats, 
+    patientTrends, 
+    stats 
+  } = dashboardData;
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -24,11 +232,97 @@ const Dashboard = () => {
             {/* Topbar at the top of the content area */}
             <Topbar style={{ zIndex: 1000 }} />
 
-            {/* Page Content */}
-            <Box flex="1" p={2} bgcolor="background.default" overflow="auto">
-              Content Area
+            {/* Dashboard Content */}
+            <Box flex="1" p={3} bgcolor="background.default" overflow="auto">
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                
+                <IconButton 
+                  color="primary" 
+                  onClick={handleRefresh} 
+                  disabled={loading}
+                  title="Refresh dashboard data"
+                >
+                  <RefreshIcon />
+                </IconButton>
+              </Box>
+              
+              {!authChecked ? (
+                <LoadingIndicator />
+              ) : !isAuthorized ? (
+                <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+                  <Alert severity="error" sx={{ width: "100%", maxWidth: "600px" }}>
+                    <Typography variant="h6">Authentication Required</Typography>
+                    <Typography>
+                      You need to be logged in as a doctor to view this dashboard.
+                    </Typography>
+                  </Alert>
+                </Box>
+              ) : loading ? (
+                <LoadingIndicator />
+              ) : (
+                <>
+                  {/* Stats Overview */}
+                  <Grid container spacing={3} mb={4}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <StatsCard 
+                        title="Total Patients" 
+                        value={stats.totalPatients.toLocaleString()} 
+                        subtitle="Registered patients" 
+                        icon={<Box sx={{ fontSize: 40 }}>👥</Box>} 
+                        loading={loading}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <StatsCard 
+                        title="Appointments" 
+                        value={stats.appointmentsThisWeek.toLocaleString()} 
+                        subtitle="This week" 
+                        icon={<Box sx={{ fontSize: 40 }}>📅</Box>} 
+                        loading={loading}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <StatsCard 
+                        title="Revenue" 
+                        value={`$${stats.monthlyRevenue.toLocaleString()}`} 
+                        subtitle="This month" 
+                        icon={<Box sx={{ fontSize: 40 }}>💰</Box>} 
+                        loading={loading}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <StatsCard 
+                        title="Inventory Items" 
+                        value={stats.inventoryItems.toLocaleString()} 
+                        subtitle={`${stats.lowStockItems} low stock`} 
+                        icon={<Box sx={{ fontSize: 40 }}>📦</Box>} 
+                        loading={loading}
+                      />
+                    </Grid>
+                  </Grid>
+                  
+                  {/* Charts Row 1 */}
+                  <Grid container spacing={3} mb={4}>
+                    <Grid item xs={12} md={8}>
+                      <RevenueChart data={revenueData} />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <PaymentDistribution data={paymentDistribution} />
+                    </Grid>
+                  </Grid>
+                  
+                  {/* Charts Row 2 */}
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <InventoryStats data={inventoryStats} />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <PatientTrends data={patientTrends} />
+                    </Grid>
+                  </Grid>
+                </>
+              )}
             </Box>
-
           </Box>
         </Box>
         
