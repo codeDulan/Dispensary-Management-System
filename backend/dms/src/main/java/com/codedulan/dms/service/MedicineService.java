@@ -49,6 +49,7 @@ public class MedicineService {
                 .name(createDTO.getName())
                 .description(createDTO.getDescription())
                 .lethalDosagePerKg(createDTO.getLethalDosagePerKg())
+                .weight(createDTO.getWeight())  // Add the weight field
                 .build();
 
         Medicine savedMedicine = medicineRepository.save(medicine);
@@ -65,6 +66,11 @@ public class MedicineService {
 
         if (updateDTO.getLethalDosagePerKg() != null) {
             medicine.setLethalDosagePerKg(updateDTO.getLethalDosagePerKg());
+        }
+
+        // Add update for weight field
+        if (updateDTO.getWeight() != null) {
+            medicine.setWeight(updateDTO.getWeight());
         }
 
         Medicine updatedMedicine = medicineRepository.save(medicine);

@@ -13,6 +13,7 @@ public class MedicineDTO {
     private String name;
     private String description;
     private Double lethalDosagePerKg;
+    private Integer weight;
 
     public static MedicineDTO fromEntity(Medicine medicine) {
         return MedicineDTO.builder()
@@ -20,6 +21,7 @@ public class MedicineDTO {
                 .name(medicine.getName())
                 .description(medicine.getDescription())
                 .lethalDosagePerKg(medicine.getLethalDosagePerKg())
+                .weight(medicine.getWeight())
                 .build();
     }
 }

@@ -1,0 +1,17 @@
+
+q
+java:S1192Ÿ"NDefine a constant instead of duplicating this literal ". Available: " 3 times.(›Ë‰êúÿÿÿÿ8Ö¬±ê2
+h
+java:S6204#"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+h
+java:S62042"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+h
+java:S6204;"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+h
+java:S6204D"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+h
+java:S6204Q"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+o
+java:S6204^"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8—Ù²ªê2
+u
+java:S3776Ã"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ÌêœÛÿÿÿÿÿ8‚‚¬±ê2

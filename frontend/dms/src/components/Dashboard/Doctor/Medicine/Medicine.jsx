@@ -10,6 +10,10 @@ import {
   Button,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
@@ -37,6 +41,15 @@ const Medicine = () => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Edit medicine state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editMedicine, setEditMedicine] = useState({
+    id: null,
+    description: "",
+    lethalDosagePerKg: "",
+    weight: ""
+  });
+
   // Notification states
   const [notification, setNotification] = useState({
     open: false,
@@ -56,7 +69,14 @@ const Medicine = () => {
           },
         });
         
-        setMedicines(response.data);
+        // Process the data to handle null values for new fields
+        const processedData = response.data.map(medicine => ({
+          ...medicine,
+          // Ensure weight property exists even if null in database
+          weight: medicine.weight || null
+        }));
+        
+        setMedicines(processedData);
       } catch (err) {
         console.error("Error fetching medicines:", err);
         setError(err.message);
@@ -101,8 +121,85 @@ const Medicine = () => {
 
   // Handle edit medicine
   const handleEdit = (id) => {
-    console.log("Edit medicine with ID:", id);
-    // You can navigate to an edit page or open a modal
+    const medicineToEdit = medicines.find(med => med.id === id);
+    if (medicineToEdit) {
+      setEditMedicine({
+        id: medicineToEdit.id,
+        description: medicineToEdit.description || "",
+        lethalDosagePerKg: medicineToEdit.lethalDosagePerKg || "",
+        weight: medicineToEdit.weight || "" // Ensure undefined or null is converted to empty string
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  // Handle edit dialog close
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    // Convert numeric values to numbers for the API
+    const parsedValue = (name === "weight" || name === "lethalDosagePerKg") && value !== "" 
+      ? parseFloat(value) 
+      : value;
+    
+    setEditMedicine({
+      ...editMedicine,
+      [name]: parsedValue
+    });
+  };
+
+  // Handle submit edit
+  const handleSubmitEdit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Prepare data for API - convert empty strings to null
+      const dataToSend = {
+        ...editMedicine,
+        weight: editMedicine.weight === "" ? null : editMedicine.weight,
+        lethalDosagePerKg: editMedicine.lethalDosagePerKg === "" ? null : editMedicine.lethalDosagePerKg
+      };
+      
+      const response = await axios.put(
+        `http://localhost:8080/api/medicines/${editMedicine.id}`,
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Process the response data to ensure fields exist
+      const processedData = {
+        ...response.data,
+        weight: response.data.weight || null
+      };
+
+      // Update local state
+      setMedicines(medicines.map(med => 
+        med.id === editMedicine.id ? processedData : med
+      ));
+      
+      // Close dialog and show success notification
+      setEditDialogOpen(false);
+      setNotification({
+        open: true,
+        message: "Medicine updated successfully",
+        severity: "success"
+      });
+    } catch (err) {
+      console.error("Error updating medicine:", err);
+      setNotification({
+        open: true,
+        message: err.response?.data?.message || "Failed to update medicine",
+        severity: "error"
+      });
+    }
   };
 
   // Handle close notification
@@ -116,12 +213,19 @@ const Medicine = () => {
     { field: "name", headerName: "Name", flex: 1 },
     { field: "description", headerName: "Description", flex: 1 },
     { 
+      field: "weight", 
+      headerName: "Weight", 
+      width: 120,
+      renderCell: (params) => {
+        return params.row.weight ? `${params.row.weight} mg` : 'N/A';
+      }
+    },
+    { 
       field: "lethalDosagePerKg", 
       headerName: "Lethal Dosage (per kg)", 
       width: 180,
-      valueFormatter: (params) => {
-        if (params.value == null) return 'N/A';
-        return `${params.value} mg/kg`;
+      renderCell: (params) => {
+        return params.row.lethalDosagePerKg ? `${params.row.lethalDosagePerKg} mg/kg` : 'N/A';
       }
     },
     {
@@ -227,7 +331,13 @@ const Medicine = () => {
                 <Typography color="error">Error: {error}</Typography>
               ) : (
                 <DataGrid 
-                  rows={filteredRows} 
+                  rows={filteredRows.map(row => ({
+                    id: row.id,
+                    name: row.name || "",
+                    description: row.description || "",
+                    weight: row.weight || null,
+                    lethalDosagePerKg: row.lethalDosagePerKg || null
+                  }))} 
                   columns={columns}
                   loading={loading}
                   pageSizeOptions={[5, 10, 25, 50]}
@@ -242,6 +352,57 @@ const Medicine = () => {
             </Box>
           </Box>
         </Box>
+
+        {/* Edit Medicine Dialog */}
+        <Dialog open={editDialogOpen} onClose={handleEditDialogClose}>
+          <DialogTitle>Edit Medicine</DialogTitle>
+          <DialogContent>
+            <Box
+              component="form"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                mt: 2,
+                minWidth: 400
+              }}
+            >
+              <TextField
+                fullWidth
+                label="Description"
+                name="description"
+                value={editMedicine.description}
+                onChange={handleEditFormChange}
+                multiline
+                rows={3}
+              />
+              
+              <TextField
+                fullWidth
+                label="Weight (mg)"
+                name="weight"
+                type="number"
+                value={editMedicine.weight}
+                onChange={handleEditFormChange}
+              />
+              
+              <TextField
+                fullWidth
+                label="Lethal Dosage (mg/kg)"
+                name="lethalDosagePerKg"
+                type="number"
+                value={editMedicine.lethalDosagePerKg}
+                onChange={handleEditFormChange}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleEditDialogClose}>Cancel</Button>
+            <Button onClick={handleSubmitEdit} variant="contained" color="primary">
+              Save Changes
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Notifications */}
         <Snackbar 

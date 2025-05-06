@@ -15,4 +15,6 @@ public class CreateMedicineDTO {
     private String description;
 
     private Double lethalDosagePerKg;
+
+    private Integer weight;
 }

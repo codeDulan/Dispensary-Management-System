@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class UpdateMedicineDTO {
     private String description;
     private Double lethalDosagePerKg;
+
+    private Integer weight;
 }

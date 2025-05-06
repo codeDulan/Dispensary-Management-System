@@ -1,0 +1,9 @@
+
+x
+java:S1192!"]Define a constant instead of duplicating this literal "Medicine not found with id: " 3 times.(Êëƒóúÿÿÿÿ
+f
+java:S3655V"PCall "Optional#isPresent()" or "!Optional#isEmpty()" before accessing the value.(Æƒ¼
+h
+java:S6204"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+h
+java:S6204("RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹

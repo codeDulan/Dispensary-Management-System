@@ -19,6 +19,7 @@ const initialValues = {
   name: "",
   description: "",
   lethalDosagePerKg: "",
+  weight: "", // Added new weight field
 };
 
 const medicineSchema = yup.object().shape({
@@ -28,6 +29,10 @@ const medicineSchema = yup.object().shape({
     .number()
     .positive("Must be a positive number")
     .required("Lethal dosage is required"),
+  weight: yup
+    .number()
+    .positive("Must be a positive number")
+    .required("Medicine weight is required"), // Added validation for weight
 });
 
 const AddMedicine = () => {
@@ -122,6 +127,20 @@ const AddMedicine = () => {
                         fullWidth
                         variant="filled"
                         type="number"
+                        label="Weight (mg)"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        value={values.weight}
+                        name="weight"
+                        error={!!touched.weight && !!errors.weight}
+                        helperText={touched.weight && errors.weight}
+                        sx={{ gridColumn: "span 2" }}
+                      />
+
+                      <TextField
+                        fullWidth
+                        variant="filled"
+                        type="number"
                         label="Lethal Dosage (per kg)"
                         onBlur={handleBlur}
                         onChange={handleChange}
@@ -135,7 +154,7 @@ const AddMedicine = () => {
                           touched.lethalDosagePerKg &&
                           errors.lethalDosagePerKg
                         }
-                        sx={{ gridColumn: "span 4" }}
+                        sx={{ gridColumn: "span 2" }}
                       />
                     </Box>
 

@@ -11,6 +11,11 @@ import {
   Snackbar,
   Alert,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  InputAdornment
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
@@ -38,6 +43,19 @@ const Inventory = () => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editItem, setEditItem] = useState({
+    id: null,
+    medicineName: "",
+    medicineWeight: "",
+    batchNumber: "",
+    expiryDate: "",
+    quantity: "",
+    sellPrice: "",
+    buyPrice: ""
+  });
+
   // Notification states
   const [notification, setNotification] = useState({
     open: false,
@@ -47,38 +65,49 @@ const Inventory = () => {
 
   // Fetch inventory items from API
   useEffect(() => {
-    const fetchInventoryItems = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8080/api/inventory", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    fetchInventoryItems();
+  }, []);
+
+  const fetchInventoryItems = async (apiPath = "") => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`http://localhost:8080/api/inventory${apiPath}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Debug: Log the first item to see its structure
+      console.log("First inventory item:", response.data[0]);
+      
+      // Make sure all fields are properly defined for each item
+      const normalizedData = response.data.map(item => {
+        // Check for various possible property names for weight
+        const medicineWeight = item.medicineWeight || 
+                              (item.medicine && item.medicine.weight) || 
+                              null;
         
-        // Debug: Log the first item
-        console.log("First inventory item:", response.data[0]);
+        console.log(`Medicine: ${item.medicineName}, Weight: ${medicineWeight}`);
         
-        // Make sure all fields are properly defined for each item
-        const normalizedData = response.data.map(item => ({
+        return {
           ...item,
           buyPriceDisplay: formatCurrency(item.buyPrice),
           sellPriceDisplay: formatCurrency(item.sellPrice),
-          receivedDateDisplay: formatDate(item.receivedDate)
-        }));
-        
-        setInventoryItems(normalizedData);
-      } catch (err) {
-        console.error("Error fetching inventory items:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchInventoryItems();
-  }, []);
+          receivedDateDisplay: formatDate(item.receivedDate),
+          // Ensure medicineWeight exists regardless of source property name
+          medicineWeight: medicineWeight
+        };
+      });
+      
+      setInventoryItems(normalizedData);
+    } catch (err) {
+      console.error("Error fetching inventory items:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Delete inventory item
   const deleteInventoryItem = async (id) => {
@@ -116,8 +145,86 @@ const Inventory = () => {
 
   // Handle edit inventory item
   const handleEdit = (id) => {
-    console.log("Edit inventory item with ID:", id);
-    // You can navigate to an edit page or open a modal
+    const itemToEdit = inventoryItems.find(item => item.id === id);
+    if (itemToEdit) {
+      // Log the item for debugging
+      console.log("Editing item:", itemToEdit);
+      
+      setEditItem({
+        id: itemToEdit.id,
+        medicineName: itemToEdit.medicineName || "",
+        medicineWeight: itemToEdit.medicineWeight || "",
+        batchNumber: itemToEdit.batchNumber || "",
+        expiryDate: itemToEdit.expiryDate ? itemToEdit.expiryDate.substring(0, 10) : "", // Format date for input
+        quantity: itemToEdit.quantity || "",
+        sellPrice: itemToEdit.sellPrice || "",
+        buyPrice: itemToEdit.buyPrice || "",
+        remainingQuantity: itemToEdit.remainingQuantity || ""
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  // Handle edit dialog close
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    // Convert numeric values to numbers for the API
+    const parsedValue = (name === "quantity" || name === "sellPrice" || name === "buyPrice") && value !== "" 
+      ? parseFloat(value) 
+      : value;
+    
+    setEditItem({
+      ...editItem,
+      [name]: parsedValue
+    });
+  };
+
+  // Handle submit edit
+  const handleSubmitEdit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Prepare data for API - only include fields that can be updated
+      const dataToSend = {
+        batchNumber: editItem.batchNumber,
+        expiryDate: editItem.expiryDate,
+        sellPrice: editItem.sellPrice,
+        buyPrice: editItem.buyPrice
+      };
+      
+      const response = await axios.put(
+        `http://localhost:8080/api/inventory/${editItem.id}`,
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Refresh inventory data
+      fetchInventoryItems();
+      
+      // Close dialog and show success notification
+      setEditDialogOpen(false);
+      setNotification({
+        open: true,
+        message: "Inventory item updated successfully",
+        severity: "success"
+      });
+    } catch (err) {
+      console.error("Error updating inventory item:", err);
+      setNotification({
+        open: true,
+        message: err.response?.data?.message || "Failed to update inventory item",
+        severity: "error"
+      });
+    }
   };
 
   // Handle close notification
@@ -163,115 +270,133 @@ const Inventory = () => {
   };
 
   // Columns Configuration for inventory items
-  // Columns Configuration for inventory items
-const columns = [
-  { field: "id", headerName: "ID", width: 60 },
-  { field: "medicineName", headerName: "Medicine", flex: 1 },
-  { field: "batchNumber", headerName: "Batch #", width: 120 },
-  { 
-    field: "expiryDate", 
-    headerName: "Expiry Date", 
-    width: 120,
-    renderCell: (params) => {
-      const expiryDate = params.row.expiryDate;
-      const expired = isExpired(expiryDate);
-      const expiringSoon = isExpiringSoon(expiryDate);
-      
-      return (
-        <Box>
-          {expired ? (
-            <Chip label={formatDate(expiryDate)} color="error" size="small" />
-          ) : expiringSoon ? (
-            <Chip label={formatDate(expiryDate)} color="warning" size="small" />
-          ) : (
-            formatDate(expiryDate)
-          )}
-        </Box>
-      );
-    }
-  },
-  { 
-    field: "quantity", 
-    headerName: "Total Qty", 
-    width: 100,
-    type: "number"
-  },
-  { 
-    field: "remainingQuantity", 
-    headerName: "Remaining", 
-    width: 100,
-    type: "number",
-    renderCell: (params) => {
-      const quantity = params.row.quantity;
-      const remaining = params.row.remainingQuantity;
-      const lowStock = isLowStock(remaining, quantity);
-      const outOfStock = remaining <= 0;
-      
-      return (
-        <Box>
-          {outOfStock ? (
-            <Chip label="0" color="error" size="small" />
-          ) : lowStock ? (
-            <Chip label={remaining} color="warning" size="small" />
-          ) : (
-            remaining
-          )}
-        </Box>
-      );
-    }
-  },
-  { 
-    field: "buyPrice", 
-    headerName: "Buy Price", 
-    width: 100,
-    renderCell: (params) => {
-      return formatCurrency(params.row.buyPrice);
-    }
-  },
-  { 
-    field: "sellPrice", 
-    headerName: "Sell Price", 
-    width: 100,
-    renderCell: (params) => {
-      return formatCurrency(params.row.sellPrice);
-    }
-  },
-  { 
-    field: "receivedDate", 
-    headerName: "Received", 
-    width: 120,
-    renderCell: (params) => {
-      return formatDate(params.row.receivedDate);
-    }
-  },
-  {
-    field: "actions",
-    headerName: "Action",
-    width: 120,
-    renderCell: (params) => (
-      <Box display="flex" justifyContent="space-around">
-        <Tooltip title="Edit">
-          <IconButton 
-            aria-label="edit" 
-            onClick={() => handleEdit(params.row.id)}
-          >
-            <EditIcon sx={{ color: iconColor }} />
-          </IconButton>
-        </Tooltip>
+  const columns = [
+    { field: "id", headerName: "ID", width: 60 },
+    { 
+      field: "medicine", 
+      headerName: "Medicine", 
+      flex: 1,
+      renderCell: (params) => {
+        const medicineName = params.row.medicineName || "Unknown";
+        const medicineWeight = params.row.medicineWeight;
+        
+        return (
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="body2">{medicineName}</Typography>
+            {medicineWeight && (
+              <Typography variant="caption" color="text.secondary">
+                {medicineWeight} mg
+              </Typography>
+            )}
+          </Box>
+        );
+      }
+    },
+    { field: "batchNumber", headerName: "Batch #", width: 120 },
+    { 
+      field: "expiryDate", 
+      headerName: "Expiry Date", 
+      width: 120,
+      renderCell: (params) => {
+        const expiryDate = params.row.expiryDate;
+        const expired = isExpired(expiryDate);
+        const expiringSoon = isExpiringSoon(expiryDate);
+        
+        return (
+          <Box>
+            {expired ? (
+              <Chip label={formatDate(expiryDate)} color="error" size="small" />
+            ) : expiringSoon ? (
+              <Chip label={formatDate(expiryDate)} color="warning" size="small" />
+            ) : (
+              formatDate(expiryDate)
+            )}
+          </Box>
+        );
+      }
+    },
+    { 
+      field: "quantity", 
+      headerName: "Total Qty", 
+      width: 100,
+      type: "number"
+    },
+    { 
+      field: "remainingQuantity", 
+      headerName: "Remaining", 
+      width: 100,
+      type: "number",
+      renderCell: (params) => {
+        const quantity = params.row.quantity;
+        const remaining = params.row.remainingQuantity;
+        const lowStock = isLowStock(remaining, quantity);
+        const outOfStock = remaining <= 0;
+        
+        return (
+          <Box>
+            {outOfStock ? (
+              <Chip label="0" color="error" size="small" />
+            ) : lowStock ? (
+              <Chip label={remaining} color="warning" size="small" />
+            ) : (
+              remaining
+            )}
+          </Box>
+        );
+      }
+    },
+    { 
+      field: "buyPrice", 
+      headerName: "Buy Price", 
+      width: 100,
+      renderCell: (params) => {
+        return formatCurrency(params.row.buyPrice);
+      }
+    },
+    { 
+      field: "sellPrice", 
+      headerName: "Sell Price", 
+      width: 100,
+      renderCell: (params) => {
+        return formatCurrency(params.row.sellPrice);
+      }
+    },
+    { 
+      field: "receivedDate", 
+      headerName: "Received", 
+      width: 120,
+      renderCell: (params) => {
+        return formatDate(params.row.receivedDate);
+      }
+    },
+    {
+      field: "actions",
+      headerName: "Action",
+      width: 120,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="space-around">
+          <Tooltip title="Edit">
+            <IconButton 
+              aria-label="edit" 
+              onClick={() => handleEdit(params.row.id)}
+            >
+              <EditIcon sx={{ color: iconColor }} />
+            </IconButton>
+          </Tooltip>
 
-        <Tooltip title="Delete">
-          <IconButton 
-            color="error" 
-            aria-label="delete"
-            onClick={() => deleteInventoryItem(params.row.id)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
-    ),
-  },
-];
+          <Tooltip title="Delete">
+            <IconButton 
+              color="error" 
+              aria-label="delete"
+              onClick={() => deleteInventoryItem(params.row.id)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
 
   // Filtering Logic - allow searching by medicine name or batch number
   const filteredRows = inventoryItems.filter(
@@ -330,21 +455,7 @@ const columns = [
                     const apiPath = searchQuery
                       ? "/low-stock?search=" + searchQuery
                       : "/low-stock";
-                    setLoading(true);
-                    const token = localStorage.getItem("token");
-                    axios
-                      .get(`http://localhost:8080/api/inventory${apiPath}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      })
-                      .then((response) => {
-                        setInventoryItems(response.data);
-                        setLoading(false);
-                      })
-                      .catch((err) => {
-                        console.error("Error fetching low stock items:", err);
-                        setError(err.message);
-                        setLoading(false);
-                      });
+                    fetchInventoryItems(apiPath);
                   }}
                 >
                   Low Stock
@@ -356,21 +467,7 @@ const columns = [
                     const apiPath = searchQuery
                       ? "/expiring?days=30&search=" + searchQuery
                       : "/expiring?days=30";
-                    setLoading(true);
-                    const token = localStorage.getItem("token");
-                    axios
-                      .get(`http://localhost:8080/api/inventory${apiPath}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      })
-                      .then((response) => {
-                        setInventoryItems(response.data);
-                        setLoading(false);
-                      })
-                      .catch((err) => {
-                        console.error("Error fetching expiring items:", err);
-                        setError(err.message);
-                        setLoading(false);
-                      });
+                    fetchInventoryItems(apiPath);
                   }}
                 >
                   Expiring Soon
@@ -382,21 +479,7 @@ const columns = [
                     const apiPath = searchQuery
                       ? "/available?search=" + searchQuery
                       : "/available";
-                    setLoading(true);
-                    const token = localStorage.getItem("token");
-                    axios
-                      .get(`http://localhost:8080/api/inventory${apiPath}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      })
-                      .then((response) => {
-                        setInventoryItems(response.data);
-                        setLoading(false);
-                      })
-                      .catch((err) => {
-                        console.error("Error fetching available items:", err);
-                        setError(err.message);
-                        setLoading(false);
-                      });
+                    fetchInventoryItems(apiPath);
                   }}
                 >
                   Available
@@ -404,21 +487,7 @@ const columns = [
                 <Button
                   variant="outlined"
                   onClick={() => {
-                    setLoading(true);
-                    const token = localStorage.getItem("token");
-                    axios
-                      .get(`http://localhost:8080/api/inventory`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      })
-                      .then((response) => {
-                        setInventoryItems(response.data);
-                        setLoading(false);
-                      })
-                      .catch((err) => {
-                        console.error("Error fetching all items:", err);
-                        setError(err.message);
-                        setLoading(false);
-                      });
+                    fetchInventoryItems("");
                   }}
                 >
                   All Items
@@ -455,8 +524,18 @@ const columns = [
                 <DataGrid
                   getRowId={(row) => row.id}
                   rows={filteredRows.map((row) => {
-                    console.log("Processing row:", row);
-                    return row;
+                    // Debug: Add console log to check what's in the row
+                    console.log(`Row ${row.id} medicine: ${row.medicineName}, weight: ${row.medicineWeight}`);
+                    
+                    // Ensure all necessary fields exist and are formatted
+                    return {
+                      ...row,
+                      medicineName: row.medicineName || "Unknown",
+                      // Try to get weight from various possible properties
+                      medicineWeight: row.medicineWeight || 
+                                    (row.medicine && row.medicine.weight) ||
+                                    null
+                    };
                   })}
                   columns={columns}
                   loading={loading}
@@ -472,6 +551,103 @@ const columns = [
             </Box>
           </Box>
         </Box>
+
+        {/* Edit Inventory Dialog */}
+        <Dialog open={editDialogOpen} onClose={handleEditDialogClose} maxWidth="sm" fullWidth>
+          <DialogTitle>Edit Inventory Item</DialogTitle>
+          <DialogContent>
+            <Box
+              component="form"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                mt: 2
+              }}
+            >
+              {/* Display Medicine Name (read-only) */}
+              <TextField
+                label="Medicine"
+                value={`${editItem.medicineName}${editItem.medicineWeight ? ` (${editItem.medicineWeight} mg)` : ''}`}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                fullWidth
+              />
+              
+              <TextField
+                label="Batch Number"
+                name="batchNumber"
+                value={editItem.batchNumber}
+                onChange={handleEditFormChange}
+                fullWidth
+              />
+              
+              <TextField
+                label="Expiry Date"
+                name="expiryDate"
+                type="date"
+                value={editItem.expiryDate}
+                onChange={handleEditFormChange}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+              
+              {/* Display Quantity (read-only) */}
+              <TextField
+                label="Total Quantity"
+                value={editItem.quantity}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                fullWidth
+              />
+              
+              {/* Display Remaining Quantity (read-only) */}
+              <TextField
+                label="Remaining Quantity"
+                value={editItem.remainingQuantity}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                fullWidth
+              />
+              
+              <TextField
+                label="Buy Price"
+                name="buyPrice"
+                type="number"
+                value={editItem.buyPrice}
+                onChange={handleEditFormChange}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">Rs.</InputAdornment>,
+                }}
+                fullWidth
+              />
+              
+              <TextField
+                label="Sell Price"
+                name="sellPrice"
+                type="number"
+                value={editItem.sellPrice}
+                onChange={handleEditFormChange}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">Rs.</InputAdornment>,
+                }}
+                fullWidth
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleEditDialogClose}>Cancel</Button>
+            <Button onClick={handleSubmitEdit} variant="contained" color="primary">
+              Save Changes
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Notifications */}
         <Snackbar

@@ -20,7 +20,8 @@ import {
   FormControl,
   Snackbar,
   Alert,
-  TextField
+  TextField,
+  Chip
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
@@ -75,7 +76,20 @@ const PrescriptionView = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log("Prescriptions:", response.data);
+      // Debug to see the structure of the response
+      console.log("Prescriptions Response:", response.data);
+      if (response.data.length > 0) {
+        console.log("First prescription:", response.data[0]);
+        if (response.data[0].items && response.data[0].items.length > 0) {
+          console.log("First prescription item:", response.data[0].items[0]);
+          // Check for medicine properties
+          console.log("Medicine properties:", {
+            medicineName: response.data[0].items[0].medicineName,
+            medicineWeight: response.data[0].items[0].medicineWeight,
+            medicine: response.data[0].items[0].medicine
+          });
+        }
+      }
       
       // Sort prescriptions by issue date (newest first)
       const sortedPrescriptions = response.data.sort((a, b) => 
@@ -109,17 +123,99 @@ const PrescriptionView = () => {
   // Current prescription
   const currentPrescription = prescriptions[currentPrescriptionIndex] || null;
 
-  // Calculate total price
+  // Helper function to extract medicine weight from the item
+  const getMedicineWeight = (item) => {
+    // Check all possible locations based on your DTO structure
+    if (item.medicineWeight) return item.medicineWeight;
+    if (item.medicine && item.medicine.weight) return item.medicine.weight;
+    if (typeof item.medicine === 'string' && item.medicineDetails && item.medicineDetails.weight) 
+      return item.medicineDetails.weight;
+    
+    // Try to extract from the medicine name if it contains weight information
+    if (item.medicineName) {
+      const weightMatch = item.medicineName.match(/(\d+)\s*mg/i);
+      if (weightMatch) return weightMatch[1];
+    }
+    
+    return null;
+  };
+
+  // Helper function to get the unit price
+  const getUnitPrice = (item) => {
+    // Check where the sell price might be located in your DTO
+    if (item.sellPrice) return item.sellPrice;
+    if (item.inventoryItem && item.inventoryItem.sellPrice) return item.inventoryItem.sellPrice;
+    
+    // Default fallback
+    return 100;
+  };
+
+  // Helper function to estimate doses per day based on dosage instructions
+  const getDosesPerDay = (dosageInstructions) => {
+    if (!dosageInstructions) return 1; // Default to 1 if no instructions
+    
+    const instruction = String(dosageInstructions).toUpperCase();
+    
+    if (instruction.includes('OD') || instruction.includes('ONCE DAILY') || 
+        instruction.includes('MANE') || instruction.includes('NOCTE')) {
+      return 1;
+    } else if (instruction.includes('BD') || instruction.includes('TWICE DAILY')) {
+      return 2;
+    } else if (instruction.includes('TDS') || instruction.includes('THREE TIMES DAILY')) {
+      return 3;
+    } else if (instruction.includes('QDS') || instruction.includes('QID') || 
+              instruction.includes('FOUR TIMES DAILY')) {
+      return 4;
+    } else {
+      return 1; // Default for other instructions
+    }
+  };
+
+  // Calculate total quantity for an item
+  const calculateTotalQuantity = (item) => {
+    if (!item) return 0;
+    
+    // Extract quantity per dose (default to 1 if not provided)
+    const quantityPerDose = parseInt(item.quantity) || 1;
+    
+    // Get number of doses per day based on dosage instructions
+    const dosesPerDay = getDosesPerDay(item.dosageInstructions);
+    
+    // Get number of days for the prescription
+    const daysSupply = parseInt(item.daysSupply) || 7;
+    
+    // Calculate total: quantity per dose * doses per day * days
+    const totalQuantity = quantityPerDose * dosesPerDay * daysSupply;
+    console.log(`Calculation for ${item.medicineName}: ${quantityPerDose} × ${dosesPerDay} × ${daysSupply} = ${totalQuantity}`);
+    
+    return totalQuantity;
+  };
+
+  // Calculate total price - Updated to account for days supply
   const calculateTotalPrice = () => {
     if (!currentPrescription || !currentPrescription.items) return DOCTOR_FEE;
     
+    console.log("Calculating total price for prescription:", currentPrescription);
+    
     const medicinesTotal = currentPrescription.items.reduce((total, item) => {
-      // If sellPrice is available, use it; otherwise fallback to an estimated price
-      const price = item.sellPrice || 100; // fallback price if not available
-      return total + (price * item.quantity);
+      // Get unit price
+      const unitPrice = getUnitPrice(item);
+      
+      // Calculate total quantity needed
+      const totalQuantity = calculateTotalQuantity(item);
+      
+      // Calculate cost for this item
+      const itemCost = unitPrice * totalQuantity;
+      
+      console.log(`Item: ${item.medicineName}, Unit Price: ${unitPrice}, Total Quantity: ${totalQuantity}, Cost: ${itemCost}`);
+      
+      return total + itemCost;
     }, 0);
     
-    return medicinesTotal + DOCTOR_FEE;
+    const finalTotal = medicinesTotal + DOCTOR_FEE;
+    console.log(`Medicines Total: ${medicinesTotal}, Doctor Fee: ${DOCTOR_FEE}, Final Total: ${finalTotal}`);
+    
+    return finalTotal;
   };
 
   // Navigation functions
@@ -136,7 +232,6 @@ const PrescriptionView = () => {
   };
 
   // Handle prescription completion
-  // Modified markAsDone function to create a payment record
   const markAsDone = async () => {
     if (!currentPrescription) return;
     
@@ -144,8 +239,7 @@ const PrescriptionView = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Skip prescription update for now due to permissions
-      // Create payment record directly
+      // Create payment record
       const medicinesCost = calculateTotalPrice() - DOCTOR_FEE;
       const totalAmount = calculateTotalPrice();
       
@@ -177,16 +271,14 @@ const PrescriptionView = () => {
   };
 
   // Handle prescription rejection
-  // Modified rejectPrescription function
   const rejectPrescription = async () => {
-    console.log("rejectPrescription called", currentPrescription);
     if (!currentPrescription) return;
     
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Skip prescription update and create a cancelled payment record
+      // Create a cancelled payment record
       const paymentData = {
         patientId: currentPrescription.patientId,
         prescriptionId: currentPrescription.id,
@@ -248,28 +340,36 @@ const PrescriptionView = () => {
               <tr>
                 <th>Medicine</th>
                 <th>Dosage</th>
-                <th>Quantity</th>
-                <th>Price</th>
+                <th>Prescribed Qty</th>
+                <th>Total Qty</th>
+                <th>Unit Price</th>
                 <th>Total</th>
               </tr>
             </thead>
             <tbody>
-              ${currentPrescription.items.map(item => `
-                <tr>
-                  <td>${item.medicineName}</td>
-                  <td>${item.dosageInstructions || 'As directed'}</td>
-                  <td>${item.quantity}</td>
-                  <td>Rs. ${item.sellPrice || 100}</td>
-                  <td>Rs. ${(item.sellPrice || 100) * item.quantity}</td>
-                </tr>
-              `).join('')}
+              ${currentPrescription.items.map(item => {
+                const totalQty = calculateTotalQuantity(item);
+                const unitPrice = getUnitPrice(item);
+                const itemTotal = unitPrice * totalQty;
+                const medicineWeight = getMedicineWeight(item);
+                return `
+                  <tr>
+                    <td>${item.medicineName}${medicineWeight ? ` (${medicineWeight} mg)` : ''}</td>
+                    <td>${item.dosageInstructions || 'As directed'} for ${item.daysSupply} days</td>
+                    <td>${item.quantity} per dose</td>
+                    <td>${totalQty}</td>
+                    <td>Rs. ${unitPrice.toFixed(2)}</td>
+                    <td>Rs. ${itemTotal.toFixed(2)}</td>
+                  </tr>
+                `;
+              }).join('')}
               <tr>
-                <td colspan="4">Doctor Fee</td>
-                <td>Rs. ${DOCTOR_FEE}</td>
+                <td colspan="5">Doctor Fee</td>
+                <td>Rs. ${DOCTOR_FEE.toFixed(2)}</td>
               </tr>
               <tr class="total-row">
-                <td colspan="4">Total Amount</td>
-                <td>Rs. ${calculateTotalPrice()}</td>
+                <td colspan="5">Total Amount</td>
+                <td>Rs. ${calculateTotalPrice().toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
@@ -408,18 +508,48 @@ const PrescriptionView = () => {
                                   <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Medicine</TableCell>
                                   <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Dosage Instructions</TableCell>
                                   <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Quantity</TableCell>
-                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Days Supply</TableCell>
+                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Total Quantity</TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {currentPrescription?.items?.map((item, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>{item.medicineName}</TableCell>
-                                    <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>{item.dosageInstructions || 'As directed'}</TableCell>
-                                    <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>{item.quantity}</TableCell>
-                                    <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>{item.daysSupply} days</TableCell>
-                                  </TableRow>
-                                ))}
+                                {currentPrescription?.items?.map((item, index) => {
+                                  const medicineWeight = getMedicineWeight(item);
+                                  console.log(`Item ${index} weight:`, medicineWeight);
+                                  return (
+                                    <TableRow key={index}>
+                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
+                                        <Box>
+                                          <Typography variant="body2">{item.medicineName}</Typography>
+                                          {medicineWeight && (
+                                            <Chip
+                                              label={`${medicineWeight} mg`}
+                                              size="small"
+                                              color="primary"
+                                              variant="outlined"
+                                              sx={{ mt: 0.5 }}
+                                            />
+                                          )}
+                                        </Box>
+                                      </TableCell>
+                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
+                                        {item.dosageInstructions || 'As directed'} 
+                                        <Typography variant="caption" display="block">
+                                          For {item.daysSupply} days
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
+                                        {item.quantity} per dose
+                                      </TableCell>
+                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
+                                        <Chip
+                                          label={calculateTotalQuantity(item)}
+                                          color="secondary"
+                                          size="small"
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                               </TableBody>
                             </Table>
                           </TableContainer>
@@ -440,13 +570,13 @@ const PrescriptionView = () => {
                             Payment
                           </Typography>
                           <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mt: 2 }}>
-                            Medicines Cost: Rs. {calculateTotalPrice() - DOCTOR_FEE}
+                            Medicines Cost: Rs. {(calculateTotalPrice() - DOCTOR_FEE).toFixed(2)}
                           </Typography>
                           <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mb: 2 }}>
-                            Doctor Fee: Rs. {DOCTOR_FEE}
+                            Doctor Fee: Rs. {DOCTOR_FEE.toFixed(2)}
                           </Typography>
                           <Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold', mt: 2 }}>
-                            Total Amount: Rs. {calculateTotalPrice()}
+                            Total Amount: Rs. {calculateTotalPrice().toFixed(2)}
                           </Typography>
                           <Box display="flex" gap={2} mt="auto">
                             <Button 

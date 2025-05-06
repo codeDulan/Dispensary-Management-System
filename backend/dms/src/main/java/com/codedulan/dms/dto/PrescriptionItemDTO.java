@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +17,8 @@ public class PrescriptionItemDTO {
     private Long inventoryItemId;
     private String medicineName;
     private Integer quantity;
+    private Integer medicineWeight; // Add this field
+    private BigDecimal sellPrice;
     private String dosageInstructions;
     private Integer daysSupply;
 
@@ -23,6 +27,8 @@ public class PrescriptionItemDTO {
                 .id(item.getId())
                 .inventoryItemId(item.getInventoryItem().getId())
                 .medicineName(item.getInventoryItem().getMedicine().getName())
+                .medicineWeight(item.getInventoryItem().getMedicine().getWeight())
+                .sellPrice(item.getInventoryItem().getSellPrice())
                 .quantity(item.getQuantity())
                 .dosageInstructions(item.getDosageInstructions())
                 .daysSupply(item.getDaysSupply())

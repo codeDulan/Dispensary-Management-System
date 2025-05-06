@@ -94,6 +94,38 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Calculate the total quantity needed based on dosage instructions.
+     *
+     * @param dosageInstructions The dosage instructions text
+     * @param quantityPerDose The quantity per dose
+     * @param daysSupply Number of days the medicine should be taken
+     * @return The total quantity needed
+     */
+    private int calculateTotalQuantity(String dosageInstructions, int quantityPerDose, int daysSupply) {
+        // Default to 1 dose per day if no instructions
+        int dosesPerDay = 1;
+
+        if (dosageInstructions != null) {
+            String instruction = dosageInstructions.toUpperCase();
+
+            if (instruction.contains("OD") || instruction.contains("ONCE DAILY") ||
+                    instruction.contains("MANE") || instruction.contains("NOCTE")) {
+                dosesPerDay = 1;
+            } else if (instruction.contains("BD") || instruction.contains("TWICE DAILY")) {
+                dosesPerDay = 2;
+            } else if (instruction.contains("TDS") || instruction.contains("THREE TIMES DAILY")) {
+                dosesPerDay = 3;
+            } else if (instruction.contains("QDS") || instruction.contains("QID") ||
+                    instruction.contains("FOUR TIMES DAILY")) {
+                dosesPerDay = 4;
+            }
+        }
+
+        // Calculate total: quantity per dose * doses per day * days
+        return quantityPerDose * dosesPerDay * daysSupply;
+    }
+
     @Transactional
     public PrescriptionDTO createPrescription(CreatePrescriptionDTO createDTO) {
         Patient patient = patientRepository.findById(createDTO.getPatientId())
@@ -114,26 +146,42 @@ public class PrescriptionService {
             InventoryItem inventoryItem = inventoryRepository.findById(itemDTO.getInventoryItemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found with id: " + itemDTO.getInventoryItemId()));
 
+            // Calculate total quantity based on dosage instructions and days supply
+            int quantityPerDose = itemDTO.getQuantity();
+            int daysSupply = itemDTO.getDaysSupply();
+            String dosageInstructions = itemDTO.getDosageInstructions();
+
+            int totalQuantityNeeded = calculateTotalQuantity(dosageInstructions, quantityPerDose, daysSupply);
+
             // Check if there's enough quantity available
-            if (inventoryItem.getRemainingQuantity() < itemDTO.getQuantity()) {
+            if (inventoryItem.getRemainingQuantity() < totalQuantityNeeded) {
                 throw new BusinessLogicException("Insufficient quantity available for " +
                         inventoryItem.getMedicine().getName() + ". Available: " +
-                        inventoryItem.getRemainingQuantity() + ", Requested: " + itemDTO.getQuantity());
+                        inventoryItem.getRemainingQuantity() + ", Requested total: " + totalQuantityNeeded +
+                        " (Qty per dose: " + quantityPerDose +
+                        ", Dosage: " + dosageInstructions +
+                        ", Days: " + daysSupply + ")");
             }
 
             // Create prescription item
             PrescriptionItem item = PrescriptionItem.builder()
                     .prescription(savedPrescription)
                     .inventoryItem(inventoryItem)
-                    .quantity(itemDTO.getQuantity())
-                    .dosageInstructions(itemDTO.getDosageInstructions())
-                    .daysSupply(itemDTO.getDaysSupply())
+                    .quantity(quantityPerDose) // Store the per-dose quantity in the entity
+                    .dosageInstructions(dosageInstructions)
+                    .daysSupply(daysSupply)
                     .build();
 
             savedPrescription.getPrescriptionItems().add(item);
 
-            // Reduce inventory quantity
-            inventoryService.reduceInventoryQuantity(inventoryItem.getId(), itemDTO.getQuantity());
+            // Reduce inventory quantity using the TOTAL quantity needed
+            inventoryService.reduceInventoryQuantity(inventoryItem.getId(), totalQuantityNeeded);
+
+            log.info("Prescribed {} of {} for {} days (total: {})",
+                    quantityPerDose,
+                    inventoryItem.getMedicine().getName(),
+                    daysSupply,
+                    totalQuantityNeeded);
         }
 
         // Save the updated prescription with items
@@ -143,13 +191,104 @@ public class PrescriptionService {
         return PrescriptionDTO.fromEntity(completePrescription);
     }
 
+    @Transactional
     public PrescriptionDTO updatePrescription(Long id, UpdatePrescriptionDTO updateDTO) {
         Prescription prescription = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription not found with id: " + id));
 
-        // Only notes can be updated after prescription is issued
+        // Update notes if provided
         if (updateDTO.getPrescriptionNotes() != null) {
             prescription.setPrescriptionNotes(updateDTO.getPrescriptionNotes());
+        }
+
+        // Handle updated items
+        if (updateDTO.getUpdatedItems() != null) {
+            for (UpdatePrescriptionItemDTO itemDTO : updateDTO.getUpdatedItems()) {
+                // Find existing prescription item
+                PrescriptionItem item = prescription.getPrescriptionItems().stream()
+                        .filter(pi -> pi.getId().equals(itemDTO.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new ResourceNotFoundException("Prescription item not found: " + itemDTO.getId()));
+
+                // Calculate inventory adjustment
+                int oldTotalQty = calculateTotalQuantity(
+                        itemDTO.getOldDosageInstructions(),
+                        itemDTO.getOldQuantity(),
+                        itemDTO.getOldDaysSupply()
+                );
+
+                int newTotalQty = calculateTotalQuantity(
+                        itemDTO.getDosageInstructions(),
+                        itemDTO.getQuantity(),
+                        itemDTO.getDaysSupply()
+                );
+
+                // Update the item
+                item.setQuantity(itemDTO.getQuantity());
+                item.setDosageInstructions(itemDTO.getDosageInstructions());
+                item.setDaysSupply(itemDTO.getDaysSupply());
+
+                // Adjust inventory if needed
+                if (newTotalQty != oldTotalQty) {
+                    InventoryItem inventoryItem = item.getInventoryItem();
+
+                    if (newTotalQty > oldTotalQty) {
+                        // Need more inventory
+                        int additionalQty = newTotalQty - oldTotalQty;
+
+                        // Check if there's enough
+                        if (inventoryItem.getRemainingQuantity() < additionalQty) {
+                            throw new BusinessLogicException("Not enough inventory for " +
+                                    inventoryItem.getMedicine().getName() + ". Available: " +
+                                    inventoryItem.getRemainingQuantity() + ", Additional needed: " + additionalQty);
+                        }
+
+                        // Reduce additional inventory
+                        inventoryService.reduceInventoryQuantity(inventoryItem.getId(), additionalQty);
+                    } else if (newTotalQty < oldTotalQty) {
+                        // Return inventory
+                        int returnQty = oldTotalQty - newTotalQty;
+                        inventoryItem.setRemainingQuantity(inventoryItem.getRemainingQuantity() + returnQty);
+                        inventoryRepository.save(inventoryItem);
+                    }
+                }
+            }
+        }
+
+        // Handle new items (similar to createPrescription logic)
+        if (updateDTO.getNewItems() != null && !updateDTO.getNewItems().isEmpty()) {
+            for (CreatePrescriptionItemDTO itemDTO : updateDTO.getNewItems()) {
+                InventoryItem inventoryItem = inventoryRepository.findById(itemDTO.getInventoryItemId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Inventory item not found: " + itemDTO.getInventoryItemId()));
+
+                // Calculate total quantity
+                int totalQtyNeeded = calculateTotalQuantity(
+                        itemDTO.getDosageInstructions(),
+                        itemDTO.getQuantity(),
+                        itemDTO.getDaysSupply()
+                );
+
+                // Check if there's enough inventory
+                if (inventoryItem.getRemainingQuantity() < totalQtyNeeded) {
+                    throw new BusinessLogicException("Not enough inventory for " +
+                            inventoryItem.getMedicine().getName() + ". Available: " +
+                            inventoryItem.getRemainingQuantity() + ", Needed: " + totalQtyNeeded);
+                }
+
+                // Create new prescription item
+                PrescriptionItem newItem = PrescriptionItem.builder()
+                        .prescription(prescription)
+                        .inventoryItem(inventoryItem)
+                        .quantity(itemDTO.getQuantity())
+                        .dosageInstructions(itemDTO.getDosageInstructions())
+                        .daysSupply(itemDTO.getDaysSupply())
+                        .build();
+
+                prescription.getPrescriptionItems().add(newItem);
+
+                // Reduce inventory
+                inventoryService.reduceInventoryQuantity(inventoryItem.getId(), totalQtyNeeded);
+            }
         }
 
         Prescription updatedPrescription = prescriptionRepository.save(prescription);

@@ -25,6 +25,9 @@ public class Medicine {
     @Column(name = "lethal_dosage")
     private Double lethalDosagePerKg;
 
+    @Column(name = "weight")
+    private Integer weight;
+
     // Relationships
     @OneToMany(mappedBy = "medicine", cascade = CascadeType.ALL)
     @ToString.Exclude

@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class InventoryItemDTO {
     private Long id;
     private Long medicineId;
+    private Integer medicineWeight;
     private String medicineName;
     private String batchNumber;
     private LocalDate expiryDate;
@@ -29,6 +30,7 @@ public class InventoryItemDTO {
         return InventoryItemDTO.builder()
                 .id(item.getId())
                 .medicineId(item.getMedicine().getId())
+                .medicineWeight(item.getMedicine().getWeight())
                 .medicineName(item.getMedicine().getName())
                 .batchNumber(item.getBatchNumber())
                 .expiryDate(item.getExpiryDate())

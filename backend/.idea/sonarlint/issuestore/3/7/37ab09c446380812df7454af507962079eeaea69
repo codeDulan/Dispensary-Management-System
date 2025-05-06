@@ -1,0 +1,15 @@
+
+~
+java:S1192,"\Define a constant instead of duplicating this literal "Payment not found with id: " 3 times.(๚ๅ๒๔ÿÿÿÿÿ8๔๓ศ๔ๅ2
+{
+java:S1192H"YDefine a constant instead of duplicating this literal "Invalid payment status: " 3 times.(๒ฆฮýÿÿÿÿ8่ํเๆ2
+o
+java:S6204'"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8เÛเๆ2
+o
+java:S6204@"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ใÛเๆ2
+o
+java:S6204M"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ๅÛเๆ2
+o
+java:S6204V"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ๆÛเๆ2
+o
+java:S6204`"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8็Ûเๆ2
