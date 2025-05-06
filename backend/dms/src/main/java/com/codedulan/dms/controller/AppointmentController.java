@@ -4,10 +4,12 @@ import com.codedulan.dms.dto.AppointmentRequest;
 import com.codedulan.dms.entity.Appointment;
 import com.codedulan.dms.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -42,8 +44,8 @@ public class AppointmentController {
             return ResponseEntity.ok(appointmentService.getPatientAppointments(date, token));
         }
 
-        // Return ALL appointments within date range, not just the current user's
-        return ResponseEntity.ok(appointmentService.getAllAppointmentsInRange(startDate, endDate));
+        // Return appointments within date range for the patient only
+        return ResponseEntity.ok(appointmentService.getPatientAppointmentsInRange(startDate, endDate, token));
     }
 
     @PreAuthorize("@accessControl.isPatient(#authHeader)")
@@ -68,7 +70,7 @@ public class AppointmentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
+    @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
     @GetMapping("/all")
     public ResponseEntity<List<Appointment>> getAllAppointments(
             @RequestHeader("Authorization") String authHeader) {
@@ -87,4 +89,23 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getPatientAppointmentsInRange(startDate, endDate, token));
     }
 
+    // New endpoint to get available time slots
+    @PreAuthorize("@accessControl.isPatient(#authHeader)")
+    @GetMapping("/available-slots")
+    public ResponseEntity<List<LocalTime>> getAvailableTimeSlots(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestHeader("Authorization") String authHeader) {
+
+        return ResponseEntity.ok(appointmentService.getAvailableTimeSlots(date));
+    }
+
+    // New endpoint to get daily queue
+    @PreAuthorize("@accessControl.isPatient(#authHeader)")
+    @GetMapping("/daily-queue")
+    public ResponseEntity<List<Appointment>> getDailyQueue(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestHeader("Authorization") String authHeader) {
+
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDate(date));
+    }
 }

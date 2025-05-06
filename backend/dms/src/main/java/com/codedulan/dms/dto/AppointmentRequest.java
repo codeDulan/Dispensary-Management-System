@@ -8,6 +8,6 @@ import java.time.LocalTime;
 public class AppointmentRequest {
     private LocalDate date;
     private LocalTime time;
+    private String appointmentType;
     private String notes;
-
 }

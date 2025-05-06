@@ -6,11 +6,12 @@ import com.codedulan.dms.entity.Patient;
 import com.codedulan.dms.repository.AppointmentRepository;
 import com.codedulan.dms.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -27,17 +28,23 @@ public class AppointmentService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
 
         validateAppointmentTime(request.getTime());
+        validateAppointmentType(request.getAppointmentType());
 
         if (appointmentRepository.existsByDateAndTime(request.getDate(), request.getTime())) {
             throw new IllegalArgumentException("Time slot already booked");
         }
 
+        // Calculate the next queue number for this date
+        Integer nextQueueNumber = getNextQueueNumber(request.getDate());
+
         return appointmentRepository.save(
                 Appointment.builder()
+                        .queueNumber(nextQueueNumber)
                         .date(request.getDate())
                         .time(request.getTime())
-                        .appointmentStatus("PENDING")
+                        .appointmentType(request.getAppointmentType())
                         .notes(request.getNotes())
+                        .appointmentStatus("PENDING")
                         .patient(patient)
                         .build()
         );
@@ -65,6 +72,7 @@ public class AppointmentService {
         }
 
         validateAppointmentTime(request.getTime());
+        validateAppointmentType(request.getAppointmentType());
 
         // Check if the new time is available (skip checking if it's the same)
         if (!appointment.getTime().equals(request.getTime()) ||
@@ -74,11 +82,17 @@ public class AppointmentService {
                     request.getDate(), request.getTime(), appointmentId)) {
                 throw new IllegalArgumentException("Time slot already booked");
             }
+
+            // If changing the date, assign a new queue number
+            if (!appointment.getDate().equals(request.getDate())) {
+                appointment.setQueueNumber(getNextQueueNumber(request.getDate()));
+            }
         }
 
         // Update appointment details
         appointment.setDate(request.getDate());
         appointment.setTime(request.getTime());
+        appointment.setAppointmentType(request.getAppointmentType());
         appointment.setNotes(request.getNotes());
 
         return appointmentRepository.save(appointment);
@@ -94,12 +108,6 @@ public class AppointmentService {
         }
 
         appointmentRepository.delete(appointment);
-    }
-
-    private void validateAppointmentTime(LocalTime time) {
-        if (time.isBefore(LocalTime.of(9, 0)) || time.isAfter(LocalTime.of(14, 55))) {
-            throw new IllegalArgumentException("Appointments only available 9:00-15:00");
-        }
     }
 
     public List<Appointment> getAllAppointments() {
@@ -124,5 +132,54 @@ public class AppointmentService {
         }
 
         return appointmentRepository.findByDateBetween(startDate, endDate);
+    }
+
+    // New method to get available time slots for a given date
+    public List<LocalTime> getAvailableTimeSlots(LocalDate date) {
+        // Generate all possible time slots from 9:00 to 14:55 in 5-minute intervals
+        List<LocalTime> allTimeSlots = generateAllTimeSlots();
+
+        // Get booked time slots for the date
+        List<LocalTime> bookedTimeSlots = appointmentRepository.findTimesByDate(date);
+
+        // Remove booked time slots from all time slots
+        allTimeSlots.removeAll(bookedTimeSlots);
+
+        return allTimeSlots;
+    }
+
+    public List<Appointment> getAppointmentsByDate(LocalDate date) {
+        return appointmentRepository.findByDateOrderByQueueNumberAsc(date);
+    }
+
+    private List<LocalTime> generateAllTimeSlots() {
+        List<LocalTime> timeSlots = new ArrayList<>();
+        LocalTime start = LocalTime.of(9, 0);
+        LocalTime end = LocalTime.of(15, 0);
+
+        while (start.isBefore(end)) {
+            timeSlots.add(start);
+            start = start.plusMinutes(5);
+        }
+
+        return timeSlots;
+    }
+
+    private void validateAppointmentTime(LocalTime time) {
+        if (time.isBefore(LocalTime.of(9, 0)) || time.isAfter(LocalTime.of(14, 55))) {
+            throw new IllegalArgumentException("Appointments only available 9:00-15:00");
+        }
+    }
+
+    private void validateAppointmentType(String type) {
+        List<String> validTypes = Arrays.asList("CHECKUP", "TAKE_MEDICINE", "GET_ADVICE", "REPORT_CHECKING", "OTHER");
+        if (type == null || !validTypes.contains(type.toUpperCase())) {
+            throw new IllegalArgumentException("Invalid appointment type. Valid types are: Checkup, Take Medicine, Get Advice, Report Checking, Other");
+        }
+    }
+
+    private Integer getNextQueueNumber(LocalDate date) {
+        Integer maxQueueNumber = appointmentRepository.findMaxQueueNumberByDate(date);
+        return (maxQueueNumber == null) ? 1 : maxQueueNumber + 1;
     }
 }
