@@ -68,7 +68,10 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
-    public List<PrescriptionDTO> getMyPrescriptions(String token) {
+    public List<PrescriptionDTO> getMyPrescriptions(String authHeader) {
+        // Extract token from auth header (remove "Bearer " prefix)
+        String token = authHeader.substring(7).trim();
+
         String email = jwtUtils.extractEmail(token);
         Patient patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with email: " + email));

@@ -31,23 +31,20 @@ public class Appointment {
             strategy = GenerationType.SEQUENCE,
             generator = "appointment_sequence"
     )
-
     @Column(name = "appointment_id")
     private Long id;
+
+    private Integer queueNumber;
     private LocalDate date;
-
     private LocalTime time;
-
+    private String appointmentType;
     private String notes;
-
-
     private String appointmentStatus;
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
-
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -56,5 +53,4 @@ public class Appointment {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 }

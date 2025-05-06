@@ -46,3 +46,152 @@
 .fc-timegrid-axis-frame {
   height: 20px !important;
 }
+
+/* Background events (available slots) styling */
+.fc-bg-event {
+  opacity: 0.3 !important;
+  cursor: pointer !important;
+}
+
+.fc-bg-event:hover {
+  opacity: 0.5 !important;
+}
+
+/* Queue number styling */
+.queue-number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-weight: bold;
+  color: white;
+}
+
+.queue-number-large {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+}
+
+.queue-number-medium {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+}
+
+.queue-number-small {
+  width: 16px;
+  height: 16px;
+  font-size: 0.6rem;
+}
+
+/* Queue board styling */
+.queue-board {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.queue-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  background-color: #e0e0e0;
+  color: #333;
+  cursor: default;
+}
+
+.queue-chip-current {
+  font-weight: bold;
+  background-color: #1976d2;
+  color: white;
+  height: 32px;
+  font-size: 0.9rem;
+}
+
+/* Appointment type indicators */
+.appointment-type-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Responsive sidebar */
+@media (max-width: 768px) {
+  .appointment-sidebar {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
+
+/* Time indicator */
+.time-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.time-icon {
+  font-size: 0.8rem !important;
+  margin-right: 4px;
+}
+
+/* Dialog styling */
+.appointment-dialog-title {
+  font-size: 1.5rem !important;
+  padding: 16px 24px !important;
+}
+
+.queue-notice {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.queue-notice-text {
+  margin-left: 16px;
+}
+
+.queue-notice-title {
+  font-weight: bold !important;
+  margin-bottom: 4px !important;
+}
+
+/* Empty state */
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px !important;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Enhanced calendar */
+.fc-day-today {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.fc-day-header {
+  font-weight: bold !important;
+}
+
+.fc .fc-button-primary {
+  text-transform: none !important;
+}

@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/patients/me").hasAuthority("PATIENT")
                         .requestMatchers("/api/patients/**").hasAuthority("DOCTOR")
                         .requestMatchers("/api/appointments/**").hasAnyAuthority("PATIENT")
+                        .requestMatchers("/api/prescriptions/my-prescriptions/**").hasAuthority("PATIENT")
                         .requestMatchers("/doctor/**").hasAnyAuthority("DOCTOR")
                         .requestMatchers("/dispenser/**").hasAnyAuthority("DISPENSER")
                         .requestMatchers("/doctordispenser/**").hasAnyAuthority("DOCTOR", "DISPENSER")
