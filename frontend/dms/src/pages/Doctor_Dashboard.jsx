@@ -6,6 +6,12 @@ import DoctorSidebar from "../components/Dashboard/Doctor/Sidebar/DoctorSidebar.
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
+// Import professional icons
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import InventoryIcon from '@mui/icons-material/Inventory';
+
 // Import custom hooks for data fetching
 import { useDashboardData, useInventoryStatus, useUpcomingAppointments } from "../hooks/useDashboardData";
 import UserService from "../services/UserService"; // Import your existing UserService
@@ -27,7 +33,7 @@ const RevenueChart = ({ data = [] }) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
-            <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+            <Tooltip formatter={(value) => `Rs. ${value.toLocaleString()}`} />
             <Legend />
             <Line 
               type="monotone" 
@@ -77,7 +83,7 @@ const PaymentDistribution = ({ data = [] }) => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+            <Tooltip formatter={(value) => `Rs. ${value.toLocaleString()}`} />
             <Legend />
           </PieChart>
         </ResponsiveContainer>
@@ -139,8 +145,9 @@ const PatientTrends = ({ data = [] }) => {
   );
 };
 
-// Stats Card Component
+// Stats Card Component - Updated with professional icons
 const StatsCard = ({ title, value, subtitle, icon, loading = false }) => {
+  const theme = useTheme(); 
   return (
     <Paper 
       elevation={3} 
@@ -163,7 +170,12 @@ const StatsCard = ({ title, value, subtitle, icon, loading = false }) => {
             </>
           )}
         </Box>
-        <Box color="primary.main">
+        <Box 
+          sx={{ 
+            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+            fontSize: 40 
+          }}
+        >
           {icon}
         </Box>
       </Box>
@@ -261,14 +273,14 @@ const Dashboard = () => {
                 <LoadingIndicator />
               ) : (
                 <>
-                  {/* Stats Overview */}
+                  {/* Stats Overview - With professional icons */}
                   <Grid container spacing={3} mb={4}>
                     <Grid item xs={12} sm={6} md={3}>
                       <StatsCard 
                         title="Total Patients" 
                         value={stats.totalPatients.toLocaleString()} 
                         subtitle="Registered patients" 
-                        icon={<Box sx={{ fontSize: 40 }}>👥</Box>} 
+                        icon={<PeopleOutlineIcon sx={{ fontSize: 40 }} />} 
                         loading={loading}
                       />
                     </Grid>
@@ -277,16 +289,16 @@ const Dashboard = () => {
                         title="Appointments" 
                         value={stats.appointmentsThisWeek.toLocaleString()} 
                         subtitle="This week" 
-                        icon={<Box sx={{ fontSize: 40 }}>📅</Box>} 
+                        icon={<EventNoteIcon sx={{ fontSize: 40 }} />} 
                         loading={loading}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={3}>
                       <StatsCard 
                         title="Revenue" 
-                        value={`$${stats.monthlyRevenue.toLocaleString()}`} 
+                        value={`Rs. ${stats.monthlyRevenue.toLocaleString()}`} 
                         subtitle="This month" 
-                        icon={<Box sx={{ fontSize: 40 }}>💰</Box>} 
+                        icon={<MonetizationOnOutlinedIcon sx={{ fontSize: 40 }} />} 
                         loading={loading}
                       />
                     </Grid>
@@ -295,7 +307,7 @@ const Dashboard = () => {
                         title="Inventory Items" 
                         value={stats.inventoryItems.toLocaleString()} 
                         subtitle={`${stats.lowStockItems} low stock`} 
-                        icon={<Box sx={{ fontSize: 40 }}>📦</Box>} 
+                        icon={<InventoryIcon sx={{ fontSize: 40 }} />} 
                         loading={loading}
                       />
                     </Grid>

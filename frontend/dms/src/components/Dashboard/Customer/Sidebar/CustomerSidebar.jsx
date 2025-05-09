@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -18,12 +18,19 @@ import UserIcon from "../../../../assets/customer.png";
 
 import UserService from "../../../../services/UserService";
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+// Modified Item component to accept onClick prop
+const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-
-
+  // Handle click based on whether onClick is provided
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      setSelected(to);
+    }
+  };
 
   return (
     <MenuItem
@@ -34,17 +41,23 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
         width: "100%",
         boxSizing: "border-box",
       }}
-      onClick={() => setSelected(to)}
+      onClick={handleClick}
       icon={icon}
     >
-      <Link
-        to={to}
-        style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-      >
+      {!onClick ? (
+        <Link
+          to={to}
+          style={{ textDecoration: "none", color: "inherit", width: "100%" }}
+        >
+          <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
+            {title}
+          </Typography>
+        </Link>
+      ) : (
         <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
           {title}
         </Typography>
-      </Link>
+      )}
     </MenuItem>
   );
 };
@@ -55,7 +68,7 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
   const [patientName, setPatientName] = useState("");
-
+  const navigate = useNavigate(); // Added useNavigate hook
 
   useEffect(() => {
     const fetchName = async () => {
@@ -70,16 +83,18 @@ const Sidebar = () => {
     fetchName();
   }, []);
 
+  // Logout handler function
+  const handleLogout = () => {
+    UserService.logout(); // Call the logout method from UserService
+    navigate("/login", { replace: true }); // Redirect to login page with replace:true
+  };
 
   return (
     <Box
       sx={{
-
         "& .pro-sidebar-layout nav":{
             width: 0,
         },
-        
-
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
           height: "100% !important",
@@ -196,8 +211,6 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
 
-              
-              
               <Item
                 title="Appoinments"
                 to="/customer/appointments"
@@ -206,17 +219,15 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
 
-             
+              {/* Modified Logout Item with onClick handler */}
               <Item
                 title="Logout"
                 to="/logout"
                 icon={<LogoutOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                onClick={handleLogout}
               />
-
-            
-              
             </Box>
           )}
         </Menu>

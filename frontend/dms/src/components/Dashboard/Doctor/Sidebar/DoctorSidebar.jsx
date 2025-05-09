@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
@@ -14,10 +14,15 @@ import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlin
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import UserIcon from "../../../../assets/user.jpg";
+import UserService from "../../../../services/UserService";
 
-const Item = ({ title, to, icon, selected, setSelected }) => {
+const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  
+  // If onClick is provided, use it, otherwise use the default behavior
+  const handleClick = onClick ? () => onClick() : () => setSelected(to);
+  
   return (
     <MenuItem
       active={selected === to}
@@ -27,17 +32,23 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
         width: "100%",
         boxSizing: "border-box",
       }}
-      onClick={() => setSelected(to)}
+      onClick={handleClick}
       icon={icon}
     >
-      <Link
-        to={to}
-        style={{ textDecoration: "none", color: "inherit", width: "100%" }}
-      >
+      {!onClick ? (
+        <Link
+          to={to}
+          style={{ textDecoration: "none", color: "inherit", width: "100%" }}
+        >
+          <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
+            {title}
+          </Typography>
+        </Link>
+      ) : (
         <Typography sx={{ fontFamily: "Roboto, sans-serif" }}>
           {title}
         </Typography>
-      </Link>
+      )}
     </MenuItem>
   );
 };
@@ -47,6 +58,13 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
+  const navigate = useNavigate();
+  
+  // Logout handler function
+  const handleLogout = () => {
+    UserService.logout(); // Call the logout method from UserService
+    navigate("/login", {replace:true}); // Redirect to login page
+  };
 
   return (
     <Box
@@ -219,15 +237,19 @@ const Sidebar = () => {
                 selected={selected}
                 setSelected={setSelected}
               />
+              {/* Modified Logout Item with onClick handler */}
               <Item
                 title="Logout"
                 to="/logout"
                 icon={<LogoutOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                onClick={handleLogout}
               />
             </Box>
           )}
+
+          
         </Menu>
       </ProSidebar>
     </Box>
