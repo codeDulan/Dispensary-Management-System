@@ -16,7 +16,11 @@ import {
   Autocomplete,
   Paper,
   Chip,
-  Tooltip
+  Tooltip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
 import { ColorModeContext, useMode, tokens } from "../../../../../theme";
@@ -25,6 +29,9 @@ import DoctorSidebar from "../../Sidebar/DoctorSidebar";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import InfoIcon from "@mui/icons-material/Info";
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete"; 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -52,10 +59,18 @@ const QuickPrescription = () => {
       quantity: "",
       daysSupply: "7",
       medicineWeight: null,
-      availableQuantity: 0
+      availableQuantity: 0,
     },
   ]);
   const [notes, setNotes] = useState("");
+
+  // Template state
+  const [templates, setTemplates] = useState([]);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [templateCondition, setTemplateCondition] = useState("");
 
   // API data
   const [patients, setPatients] = useState([]);
@@ -89,22 +104,41 @@ const QuickPrescription = () => {
   // Helper function to get doses per day based on dosage instructions
   const getDosesPerDay = (dosageInstructions) => {
     if (!dosageInstructions) return 1; // Default to 1 if no instructions
-    
+
     const instruction = String(dosageInstructions || "").toUpperCase();
-    
-    if (instruction.includes('OD') || instruction.includes('ONCE DAILY') || 
-        instruction.includes('MANE') || instruction.includes('NOCTE')) {
+
+    if (
+      instruction.includes("OD") ||
+      instruction.includes("ONCE DAILY") ||
+      instruction.includes("MANE") ||
+      instruction.includes("NOCTE")
+    ) {
       return 1;
-    } else if (instruction.includes('BD') || instruction.includes('TWICE DAILY')) {
+    } else if (
+      instruction.includes("BD") ||
+      instruction.includes("TWICE DAILY")
+    ) {
       return 2;
-    } else if (instruction.includes('TDS') || instruction.includes('THREE TIMES DAILY')) {
+    } else if (
+      instruction.includes("TDS") ||
+      instruction.includes("THREE TIMES DAILY")
+    ) {
       return 3;
-    } else if (instruction.includes('QDS') || instruction.includes('QID') || 
-              instruction.includes('FOUR TIMES DAILY')) {
+    } else if (
+      instruction.includes("QDS") ||
+      instruction.includes("QID") ||
+      instruction.includes("FOUR TIMES DAILY")
+    ) {
       return 4;
-    } else if (instruction.includes('STAT') || instruction.includes('IMMEDIATELY')) {
+    } else if (
+      instruction.includes("STAT") ||
+      instruction.includes("IMMEDIATELY")
+    ) {
       return 1; // One-time dose
-    } else if (instruction.includes('PRN') || instruction.includes('WHEN REQUIRED')) {
+    } else if (
+      instruction.includes("PRN") ||
+      instruction.includes("WHEN REQUIRED")
+    ) {
       return 1; // Assume once daily for PRN
     } else {
       return 1; // Default for other instructions
@@ -114,24 +148,25 @@ const QuickPrescription = () => {
   // Calculate total quantity for an item
   const calculateTotalQuantity = (med) => {
     if (!med || !med.quantity) return 0;
-    
+
     // Extract quantity per dose
     const quantityPerDose = parseInt(med.quantity) || 1;
-    
+
     // Get number of doses per day based on dosage instructions
     const dosesPerDay = getDosesPerDay(med.dosageInstructions);
-    
+
     // Get number of days for the prescription
     const daysSupply = parseInt(med.daysSupply) || 7;
-    
+
     // Calculate total: quantity per dose * doses per day * days
     return quantityPerDose * dosesPerDay * daysSupply;
   };
 
-  // Fetch patients and inventory items on component mount
+  // Fetch patients, inventory items, and templates on component mount
   useEffect(() => {
     fetchPatients();
     fetchInventoryItems();
+    fetchTemplates();
   }, []);
 
   // Fetch patients from API
@@ -175,6 +210,27 @@ const QuickPrescription = () => {
     }
   };
 
+  // Fetch templates from API
+  const fetchTemplates = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_BASE_URL}/prescription-templates`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("Template data:", response.data);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      showNotification("Failed to load prescription templates", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Helper function to show notifications
   const showNotification = (message, severity = "success") => {
     setNotification({
@@ -184,9 +240,205 @@ const QuickPrescription = () => {
     });
   };
 
+  const handleDeleteTemplate = async (templateId) => {
+      if (!templateId) return;
+
+      try {
+        setSaving(true);
+        const token = localStorage.getItem("token");
+        await axios.delete(
+          `${API_BASE_URL}/prescription-templates/${templateId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // Remove the deleted template from the state
+        setTemplates(
+          templates.filter((template) => template.id !== templateId)
+        );
+
+        // If the deleted template was selected, clear selection
+        if (selectedTemplate?.id === templateId) {
+          setSelectedTemplate(null);
+        }
+
+        showNotification("Template deleted successfully", "success");
+      } catch (error) {
+        console.error("Error deleting template:", error);
+        showNotification(
+          error.response?.data?.message || "Failed to delete template",
+          "error"
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
+
   // Close notification
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
+  };
+
+  // Template dialog handlers
+  const handleOpenTemplateDialog = () => {
+    setTemplateDialogOpen(true);
+  };
+
+  const handleCloseTemplateDialog = () => {
+    setTemplateDialogOpen(false);
+    setSelectedTemplate(null);
+  };
+
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+  };
+
+  const handleLoadTemplate = () => {
+    if (!selectedTemplate) {
+      showNotification("Please select a template", "error");
+      return;
+    }
+
+    // Set diagnosis if available
+    if (selectedTemplate.conditionName) {
+      const newDiagnosis = [...diagnosis];
+      newDiagnosis[0] = selectedTemplate.conditionName;
+      setDiagnosis(newDiagnosis);
+    }
+
+    // Set notes if available
+    if (selectedTemplate.templateNotes) {
+      setNotes(selectedTemplate.templateNotes);
+    }
+
+    // Handle items - need to convert template medicines to inventory items
+    if (selectedTemplate.items && selectedTemplate.items.length > 0) {
+      const newMedicines = selectedTemplate.items
+        .map((item) => {
+          // Find matching inventory items for this medicine
+          const matchingInventory = inventoryItems.filter(
+            (inv) => inv.medicineId === item.medicineId
+          );
+
+          if (matchingInventory.length > 0) {
+            const bestMatch = matchingInventory[0];
+            return {
+              inventoryItemId: bestMatch.id,
+              name: bestMatch.medicineName || item.medicineName, // Ensure name is set
+              type: "",
+              dosageInstructions: item.dosageInstructions,
+              quantity: item.quantity.toString(),
+              daysSupply: item.daysSupply.toString(),
+              medicineWeight: bestMatch.medicineWeight,
+              availableQuantity: bestMatch.remainingQuantity || 0,
+            };
+          }
+
+          return null;
+        })
+        .filter((med) => med !== null);
+
+      if (newMedicines.length > 0) {
+        setMedicines(newMedicines);
+        console.log("Loaded medicines:", newMedicines); // Debug log
+      } else {
+        // If no matches were found, keep one empty row
+        setMedicines([
+          {
+            inventoryItemId: "",
+            name: "",
+            type: "",
+            dosageInstructions: "",
+            quantity: "",
+            daysSupply: "7",
+            medicineWeight: null,
+            availableQuantity: 0,
+          },
+        ]);
+        showNotification(
+          "No inventory items found for template medicines",
+          "warning"
+        );
+      }
+    }
+
+    setTemplateDialogOpen(false);
+    showNotification("Template loaded successfully", "success");
+  };
+  // Save template dialog handlers
+  const handleOpenSaveTemplateDialog = () => {
+    // Default template name to first diagnosis if available
+    if (diagnosis[0] && diagnosis[0].trim()) {
+      setTemplateCondition(diagnosis[0].trim());
+      setNewTemplateName(`${diagnosis[0].trim()} Treatment`);
+    }
+    setSaveTemplateDialogOpen(true);
+  };
+
+  const handleCloseSaveTemplateDialog = () => {
+    setSaveTemplateDialogOpen(false);
+    setNewTemplateName("");
+    setTemplateCondition("");
+  };
+
+  const handleSaveAsTemplate = async () => {
+    // Validate template data
+    if (!newTemplateName.trim()) {
+      showNotification("Please enter a template name", "error");
+      return;
+    }
+
+    // Filter out empty medicine items
+    const validMedicines = medicines.filter(
+      (m) => m.inventoryItemId && m.quantity
+    );
+
+    if (validMedicines.length === 0) {
+      showNotification("Please add at least one valid medicine", "error");
+      return;
+    }
+
+    // Prepare template data
+    const templateData = {
+      templateName: newTemplateName.trim(),
+      conditionName: templateCondition.trim(),
+      templateNotes: notes.trim(),
+      items: validMedicines
+        .map((med) => {
+          // Find the medicine ID for this inventory item
+          const inventoryItem = inventoryItems.find(
+            (item) => item.id === med.inventoryItemId
+          );
+          return {
+            medicineId: inventoryItem ? inventoryItem.medicineId : null,
+            quantity: parseInt(med.quantity) || 1,
+            dosageInstructions: med.dosageInstructions || "Take as directed",
+            daysSupply: parseInt(med.daysSupply) || 7,
+          };
+        })
+        .filter((item) => item.medicineId), // Filter out items where we couldn't find the medicine ID
+    };
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_BASE_URL}/prescription-templates`,
+        templateData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      showNotification("Template saved successfully!", "success");
+      setSaveTemplateDialogOpen(false);
+      fetchTemplates(); // Refresh the templates list
+    } catch (error) {
+      console.error("Error saving template:", error);
+      showNotification(
+        error.response?.data?.message || "Failed to save template",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Diagnosis handlers
@@ -225,7 +477,7 @@ const QuickPrescription = () => {
         quantity: "",
         daysSupply: "7",
         medicineWeight: null,
-        availableQuantity: 0
+        availableQuantity: 0,
       },
     ]);
     setTimeout(() => {
@@ -262,7 +514,7 @@ const QuickPrescription = () => {
           quantity: "",
           daysSupply: "7",
           medicineWeight: null,
-          availableQuantity: 0
+          availableQuantity: 0,
         });
         setMedicines(newMedicines);
         setTimeout(() => {
@@ -341,7 +593,11 @@ const QuickPrescription = () => {
       handleMedicineChange(index, "inventoryItemId", newValue.id);
       handleMedicineChange(index, "name", newValue.medicineName || "");
       handleMedicineChange(index, "medicineWeight", newValue.medicineWeight);
-      handleMedicineChange(index, "availableQuantity", newValue.remainingQuantity || 0);
+      handleMedicineChange(
+        index,
+        "availableQuantity",
+        newValue.remainingQuantity || 0
+      );
     } else {
       handleMedicineChange(index, "inventoryItemId", "");
       handleMedicineChange(index, "name", "");
@@ -393,9 +649,11 @@ const QuickPrescription = () => {
     }
 
     // Check if any medicine has insufficient quantity
-    const insufficientMeds = validMedicines.filter(med => !isQuantitySufficient(med));
+    const insufficientMeds = validMedicines.filter(
+      (med) => !isQuantitySufficient(med)
+    );
     if (insufficientMeds.length > 0) {
-      const medNames = insufficientMeds.map(med => med.name).join(", ");
+      const medNames = insufficientMeds.map((med) => med.name).join(", ");
       showNotification(
         `Insufficient inventory quantity for: ${medNames}`,
         "error"
@@ -489,6 +747,32 @@ const QuickPrescription = () => {
                   InputProps={{ readOnly: true }}
                   sx={{ width: 150 }}
                 />
+              </Box>
+
+              {/* Template Buttons */}
+              <Box mt={2} display="flex" gap={2}>
+                <Button
+                  variant="contained"
+                  onClick={handleOpenTemplateDialog}
+                  startIcon={<LibraryBooksIcon />}
+                  sx={{
+                    backgroundColor: colors.primary[300],
+                    "&:hover": {
+                      backgroundColor: colors.primary[200],
+                    },
+                  }}
+                >
+                  Load Template
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleOpenSaveTemplateDialog}
+                  startIcon={<SaveIcon />}
+                >
+                  Save as Template
+                </Button>
               </Box>
 
               {/* Patient Medical Notes Section */}
@@ -610,7 +894,7 @@ const QuickPrescription = () => {
                       <InfoIcon fontSize="small" color="info" />
                     </Tooltip>
                   </Box>
-                  
+
                   {medicines.map((med, i) => (
                     <Box
                       sx={{
@@ -619,9 +903,10 @@ const QuickPrescription = () => {
                         p: 2,
                         mb: 2,
                         boxShadow: theme.shadows[2],
-                        borderLeft: !med.quantity || isQuantitySufficient(med) 
-                          ? undefined 
-                          : `4px solid ${colors.redAccent[500]}`
+                        borderLeft:
+                          !med.quantity || isQuantitySufficient(med)
+                            ? undefined
+                            : `4px solid ${colors.redAccent[500]}`,
                       }}
                       key={i}
                       display="flex"
@@ -664,6 +949,14 @@ const QuickPrescription = () => {
                         onChange={(e, newValue) =>
                           handleMedicineSelect(i, newValue)
                         }
+                        // Add this value prop to connect the medicine data to the component
+                        value={
+                          med.inventoryItemId
+                            ? inventoryItems.find(
+                                (item) => item.id === med.inventoryItemId
+                              ) || null
+                            : null
+                        }
                         renderInput={(params) => (
                           <TextField
                             {...params}
@@ -677,12 +970,22 @@ const QuickPrescription = () => {
                         renderOption={(props, option) => (
                           <li {...props}>
                             <Box>
-                              <Typography variant="body1">{option.medicineName}</Typography>
+                              <Typography variant="body1">
+                                {option.medicineName}
+                              </Typography>
                               <Box display="flex" gap={1} alignItems="center">
                                 {option.medicineWeight && (
-                                  <Chip size="small" label={`${option.medicineWeight} mg`} color="primary" variant="outlined" />
+                                  <Chip
+                                    size="small"
+                                    label={`${option.medicineWeight} mg`}
+                                    color="primary"
+                                    variant="outlined"
+                                  />
                                 )}
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
                                   {option.remainingQuantity || 0} available
                                 </Typography>
                               </Box>
@@ -694,27 +997,32 @@ const QuickPrescription = () => {
                       <Box display="flex" flexDirection="column" gap={2}>
                         {/* Medication Information (if selected) */}
                         {med.inventoryItemId && (
-                          <Box 
-                            sx={{ 
+                          <Box
+                            sx={{
                               backgroundColor: colors.primary[400],
-                              borderRadius: '4px',
+                              borderRadius: "4px",
                               p: 1,
-                              display: 'flex',
-                              justifyContent: 'space-between'
+                              display: "flex",
+                              justifyContent: "space-between",
                             }}
                           >
                             <Typography variant="body2">
-                              Available: <strong>{med.availableQuantity}</strong>
+                              Available:{" "}
+                              <strong>{med.availableQuantity}</strong>
                             </Typography>
-                            
+
                             {med.quantity && (
                               <Box display="flex" alignItems="center" gap={1}>
                                 <Typography variant="body2">
-                                  Total Required: 
+                                  Total Required:
                                 </Typography>
-                                <Chip 
-                                  label={calculateTotalQuantity(med)} 
-                                  color={isQuantitySufficient(med) ? "success" : "error"}
+                                <Chip
+                                  label={calculateTotalQuantity(med)}
+                                  color={
+                                    isQuantitySufficient(med)
+                                      ? "success"
+                                      : "error"
+                                  }
                                   size="small"
                                 />
                               </Box>
@@ -806,7 +1114,7 @@ const QuickPrescription = () => {
                       </Box>
                     </Box>
                   ))}
-                  
+
                   <IconButton onClick={() => handleAddMedicine()}>
                     <AddCircleOutlineIcon />
                   </IconButton>
@@ -840,13 +1148,147 @@ const QuickPrescription = () => {
                   {saving ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    "Save Prescription"
+                    "Send Prescription"
                   )}
                 </Button>
               </Box>
             </Box>
           </Box>
         </Box>
+
+        {/* Template Select Dialog */}
+        <Dialog
+          open={templateDialogOpen}
+          onClose={handleCloseTemplateDialog}
+          maxWidth="md"
+        >
+          <DialogTitle>Select Prescription Template</DialogTitle>
+          <DialogContent sx={{ width: 500, maxHeight: 400 }}>
+            {templates.length === 0 ? (
+              <Typography color="text.secondary" sx={{ py: 2 }}>
+                No saved templates available.
+              </Typography>
+            ) : (
+              <Box sx={{ mt: 2 }}>
+                {templates.map((template) => (
+                  <Box
+                    key={template.id}
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      border: "1px solid",
+                      borderColor:
+                        selectedTemplate?.id === template.id
+                          ? "primary.main"
+                          : "divider",
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      bgcolor:
+                        selectedTemplate?.id === template.id
+                          ? "action.selected"
+                          : "background.paper",
+                      "&:hover": {
+                        bgcolor: "action.hover",
+                      },
+                      position: "relative",
+                    }}
+                    onClick={() => handleTemplateSelect(template)}
+                  >
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {template.templateName}
+                    </Typography>
+                    {template.conditionName && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Condition: {template.conditionName}
+                      </Typography>
+                    )}
+                    <Typography variant="body2">
+                      {template.items.length}{" "}
+                      {template.items.length === 1 ? "medicine" : "medicines"}
+                    </Typography>
+
+                    {/* Delete button */}
+                    <IconButton
+                      size="small"
+                      color="error"
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering template selection
+                        if (
+                          window.confirm(
+                            `Are you sure you want to delete the template "${template.templateName}"?`
+                          )
+                        ) {
+                          handleDeleteTemplate(template.id);
+                        }
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseTemplateDialog}>Cancel</Button>
+            <Button
+              onClick={handleLoadTemplate}
+              color="primary"
+              variant="contained"
+              disabled={!selectedTemplate || templates.length === 0}
+            >
+              Load Template
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Save as Template Dialog */}
+        <Dialog
+          open={saveTemplateDialogOpen}
+          onClose={handleCloseSaveTemplateDialog}
+        >
+          <DialogTitle>Save as Template</DialogTitle>
+          <DialogContent sx={{ width: 400 }}>
+            <Box display="flex" flexDirection="column" gap={3} mt={2}>
+              <TextField
+                fullWidth
+                label="Template Name"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                placeholder="e.g., Common Cold Treatment"
+                required
+              />
+
+              <TextField
+                fullWidth
+                label="Condition/Diagnosis"
+                value={templateCondition}
+                onChange={(e) => setTemplateCondition(e.target.value)}
+                placeholder="e.g., Upper Respiratory Tract Infection"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseSaveTemplateDialog}>Cancel</Button>
+            <Button
+              onClick={handleSaveAsTemplate}
+              color="primary"
+              variant="contained"
+              disabled={!newTemplateName.trim() || saving}
+            >
+              {saving ? <CircularProgress size={24} /> : "Save Template"}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Notification Snackbar */}
         <Snackbar
