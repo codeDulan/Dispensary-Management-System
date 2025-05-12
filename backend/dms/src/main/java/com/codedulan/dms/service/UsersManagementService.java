@@ -3,6 +3,7 @@ package com.codedulan.dms.service;
 
 
 
+import com.codedulan.dms.dto.PasswordChangeDto;
 import com.codedulan.dms.dto.ReqRes;
 import com.codedulan.dms.entity.Users;
 import com.codedulan.dms.repository.UsersRepository;
@@ -212,5 +213,47 @@ public class UsersManagementService {
         }
         return reqRes;
 
+    }
+
+    //Change password
+    // Add this method to your UsersManagementService class
+
+    public ReqRes changePassword(String email, PasswordChangeDto passwordChangeDto) {
+        ReqRes reqRes = new ReqRes();
+        try {
+            // Find the user
+            Optional<Users> userOptional = usersRepo.findByEmail(email);
+            if (userOptional.isPresent()) {
+                Users existingUser = userOptional.get();
+
+                // Verify current password
+                if (!passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), existingUser.getPassword())) {
+                    reqRes.setStatusCode(401);
+                    reqRes.setMessage("Current password is incorrect");
+                    return reqRes;
+                }
+
+                // Check if new password and confirm password match
+                if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
+                    reqRes.setStatusCode(400);
+                    reqRes.setMessage("New password and confirm password do not match");
+                    return reqRes;
+                }
+
+                // Update password
+                existingUser.setPassword(passwordEncoder.encode(passwordChangeDto.getNewPassword()));
+                Users savedUser = usersRepo.save(existingUser);
+
+                reqRes.setStatusCode(200);
+                reqRes.setMessage("Password changed successfully");
+            } else {
+                reqRes.setStatusCode(404);
+                reqRes.setMessage("User not found");
+            }
+        } catch (Exception e) {
+            reqRes.setStatusCode(500);
+            reqRes.setMessage("Error occurred while changing password: " + e.getMessage());
+        }
+        return reqRes;
     }
 }

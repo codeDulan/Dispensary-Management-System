@@ -86,7 +86,7 @@ public class PaymentController {
     }
 
     @PostMapping
-    @PreAuthorize("@accessControl.isDispenser(#authHeader)")
+    @PreAuthorize("@accessControl.isDoctor(#authHeader) or @accessControl.isDispenser(#authHeader)")
     public ResponseEntity<PaymentDTO> createPayment(
             @Valid @RequestBody CreatePaymentDTO createDTO,
             @RequestHeader("Authorization") String authHeader) {
@@ -96,7 +96,7 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("@accessControl.isDispenser(#authHeader)")
+    @PreAuthorize("@accessControl.isDoctor(#authHeader) or @accessControl.isDispenser(#authHeader)")
     public ResponseEntity<PaymentDTO> updatePayment(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePaymentDTO updateDTO,
@@ -106,7 +106,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("@accessControl.isDispenser(#authHeader)")
+    @PreAuthorize("@accessControl.isDoctor(#authHeader) or @accessControl.isDispenser(#authHeader)")
     public ResponseEntity<Void> deletePayment(
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {

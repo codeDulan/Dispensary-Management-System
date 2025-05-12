@@ -29,8 +29,6 @@ import DispenserSidebar from "../Sidebar/DispenserSidebar";
 import Topbar from "./Topbar";
 import axios from "axios";
 
-const DOCTOR_FEE = 300;
-
 const PrescriptionView = () => {
   const [theme, colorMode] = useMode();
   const colors = tokens(theme.palette.mode);
@@ -43,6 +41,15 @@ const PrescriptionView = () => {
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
   const [filterOption, setFilterOption] = useState("all");
   const [filterDate, setFilterDate] = useState("");
+  
+  // New state variables
+  const [doctorFee, setDoctorFee] = useState(300);
+  
+  // Load processed prescriptions from localStorage to persist across refreshes
+  const [processedPrescriptions, setProcessedPrescriptions] = useState(() => {
+    const savedProcessed = localStorage.getItem('processedPrescriptions');
+    return savedProcessed ? new Set(JSON.parse(savedProcessed)) : new Set();
+  });
   
   // API base URL
   const API_BASE_URL = "http://localhost:8080/api";
@@ -123,6 +130,17 @@ const PrescriptionView = () => {
   // Current prescription
   const currentPrescription = prescriptions[currentPrescriptionIndex] || null;
 
+  // Check if current prescription is processed
+  const isCurrentPrescriptionProcessed = () => {
+    return currentPrescription && processedPrescriptions.has(currentPrescription.id);
+  };
+
+  // Handle doctor fee change
+  const handleDoctorFeeChange = (e) => {
+    const value = parseFloat(e.target.value);
+    setDoctorFee(isNaN(value) ? 0 : value);
+  };
+
   // Helper function to extract medicine weight from the item
   const getMedicineWeight = (item) => {
     // Check all possible locations based on your DTO structure
@@ -193,7 +211,7 @@ const PrescriptionView = () => {
 
   // Calculate total price - Updated to account for days supply
   const calculateTotalPrice = () => {
-    if (!currentPrescription || !currentPrescription.items) return DOCTOR_FEE;
+    if (!currentPrescription || !currentPrescription.items) return doctorFee;
     
     console.log("Calculating total price for prescription:", currentPrescription);
     
@@ -212,8 +230,8 @@ const PrescriptionView = () => {
       return total + itemCost;
     }, 0);
     
-    const finalTotal = medicinesTotal + DOCTOR_FEE;
-    console.log(`Medicines Total: ${medicinesTotal}, Doctor Fee: ${DOCTOR_FEE}, Final Total: ${finalTotal}`);
+    const finalTotal = medicinesTotal + doctorFee;
+    console.log(`Medicines Total: ${medicinesTotal}, Doctor Fee: ${doctorFee}, Final Total: ${finalTotal}`);
     
     return finalTotal;
   };
@@ -240,14 +258,14 @@ const PrescriptionView = () => {
       const token = localStorage.getItem("token");
       
       // Create payment record
-      const medicinesCost = calculateTotalPrice() - DOCTOR_FEE;
+      const medicinesCost = calculateTotalPrice() - doctorFee;
       const totalAmount = calculateTotalPrice();
       
       const paymentData = {
         patientId: currentPrescription.patientId,
         prescriptionId: currentPrescription.id,
         medicinesCost: medicinesCost,
-        doctorFee: DOCTOR_FEE,
+        doctorFee: doctorFee,
         totalAmount: totalAmount,
         paymentMethod: "CASH",
         transactionReference: `PRESC-${currentPrescription.id}`,
@@ -259,6 +277,13 @@ const PrescriptionView = () => {
         paymentData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // Mark the prescription as processed
+      const updatedProcessed = new Set([...processedPrescriptions, currentPrescription.id]);
+      setProcessedPrescriptions(updatedProcessed);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('processedPrescriptions', JSON.stringify([...updatedProcessed]));
       
       showNotification("Payment recorded successfully");
       fetchPrescriptions();
@@ -296,6 +321,13 @@ const PrescriptionView = () => {
         paymentData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // Mark the prescription as processed
+      const updatedProcessed = new Set([...processedPrescriptions, currentPrescription.id]);
+      setProcessedPrescriptions(updatedProcessed);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('processedPrescriptions', JSON.stringify([...updatedProcessed]));
       
       showNotification("Prescription marked as rejected in payment records");
       fetchPrescriptions();
@@ -365,7 +397,7 @@ const PrescriptionView = () => {
               }).join('')}
               <tr>
                 <td colspan="5">Doctor Fee</td>
-                <td>Rs. ${DOCTOR_FEE.toFixed(2)}</td>
+                <td>Rs. ${doctorFee.toFixed(2)}</td>
               </tr>
               <tr class="total-row">
                 <td colspan="5">Total Amount</td>
@@ -570,40 +602,88 @@ const PrescriptionView = () => {
                             Payment
                           </Typography>
                           <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mt: 2 }}>
-                            Medicines Cost: Rs. {(calculateTotalPrice() - DOCTOR_FEE).toFixed(2)}
+                            Medicines Cost: Rs. {(calculateTotalPrice() - doctorFee).toFixed(2)}
                           </Typography>
-                          <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mb: 2 }}>
-                            Doctor Fee: Rs. {DOCTOR_FEE.toFixed(2)}
-                          </Typography>
+                          
+                          {/* Editable Doctor Fee */}
+                          <Box display="flex" alignItems="center" mt={1} mb={1}>
+                            <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mr: 2 }}>
+                              Doctor Fee: Rs.
+                            </Typography>
+                            <TextField
+                              type="number"
+                              value={doctorFee}
+                              onChange={handleDoctorFeeChange}
+                              size="small"
+                              disabled={isCurrentPrescriptionProcessed()}
+                              InputProps={{
+                                sx: { 
+                                  width: '100px',
+                                  color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000'
+                                }
+                              }}
+                            />
+                          </Box>
+                          
                           <Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold', mt: 2 }}>
                             Total Amount: Rs. {calculateTotalPrice().toFixed(2)}
                           </Typography>
-                          <Box display="flex" gap={2} mt="auto">
-                            <Button 
-                              variant="contained"
-                              fullWidth
-                              onClick={rejectPrescription}
-                              disabled={loading}
+                          
+                          {isCurrentPrescriptionProcessed() ? (
+                            <Box 
+                              display="flex" 
+                              justifyContent="center" 
+                              alignItems="center" 
+                              mt="auto"
+                              p={2}
                               sx={{
-                                backgroundColor: colors.redAccent[500],
-                                '&:hover': { backgroundColor: colors.redAccent[600] }
+                                backgroundColor: theme.palette.mode === 'dark' ? colors.greenAccent[800] : colors.greenAccent[50],
+                                border: `1px solid ${theme.palette.mode === 'dark' ? colors.greenAccent[400] : colors.greenAccent[500]}`,
+                                borderRadius: 1,
+                                boxShadow: 'none'
                               }}
                             >
-                              Reject
-                            </Button>
-                            <Button 
-                              variant="contained"
-                              fullWidth
-                              onClick={markAsDone}
-                              disabled={loading}
-                              sx={{
-                                backgroundColor: colors.greenAccent[500],
-                                '&:hover': { backgroundColor: colors.greenAccent[600] }
-                              }}
-                            >
-                              Done
-                            </Button>
-                          </Box>
+                              <Typography
+                                variant="h6"
+                                sx={{ 
+                                  color: theme.palette.mode === 'dark' ? colors.greenAccent[400] : colors.greenAccent[800],
+                                  fontWeight: 'bold',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1
+                                }}
+                              >
+                                <span style={{ fontSize: '1.2rem' }}>✓</span> Saved Successfully
+                              </Typography>
+                            </Box>
+                          ) : (
+                            <Box display="flex" gap={2} mt="auto">
+                              <Button 
+                                variant="contained"
+                                fullWidth
+                                onClick={rejectPrescription}
+                                disabled={loading}
+                                sx={{
+                                  backgroundColor: colors.redAccent[500],
+                                  '&:hover': { backgroundColor: colors.redAccent[600] }
+                                }}
+                              >
+                                Reject
+                              </Button>
+                              <Button 
+                                variant="contained"
+                                fullWidth
+                                onClick={markAsDone}
+                                disabled={loading}
+                                sx={{
+                                  backgroundColor: colors.greenAccent[500],
+                                  '&:hover': { backgroundColor: colors.greenAccent[600] }
+                                }}
+                              >
+                                Done
+                              </Button>
+                            </Box>
+                          )}
                         </Card>
                       </Grid>
                     </Grid>

@@ -1,11 +1,9 @@
 package com.codedulan.dms.service;
 
-import com.codedulan.dms.dto.DoctorRegisterPatientDto;
-import com.codedulan.dms.dto.PatientDto;
-import com.codedulan.dms.dto.PatientLoginDto;
+import com.codedulan.dms.dto.*;
 import com.codedulan.dms.entity.Patient;
-import com.codedulan.dms.entity.Users;
 import com.codedulan.dms.repository.PatientRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -188,5 +186,62 @@ public class PatientService {
                         .address(patient.getAddress())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    //Patient profile update
+    @Transactional
+    public Patient updatePatientProfile(String email, @Valid PatientProfileUpdateDto updateDto) {
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Patient not found"));
+
+        // Update fields (except email)
+        if (updateDto.getFirstName() != null) patient.setFirstName(updateDto.getFirstName());
+        if (updateDto.getLastName() != null) patient.setLastName(updateDto.getLastName());
+        if (updateDto.getNic() != null) patient.setNic(updateDto.getNic());
+        if (updateDto.getAddress() != null) patient.setAddress(updateDto.getAddress());
+        if (updateDto.getContact() != null) patient.setContact(updateDto.getContact());
+        if (updateDto.getGender() != null) patient.setGender(updateDto.getGender());
+        if (updateDto.getAge() != null) patient.setAge(updateDto.getAge());
+        if (updateDto.getWeight() != null) patient.setWeight(updateDto.getWeight());
+        if (updateDto.getMedicalNotes() != null) patient.setMedicalNotes(updateDto.getMedicalNotes());
+
+        return patientRepository.save(patient);
+    }
+
+    @Transactional
+    public boolean changePassword(String email, @Valid PasswordChangeDto passwordChangeDto) {
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Patient not found"));
+
+        // Verify old password
+        if (!passwordEncoder.matches(passwordChangeDto.getCurrentPassword(), patient.getPassword())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+
+        // Set new password
+        patient.setPassword(passwordEncoder.encode(passwordChangeDto.getNewPassword()));
+        patientRepository.save(patient);
+
+        return true;
+    }
+
+    //doctor update patient profile
+    @Transactional
+    public Patient updatePatientById(Long patientId, PatientProfileUpdateDto updateDto) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new UsernameNotFoundException("Patient not found"));
+
+        // Update fields (except email)
+        if (updateDto.getFirstName() != null) patient.setFirstName(updateDto.getFirstName());
+        if (updateDto.getLastName() != null) patient.setLastName(updateDto.getLastName());
+        if (updateDto.getNic() != null) patient.setNic(updateDto.getNic());
+        if (updateDto.getAddress() != null) patient.setAddress(updateDto.getAddress());
+        if (updateDto.getContact() != null) patient.setContact(updateDto.getContact());
+        if (updateDto.getGender() != null) patient.setGender(updateDto.getGender());
+        if (updateDto.getAge() != null) patient.setAge(updateDto.getAge());
+        if (updateDto.getWeight() != null) patient.setWeight(updateDto.getWeight());
+        if (updateDto.getMedicalNotes() != null) patient.setMedicalNotes(updateDto.getMedicalNotes());
+
+        return patientRepository.save(patient);
     }
 }

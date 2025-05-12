@@ -1,0 +1,10 @@
+
+…
+java:S1192#"jDefine a constant instead of duplicating this literal "Prescription template not found with id: " 4 times.(‡‡—§üÿÿÿÿ
+h
+java:S6204"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+g
+java:S3776L"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(‹ë—t
+i
+java:S6204£"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
+R	java:S125"<This block of commented-out lines of code should be removed.(Ì»Ñú

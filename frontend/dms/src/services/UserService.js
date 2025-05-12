@@ -275,6 +275,63 @@ static async getPatientProfile() {
 }
 
 
+//Patient Profile Update
+// Add these methods to UserService.js
+
+// Get patient's full profile
+static async getPatientFullProfile() {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${UserService.BASE_URL}/api/patients/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// Update patient profile
+static async updatePatientProfile(profileData) {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.put(
+      `${UserService.BASE_URL}/api/patients/profile`,
+      profileData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// Change patient password
+static async changePatientPassword(passwordData) {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.put(
+      `${UserService.BASE_URL}/api/patients/change-password`,
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
   
 
 

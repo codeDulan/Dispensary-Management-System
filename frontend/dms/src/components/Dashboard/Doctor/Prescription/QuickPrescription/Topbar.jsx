@@ -8,28 +8,62 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import LockIcon from '@mui/icons-material/Lock';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import Medicinetitle from "./QuickPrescriptionTitle";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import PasswordChangeDialog from "../../PasswordChange/PasswordChangeDialog";
 
 const Topbar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
+  const navigate = useNavigate();
   
   // State for notifications
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const notificationOpen = Boolean(notificationAnchorEl);
+  
+  // State for user profile menu
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+  const profileOpen = Boolean(profileAnchorEl);
+  
+  // State for password change dialog
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   
   // Notification menu handlers
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleNotificationClick = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
     fetchNotifications();
   };
   
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
+  };
+  
+  // Profile menu handlers
+  const handleProfileClick = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+  };
+  
+  const handleProfileClose = () => {
+    setProfileAnchorEl(null);
+  };
+  
+  // Handle change password
+  const handleChangePassword = () => {
+    setPasswordDialogOpen(true);
+    handleProfileClose();
+  };
+  
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
   };
   
   // Fetch unread notification count
@@ -92,7 +126,7 @@ const Topbar = () => {
       
       setNotifications([]);
       setUnreadCount(0);
-      handleClose();
+      handleNotificationClose();
     } catch (err) {
       console.error("Error marking all notifications as read:", err);
     }
@@ -131,10 +165,10 @@ const Topbar = () => {
 
         {/* Notification icon */}
         <IconButton 
-          onClick={handleClick}
-          aria-controls={open ? 'notification-menu' : undefined}
+          onClick={handleNotificationClick}
+          aria-controls={notificationOpen ? 'notification-menu' : undefined}
           aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
+          aria-expanded={notificationOpen ? 'true' : undefined}
         >
           <Badge badgeContent={unreadCount} color="error">
             <NotificationsOutlinedIcon />
@@ -144,9 +178,9 @@ const Topbar = () => {
         {/* Notification Menu */}
         <Menu
           id="notification-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
+          anchorEl={notificationAnchorEl}
+          open={notificationOpen}
+          onClose={handleNotificationClose}
           PaperProps={{
             elevation: 0,
             sx: {
@@ -211,10 +245,62 @@ const Topbar = () => {
         </Menu>
 
         {/* User icon */}
-        <IconButton>
+        <IconButton
+          onClick={handleProfileClick}
+          aria-controls={profileOpen ? 'profile-menu' : undefined}
+          aria-haspopup="true"
+          aria-expanded={profileOpen ? 'true' : undefined}
+        >
           <PersonOutlinedIcon />
         </IconButton>
+        
+        {/* Profile Menu */}
+        <Menu
+          id="profile-menu"
+          anchorEl={profileAnchorEl}
+          open={profileOpen}
+          onClose={handleProfileClose}
+          PaperProps={{
+            elevation: 0,
+            sx: {
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              width: 200,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+            },
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem onClick={handleChangePassword}>
+            <ListItemIcon>
+              <LockIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Change Password" />
+          </MenuItem>
+          
+          <Divider />
+          
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <ExitToAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+          </MenuItem>
+        </Menu>
       </Box>
+      
+      {/* Password Change Dialog */}
+      <PasswordChangeDialog 
+        open={passwordDialogOpen}
+        handleClose={() => setPasswordDialogOpen(false)}
+      />
     </Box>
   );
 };

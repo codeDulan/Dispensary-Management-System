@@ -2,6 +2,7 @@ package com.codedulan.dms.controller;
 
 
 
+import com.codedulan.dms.dto.PasswordChangeDto;
 import com.codedulan.dms.dto.ReqRes;
 import com.codedulan.dms.entity.Users;
 import com.codedulan.dms.service.UsersManagementService;
@@ -61,6 +62,16 @@ public class UserManagementController {
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<ReqRes> deleteUSer(@PathVariable Long userId){
         return ResponseEntity.ok(usersManagementService.deleteUser(userId));
+    }
+
+    // Add this endpoint to your UserManagementController class
+
+    @PutMapping("/user/change-password")
+    public ResponseEntity<ReqRes> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        ReqRes response = usersManagementService.changePassword(email, passwordChangeDto);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
 

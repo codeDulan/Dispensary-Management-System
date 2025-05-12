@@ -21,7 +21,7 @@ import {
   MedicationOutlined,
   ArrowForward
 } from "@mui/icons-material";
-import Topbar from "../components/Dashboard/Doctor/Topbar/Topbar.jsx";
+import Topbar from "../components/Dashboard/Doctor/Topbar/PatientTopbar.jsx";
 import CustomerSidebar from "../components/Dashboard/Customer/Sidebar/CustomerSidebar.jsx";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";

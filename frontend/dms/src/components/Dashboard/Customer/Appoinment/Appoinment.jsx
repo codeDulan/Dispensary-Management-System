@@ -30,7 +30,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, AccessTime, EventAvailable, EventBusy } from "@mui/icons-material";
 import { tokens } from "../../../../theme.js";
-import Topbar from "../../Doctor/Topbar/Topbar.jsx";
+import Topbar from "../../Doctor/Topbar/PatientTopbar.jsx";
 import CustomerSidebar from "../Sidebar/CustomerSidebar.jsx";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
