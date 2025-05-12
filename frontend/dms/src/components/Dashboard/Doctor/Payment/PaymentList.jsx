@@ -20,7 +20,7 @@ import {
   Chip,
   Snackbar,
   Alert,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
@@ -43,8 +43,12 @@ const PaymentList = () => {
   // State for API data
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
-  
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
   // Filter states
   const [filterType, setFilterType] = useState("all");
   const [statusFilter, setStatusFilter] = useState("");
@@ -65,9 +69,9 @@ const PaymentList = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
       let url = `${API_BASE_URL}/payments`;
-      
+
       // Apply filters based on selection
       if (filterType === "status" && statusFilter) {
         url = `${API_BASE_URL}/payments/status/${statusFilter}`;
@@ -81,9 +85,12 @@ const PaymentList = () => {
         url = `${API_BASE_URL}/payments/patient/${patientId}`;
       } else if (filterType === "prescription" && prescriptionId) {
         try {
-          const response = await axios.get(`${API_BASE_URL}/payments/prescription/${prescriptionId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const response = await axios.get(
+            `${API_BASE_URL}/payments/prescription/${prescriptionId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           setPayments([response.data]);
           setLoading(false);
           return;
@@ -96,11 +103,11 @@ const PaymentList = () => {
           }
         }
       }
-      
+
       const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       console.log("Payments:", response.data);
       setPayments(response.data);
     } catch (error) {
@@ -143,7 +150,7 @@ const PaymentList = () => {
     setNotification({
       open: true,
       message,
-      severity
+      severity,
     });
   };
 
@@ -157,15 +164,15 @@ const PaymentList = () => {
     if (!window.confirm("Are you sure you want to delete this payment?")) {
       return;
     }
-    
+
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
       await axios.delete(`${API_BASE_URL}/payments/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       showNotification("Payment deleted successfully");
       fetchPayments();
     } catch (error) {
@@ -221,28 +228,21 @@ const PaymentList = () => {
 
             <Box p={3}>
               {/* Page Title */}
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" fontWeight="bold" color={colors.grey[100]}>
-                  Payment Management
-                </Typography>
-                <Button
-                  component={Link}
-                  to="/payments/new"
-                  variant="contained"
-                  sx={{
-                    backgroundColor: colors.greenAccent[600],
-                    '&:hover': { backgroundColor: colors.greenAccent[700] }
-                  }}
-                >
-                  New Payment
-                </Button>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={3}
+              >
+                
+                
               </Box>
 
               {/* Filters */}
-              <Box 
-                mb={3} 
-                p={2} 
-                display="flex" 
+              <Box
+                mb={3}
+                p={2}
+                display="flex"
                 flexWrap="wrap"
                 gap={2}
                 alignItems="center"
@@ -329,6 +329,14 @@ const PaymentList = () => {
                   </Button>
                   <Button
                     variant="outlined"
+                    sx={{
+                      color: colors.primary[100],
+                      borderColor: colors.primary[100],
+                      "&:hover": {
+                        backgroundColor: colors.primary[400],
+                        color: "white",
+                      },
+                    }}
                     onClick={resetFilters}
                     startIcon={<RefreshIcon />}
                   >
@@ -343,7 +351,7 @@ const PaymentList = () => {
                 sx={{
                   backgroundColor: colors.primary[400],
                   borderRadius: 1,
-                  overflow: 'hidden'
+                  overflow: "hidden",
                 }}
               >
                 {loading ? (
@@ -358,14 +366,44 @@ const PaymentList = () => {
                   <TableContainer>
                     <Table>
                       <TableHead>
-                        <TableRow sx={{ backgroundColor: colors.blueAccent[700] }}>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>ID</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Patient</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Date</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Amount</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Method</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Status</TableCell>
-                          <TableCell sx={{ fontWeight: 'bold', color: colors.grey[100] }}>Actions</TableCell>
+                        <TableRow
+                          sx={{ backgroundColor: colors.blueAccent[700] }}
+                        >
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            ID
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Patient
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Date
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Amount
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Method
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Status
+                          </TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: colors.grey[100] }}
+                          >
+                            Actions
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -373,16 +411,20 @@ const PaymentList = () => {
                           <TableRow key={payment.id}>
                             <TableCell>{payment.id}</TableCell>
                             <TableCell>{payment.patientName}</TableCell>
-                            <TableCell>{formatDateDisplay(payment.paymentDate)}</TableCell>
+                            <TableCell>
+                              {formatDateDisplay(payment.paymentDate)}
+                            </TableCell>
                             <TableCell>Rs. {payment.totalAmount}</TableCell>
                             <TableCell>{payment.paymentMethod}</TableCell>
                             <TableCell>
                               <Chip
                                 label={payment.status}
                                 sx={{
-                                  backgroundColor: getStatusColor(payment.status),
-                                  color: '#fff',
-                                  fontWeight: 'bold'
+                                  backgroundColor: getStatusColor(
+                                    payment.status
+                                  ),
+                                  color: "#fff",
+                                  fontWeight: "bold",
                                 }}
                               />
                             </TableCell>
@@ -416,18 +458,18 @@ const PaymentList = () => {
             </Box>
           </Box>
         </Box>
-        
+
         {/* Notification Snackbar */}
         <Snackbar
           open={notification.open}
           autoHideDuration={6000}
           onClose={handleCloseNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         >
-          <Alert 
-            onClose={handleCloseNotification} 
+          <Alert
+            onClose={handleCloseNotification}
             severity={notification.severity}
-            sx={{ width: '100%' }}
+            sx={{ width: "100%" }}
           >
             {notification.message}
           </Alert>
