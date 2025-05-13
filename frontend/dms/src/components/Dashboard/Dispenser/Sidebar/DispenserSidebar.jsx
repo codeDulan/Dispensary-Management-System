@@ -12,6 +12,7 @@ import PostAddOutlinedIcon from '@mui/icons-material/PostAddOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import UserIcon from "../../../../assets/dispenser.jpg";
 import UserService from "../../../../services/UserService"; // Added UserService import
 
@@ -189,6 +190,15 @@ const Sidebar = () => {
                 title="Dashboard"
                 to="/dispenser/dashboard"
                 icon={<DashboardOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              
+              {/* Add the Appointments item here */}
+              <Item
+                title="Appointments"
+                to="/dispenser/appointments"
+                icon={<CalendarMonthOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />

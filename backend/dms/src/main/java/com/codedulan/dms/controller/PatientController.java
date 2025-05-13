@@ -64,7 +64,7 @@ public class PatientController {
 
 
     @GetMapping
-    @PreAuthorize("hasAuthority('DOCTOR')") // Optional: restrict to doctor role
+    @PreAuthorize("hasAnyAuthority('DOCTOR', 'DISPENSER')")
     public ResponseEntity<List<PatientDto>> getAllPatients() {
         List<PatientDto> patients = patientService.getAllPatients();
         return ResponseEntity.ok(patients);
@@ -137,7 +137,7 @@ public class PatientController {
     //Doctor updates patient profile
     // Get a specific patient by ID (for doctors)
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('DOCTOR')")
+    @PreAuthorize("hasAuthority('DOCTOR') or hasAuthority('DISPENSER')")
     public ResponseEntity<PatientDto> getPatientById(@PathVariable Long id) {
         try {
             Patient patient = patientRepository.findById(id)

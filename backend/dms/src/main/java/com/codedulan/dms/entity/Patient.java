@@ -1,5 +1,6 @@
 package com.codedulan.dms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -81,7 +82,7 @@ public class Patient {
     private LocalDateTime createdAt;
 
 
-    @JsonManagedReference
+    @JsonIgnore
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Appointment> appointments = new ArrayList<>();
 

@@ -41,8 +41,8 @@ public class Appointment {
     private String notes;
     private String appointmentStatus;
 
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 

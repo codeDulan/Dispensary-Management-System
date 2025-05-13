@@ -1,6 +1,7 @@
 package com.codedulan.dms.controller;
 
 import com.codedulan.dms.dto.AppointmentRequest;
+import com.codedulan.dms.dto.AppointmentStatusRequest;
 import com.codedulan.dms.entity.Appointment;
 import com.codedulan.dms.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +91,7 @@ public class AppointmentController {
     }
 
     // New endpoint to get available time slots
-    @PreAuthorize("@accessControl.isPatient(#authHeader)")
+    @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader)")
     @GetMapping("/available-slots")
     public ResponseEntity<List<LocalTime>> getAvailableTimeSlots(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -100,12 +101,45 @@ public class AppointmentController {
     }
 
     // New endpoint to get daily queue
-    @PreAuthorize("@accessControl.isPatient(#authHeader)")
+    @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader)")
     @GetMapping("/daily-queue")
     public ResponseEntity<List<Appointment>> getDailyQueue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestHeader("Authorization") String authHeader) {
 
         return ResponseEntity.ok(appointmentService.getAppointmentsByDate(date));
+    }
+
+    // New endpoint for dispenser to create appointment for a patient
+    @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
+    @PostMapping("/create-for-patient/{patientId}")
+    public ResponseEntity<Appointment> createAppointmentForPatient(
+            @PathVariable Long patientId,
+            @RequestBody AppointmentRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+
+        return ResponseEntity.ok(appointmentService.createAppointmentForPatient(patientId, request));
+    }
+
+    // New endpoint to update appointment status
+    @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Appointment> updateAppointmentStatus(
+            @PathVariable Long id,
+            @RequestBody AppointmentStatusRequest statusRequest,
+            @RequestHeader("Authorization") String authHeader) {
+
+        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(id, statusRequest.getStatus()));
+    }
+
+    // New endpoint to cancel all appointments for a specific date
+    @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
+    @PutMapping("/cancel-all-by-date/{date}")
+    public ResponseEntity<Void> cancelAllAppointmentsByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestHeader("Authorization") String authHeader) {
+
+        appointmentService.cancelAllAppointmentsByDate(date);
+        return ResponseEntity.noContent().build();
     }
 }

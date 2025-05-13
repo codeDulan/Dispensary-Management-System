@@ -28,7 +28,13 @@ import {
   Paper,
   Grid,
 } from "@mui/material";
-import { Edit, Delete, AccessTime, EventAvailable, EventBusy } from "@mui/icons-material";
+import {
+  Edit,
+  Delete,
+  AccessTime,
+  EventAvailable,
+  EventBusy,
+} from "@mui/icons-material";
 import { tokens } from "../../../../theme.js";
 import Topbar from "../../Doctor/Topbar/PatientTopbar.jsx";
 import CustomerSidebar from "../Sidebar/CustomerSidebar.jsx";
@@ -59,7 +65,9 @@ const Appointment = () => {
   const [appointmentType, setAppointmentType] = useState("CHECKUP");
   const [notes, setNotes] = useState("");
   const [calendarApi, setCalendarApi] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const fetchAppointments = useCallback(async (startDate, endDate) => {
     const token = localStorage.getItem("token");
@@ -89,6 +97,7 @@ const Appointment = () => {
           queueNumber: appt.queueNumber,
           appointmentType: appt.appointmentType,
           notes: appt.notes,
+          appointmentStatus: appt.appointmentStatus,
         },
       }));
 
@@ -104,12 +113,12 @@ const Appointment = () => {
   const fetchAvailableSlots = async (date) => {
     console.log("fetchAvailableSlots called with date:", date);
     const token = localStorage.getItem("token");
-    
+
     try {
       // Clear previous slots first
       setAvailableSlots([]);
       setBookedSlots([]);
-      
+
       const response = await axios.get(
         "http://localhost:8080/api/appointments/available-slots",
         {
@@ -117,31 +126,36 @@ const Appointment = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
-      console.log("Available slots from server for date", date, ":", response.data);
-      
+
+      console.log(
+        "Available slots from server for date",
+        date,
+        ":",
+        response.data
+      );
+
       const slots = Array.isArray(response.data) ? response.data : [];
-      
+
       // Create a set of all possible time slots from 9:00 to 14:55 with 5-minute intervals
       const allTimeSlots = [];
       const startTime = new Date(`${date}T09:00:00`);
       const endTime = new Date(`${date}T15:00:00`);
-      
+
       // Generate all time slots
       let currentTime = new Date(startTime);
       while (currentTime < endTime) {
         // Format time as HH:MM:SS
-        const hours = String(currentTime.getHours()).padStart(2, '0');
-        const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+        const hours = String(currentTime.getHours()).padStart(2, "0");
+        const minutes = String(currentTime.getMinutes()).padStart(2, "0");
         const timeString = `${hours}:${minutes}:00`;
-        
+
         allTimeSlots.push(timeString);
         currentTime.setMinutes(currentTime.getMinutes() + 5);
       }
-      
+
       // Create a set of available time slots for faster lookup
       const availableTimeSet = new Set(slots);
-      
+
       // Create events for available slots
       const availableEvents = slots.map((timeSlot) => ({
         id: `available-${date}-${timeSlot}`,
@@ -149,16 +163,16 @@ const Appointment = () => {
         start: `${date}T${timeSlot}`,
         end: `${date}T${timeSlot}`,
         allDay: false,
-        color: '#4caf50',  // Green color
+        color: "#4caf50", // Green color
         extendedProps: {
-          isAvailableSlot: true
-        }
+          isAvailableSlot: true,
+        },
       }));
-      
+
       // Create events for booked slots (all slots not in available slots)
       const bookedEvents = allTimeSlots
-        .filter(time => !availableTimeSet.has(time))
-        .map(timeSlot => ({
+        .filter((time) => !availableTimeSet.has(time))
+        .map((timeSlot) => ({
           id: `booked-${date}-${timeSlot}`,
           title: "Booked",
           start: `${date}T${timeSlot}`,
@@ -166,12 +180,14 @@ const Appointment = () => {
           allDay: false,
           color: colors.grey[500],
           extendedProps: {
-            isBookedSlot: true
-          }
+            isBookedSlot: true,
+          },
         }));
-      
-      console.log(`Generated ${availableEvents.length} available events and ${bookedEvents.length} booked events for date ${date}`);
-      
+
+      console.log(
+        `Generated ${availableEvents.length} available events and ${bookedEvents.length} booked events for date ${date}`
+      );
+
       setAvailableSlots(availableEvents);
       setBookedSlots(bookedEvents);
     } catch (error) {
@@ -187,52 +203,55 @@ const Appointment = () => {
     const hours = startTime.getHours();
     const minutes = startTime.getMinutes();
     const now = new Date();
-  
+
     if (startTime < now) {
       toast.error("Cannot book appointments in the past");
       return;
     }
-  
+
     if (hours < 9 || (hours === 15 && minutes > 0) || hours > 15) {
       toast.error(
         "Appointments can only be booked between 9:00 AM and 3:00 PM"
       );
       return;
     }
-  
+
     // Format the selected time to match the format from the backend
-    const selectedDate = selectInfo.startStr.split('T')[0];
-    
+    const selectedDate = selectInfo.startStr.split("T")[0];
+
     // Format hours and minutes with leading zeros if needed
-    const formattedHours = hours.toString().padStart(2, '0');
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    
+    const formattedHours = hours.toString().padStart(2, "0");
+    const formattedMinutes = minutes.toString().padStart(2, "0");
+
     // Create a time string that matches the backend format (HH:MM:00)
     const selectedTimeString = `${formattedHours}:${formattedMinutes}:00`;
-    
+
     console.log("Selected time:", selectedTimeString);
-    console.log("Available slot times:", availableSlots.map(slot => slot.start.split('T')[1]));
-    
-    // Check if the time is in the booked slots
-    const isBooked = bookedSlots.some(slot => 
-      slot.start.split('T')[1] === selectedTimeString
+    console.log(
+      "Available slot times:",
+      availableSlots.map((slot) => slot.start.split("T")[1])
     );
-    
+
+    // Check if the time is in the booked slots
+    const isBooked = bookedSlots.some(
+      (slot) => slot.start.split("T")[1] === selectedTimeString
+    );
+
     if (isBooked) {
       toast.error("This time slot is already booked");
       return;
     }
-  
+
     // Check if the time is in the available slots
-    const isAvailable = availableSlots.some(slot => 
-      slot.start.split('T')[1] === selectedTimeString
+    const isAvailable = availableSlots.some(
+      (slot) => slot.start.split("T")[1] === selectedTimeString
     );
-  
+
     if (!isAvailable) {
       toast.error("This time slot is not available");
       return;
     }
-  
+
     setCurrentAppointment({
       start: selectInfo.startStr,
       end: selectInfo.endStr,
@@ -245,18 +264,18 @@ const Appointment = () => {
 
   const handleEventClick = (clickInfo) => {
     const event = clickInfo.event;
-    
+
     // If it's a booked slot, show a message
     if (event.extendedProps.isBookedSlot) {
       toast.info("This time slot is already booked");
       return;
     }
-    
+
     // If it's an available slot, treat it as a selection
     if (event.extendedProps.isAvailableSlot) {
       handleDateSelect({
         startStr: event.startStr,
-        endStr: event.endStr
+        endStr: event.endStr,
       });
       return;
     }
@@ -268,6 +287,7 @@ const Appointment = () => {
       start: event.start,
       end: event.end,
       queueNumber: event.extendedProps.queueNumber,
+      appointmentStatus: event.extendedProps.appointmentStatus,
       action: "update",
     });
     setAppointmentType(event.extendedProps.appointmentType || "CHECKUP");
@@ -309,12 +329,16 @@ const Appointment = () => {
         const startDate = view.activeStart.toISOString().split("T")[0];
         const endDate = view.activeEnd.toISOString().split("T")[0];
         fetchAppointments(startDate, endDate);
-        
+
         // Get the current date in local timezone
         const currentViewDate = calendarApi.getDate();
-        const currentDateFormatted = 
-          `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth() + 1).padStart(2, '0')}-${String(currentViewDate.getDate()).padStart(2, '0')}`;
-        
+        const currentDateFormatted = `${currentViewDate.getFullYear()}-${String(
+          currentViewDate.getMonth() + 1
+        ).padStart(2, "0")}-${String(currentViewDate.getDate()).padStart(
+          2,
+          "0"
+        )}`;
+
         fetchAvailableSlots(currentDateFormatted);
       }
     } catch (err) {
@@ -345,7 +369,7 @@ const Appointment = () => {
         const startDate = view.activeStart.toISOString().split("T")[0];
         const endDate = view.activeEnd.toISOString().split("T")[0];
         fetchAppointments(startDate, endDate);
-        
+
         // Also update available slots for the current date
         const currentDate = currentAppointment.start.split("T")[0];
         fetchAvailableSlots(currentDate);
@@ -360,7 +384,7 @@ const Appointment = () => {
   };
 
   const getAppointmentTypeLabel = (type) => {
-    const found = appointmentTypes.find(t => t.value === type);
+    const found = appointmentTypes.find((t) => t.value === type);
     return found ? found.label : type;
   };
 
@@ -385,18 +409,25 @@ const Appointment = () => {
     if (calendarApi) {
       // Get the current date in the calendar view (in local timezone)
       const currentViewDate = calendarApi.getDate();
-      
+
       // Format it as YYYY-MM-DD string in the local timezone
-      const currentDateFormatted = 
-        `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth() + 1).padStart(2, '0')}-${String(currentViewDate.getDate()).padStart(2, '0')}`;
-      
+      const currentDateFormatted = `${currentViewDate.getFullYear()}-${String(
+        currentViewDate.getMonth() + 1
+      ).padStart(2, "0")}-${String(currentViewDate.getDate()).padStart(
+        2,
+        "0"
+      )}`;
+
       // Get the date range for appointments
       const view = calendarApi.view;
       const startDate = view.activeStart.toISOString().split("T")[0];
       const endDate = view.activeEnd.toISOString().split("T")[0];
-      
-      console.log("Initial calendar setup - fetching data for date:", currentDateFormatted);
-      
+
+      console.log(
+        "Initial calendar setup - fetching data for date:",
+        currentDateFormatted
+      );
+
       // Fetch appointments and available slots
       fetchAppointments(startDate, endDate);
       fetchAvailableSlots(currentDateFormatted);
@@ -461,13 +492,15 @@ const Appointment = () => {
                           <ListItem
                             key={event.id}
                             sx={{
-                              backgroundColor: getAppointmentTypeColor(event.extendedProps.appointmentType),
+                              backgroundColor: getAppointmentTypeColor(
+                                event.extendedProps.appointmentType
+                              ),
                               margin: "8px 0",
                               borderRadius: "4px",
                               "&:hover": {
                                 backgroundColor: colors.greenAccent[600],
                               },
-                              cursor: "pointer"
+                              cursor: "pointer",
                             }}
                             onClick={() => handleAppointmentClick(event)}
                           >
@@ -494,7 +527,8 @@ const Appointment = () => {
                                     {event.title}
                                   </Typography>
                                   <Typography variant="caption" display="block">
-                                    Queue #{event.extendedProps.queueNumber} - {formatDate(event.start, {
+                                    Queue #{event.extendedProps.queueNumber} -{" "}
+                                    {formatDate(event.start, {
                                       hour: "2-digit",
                                       minute: "2-digit",
                                     })}
@@ -502,16 +536,41 @@ const Appointment = () => {
                                 </Box>
                               }
                               secondary={
-                                <Typography
-                                  variant="body2"
-                                  color={colors.grey[100]}
-                                >
-                                  {formatDate(event.start, {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </Typography>
+                                <>
+                                  <Typography
+                                    variant="body2"
+                                    color={colors.grey[100]}
+                                  >
+                                    {formatDate(event.start, {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </Typography>
+                                  {/* Add this line to show the appointment status */}
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      mt: 0.5,
+                                      fontWeight: "medium",
+                                      color:
+                                        event.extendedProps
+                                          .appointmentStatus === "CONFIRMED"
+                                          ? colors.greenAccent[400]
+                                          : event.extendedProps
+                                              .appointmentStatus === "COMPLETED"
+                                          ? colors.blueAccent[400]
+                                          : event.extendedProps
+                                              .appointmentStatus === "CANCELLED"
+                                          ? colors.redAccent[400]
+                                          : colors.grey[100],
+                                    }}
+                                  >
+                                    Status:{" "}
+                                    {event.extendedProps.appointmentStatus ||
+                                      "PENDING"}
+                                  </Typography>
+                                </>
                               }
                             />
                             <IconButton
@@ -538,48 +597,65 @@ const Appointment = () => {
                           textAlign: "center",
                         }}
                       >
-                        <EventAvailable sx={{ fontSize: 40, color: colors.grey[500], mb: 2 }} />
+                        <EventAvailable
+                          sx={{ fontSize: 40, color: colors.grey[500], mb: 2 }}
+                        />
                         <Typography variant="body1" color={colors.grey[100]}>
                           You have no scheduled appointments
                         </Typography>
-                        <Typography variant="body2" color={colors.grey[300]} mt={1}>
-                          Click on an available time slot in the calendar to book an appointment
+                        <Typography
+                          variant="body2"
+                          color={colors.grey[300]}
+                          mt={1}
+                        >
+                          Click on an available time slot in the calendar to
+                          book an appointment
                         </Typography>
                       </Box>
                     )}
-                    
+
                     <Box mt={2}>
                       <Typography variant="h6" gutterBottom>
                         Booking Instructions
                       </Typography>
-                      <Box sx={{ 
-                        backgroundColor: colors.primary[500], 
-                        p: 2, 
-                        borderRadius: "4px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 1
-                      }}>
+                      <Box
+                        sx={{
+                          backgroundColor: colors.primary[500],
+                          p: 2,
+                          borderRadius: "4px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1,
+                        }}
+                      >
                         <Box display="flex" alignItems="top" gap={1}>
-                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>1.</Box>
+                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>
+                            1.
+                          </Box>
                           <Typography variant="body2" color={colors.grey[100]}>
                             Look for slots marked "Available" in the calendar
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="top" gap={1}>
-                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>2.</Box>
+                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>
+                            2.
+                          </Box>
                           <Typography variant="body2" color={colors.grey[100]}>
                             Click on your preferred available time slot
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="top" gap={1}>
-                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>3.</Box>
+                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>
+                            3.
+                          </Box>
                           <Typography variant="body2" color={colors.grey[100]}>
                             Select appointment type and add optional notes
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="top" gap={1}>
-                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>4.</Box>
+                          <Box sx={{ minWidth: "20px", textAlign: "center" }}>
+                            4.
+                          </Box>
                           <Typography variant="body2" color={colors.grey[100]}>
                             Use the sidebar to view or edit your appointments
                           </Typography>
@@ -601,47 +677,69 @@ const Appointment = () => {
                       flexDirection: "column",
                     }}
                   >
-                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ mb: 2 }}>
                       <Typography variant="h4">Appointment Calendar</Typography>
                       <Typography variant="body2" color={colors.grey[300]}>
-                        Select a date and click on an available time slot to book your appointment
+                        Select a date and click on an available time slot to
+                        book your appointment
                       </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                          p: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                        }}>
-                          <EventAvailable sx={{ color: '#4caf50', fontSize: "1rem", mr: 1 }} />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 1,
+                          mt: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            backgroundColor: "rgba(76, 175, 80, 0.2)",
+                            p: "4px 8px",
+                            borderRadius: "4px",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          <EventAvailable
+                            sx={{ color: "#4caf50", fontSize: "1rem", mr: 1 }}
+                          />
                           Available Slots
                         </Box>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          backgroundColor: 'rgba(150, 150, 150, 0.2)',
-                          p: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                        }}>
-                          <EventBusy sx={{ color: colors.grey[500], fontSize: "1rem", mr: 1 }} />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            backgroundColor: "rgba(150, 150, 150, 0.2)",
+                            p: "4px 8px",
+                            borderRadius: "4px",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          <EventBusy
+                            sx={{
+                              color: colors.grey[500],
+                              fontSize: "1rem",
+                              mr: 1,
+                            }}
+                          />
                           Booked Slots
                         </Box>
                       </Box>
                     </Box>
-                    
-                    <Box sx={{ 
-                        flexGrow: 1, 
+
+                    <Box
+                      sx={{
+                        flexGrow: 1,
                         position: "relative",
                         "& .fc-event": {
-                          cursor: "pointer"
+                          cursor: "pointer",
                         },
                         "& .fc-timegrid-event": {
-                          borderRadius: "4px"
-                        }
-                      }}>
+                          borderRadius: "4px",
+                        },
+                      }}
+                    >
                       <FullCalendar
                         plugins={[
                           dayGridPlugin,
@@ -698,19 +796,24 @@ const Appointment = () => {
                                   display: "flex",
                                   alignItems: "center",
                                   color: colors.grey[200],
-                                  backgroundColor: 'rgba(150, 150, 150, 0.4)',
-                                  width: '100%',
-                                  height: '100%',
-                                  borderRadius: '2px',
-                                  justifyContent: 'center'
+                                  backgroundColor: "rgba(150, 150, 150, 0.4)",
+                                  width: "100%",
+                                  height: "100%",
+                                  borderRadius: "2px",
+                                  justifyContent: "center",
                                 }}
                               >
-                                <EventBusy sx={{ fontSize: "0.8rem", marginRight: "2px" }} />
+                                <EventBusy
+                                  sx={{
+                                    fontSize: "0.8rem",
+                                    marginRight: "2px",
+                                  }}
+                                />
                                 <span>Booked</span>
                               </Box>
                             );
                           }
-                          
+
                           // For available slots
                           if (eventInfo.event.extendedProps.isAvailableSlot) {
                             return (
@@ -721,19 +824,24 @@ const Appointment = () => {
                                   lineHeight: "1.2",
                                   display: "flex",
                                   alignItems: "center",
-                                  color: '#006400',
-                                  backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                                  width: '100%',
-                                  height: '100%',
-                                  borderRadius: '2px',
-                                  cursor: 'pointer',
-                                  justifyContent: 'center',
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(76, 175, 80, 0.4)',
-                                  }
+                                  color: "#006400",
+                                  backgroundColor: "rgba(76, 175, 80, 0.2)",
+                                  width: "100%",
+                                  height: "100%",
+                                  borderRadius: "2px",
+                                  cursor: "pointer",
+                                  justifyContent: "center",
+                                  "&:hover": {
+                                    backgroundColor: "rgba(76, 175, 80, 0.4)",
+                                  },
                                 }}
                               >
-                                <EventAvailable sx={{ fontSize: "0.8rem", marginRight: "2px" }} />
+                                <EventAvailable
+                                  sx={{
+                                    fontSize: "0.8rem",
+                                    marginRight: "2px",
+                                  }}
+                                />
                                 <span>Available</span>
                               </Box>
                             );
@@ -742,17 +850,26 @@ const Appointment = () => {
                         datesSet={(arg) => {
                           // Get the date in local timezone
                           const currentViewDate = arg.view.currentStart;
-                          
+
                           // Format it as YYYY-MM-DD string in local timezone
-                          const currentDateFormatted = 
-                            `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth() + 1).padStart(2, '0')}-${String(currentViewDate.getDate()).padStart(2, '0')}`;
-                          
-                          console.log("Calendar date (local):", currentViewDate);
-                          console.log("Fetching available slots for date:", currentDateFormatted);
-                          
+                          const currentDateFormatted = `${currentViewDate.getFullYear()}-${String(
+                            currentViewDate.getMonth() + 1
+                          ).padStart(2, "0")}-${String(
+                            currentViewDate.getDate()
+                          ).padStart(2, "0")}`;
+
+                          console.log(
+                            "Calendar date (local):",
+                            currentViewDate
+                          );
+                          console.log(
+                            "Fetching available slots for date:",
+                            currentDateFormatted
+                          );
+
                           fetchAvailableSlots(currentDateFormatted);
                           setSelectedDate(currentDateFormatted);
-                          
+
                           // Also update appointments
                           const startDate = arg.startStr.split("T")[0];
                           const endDate = arg.endStr.split("T")[0];
@@ -763,7 +880,7 @@ const Appointment = () => {
                             arg.el.title = "Available slot - Click to book";
                           } else if (arg.event.extendedProps.isBookedSlot) {
                             arg.el.title = "This time slot is already booked";
-                          } 
+                          }
                         }}
                         ref={(ref) => {
                           if (ref) {
@@ -779,8 +896,8 @@ const Appointment = () => {
           </Box>
         </Box>
 
-        <Dialog 
-          open={openDialog} 
+        <Dialog
+          open={openDialog}
           onClose={() => setOpenDialog(false)}
           maxWidth="sm"
           fullWidth
@@ -792,14 +909,16 @@ const Appointment = () => {
           </DialogTitle>
           <DialogContent>
             {currentAppointment?.action === "update" && (
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
-                mb: 2,
-                backgroundColor: colors.primary[300],
-                p: 2,
-                borderRadius: "4px"
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  mb: 2,
+                  backgroundColor: colors.primary[300],
+                  p: 2,
+                  borderRadius: "4px",
+                }}
+              >
                 <Box
                   sx={{
                     display: "flex",
@@ -827,9 +946,11 @@ const Appointment = () => {
                 </Box>
               </Box>
             )}
-            
+
             <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
-              <InputLabel id="appointment-type-label">Appointment Type</InputLabel>
+              <InputLabel id="appointment-type-label">
+                Appointment Type
+              </InputLabel>
               <Select
                 labelId="appointment-type-label"
                 value={appointmentType}
@@ -843,7 +964,7 @@ const Appointment = () => {
                 ))}
               </Select>
             </FormControl>
-            
+
             <TextField
               margin="dense"
               label="Additional Notes (Optional)"
@@ -855,7 +976,7 @@ const Appointment = () => {
               multiline
               rows={2}
             />
-            
+
             <Typography variant="body2" mt={2}>
               Date: {currentAppointment?.start?.split("T")[0]}
             </Typography>

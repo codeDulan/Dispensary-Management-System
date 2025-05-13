@@ -7,6 +7,7 @@ import com.codedulan.dms.repository.AppointmentRepository;
 import com.codedulan.dms.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,6 +27,34 @@ public class AppointmentService {
         String email = jwtUtils.extractUsername(token);
         Patient patient = patientRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        validateAppointmentTime(request.getTime());
+        validateAppointmentType(request.getAppointmentType());
+
+        if (appointmentRepository.existsByDateAndTime(request.getDate(), request.getTime())) {
+            throw new IllegalArgumentException("Time slot already booked");
+        }
+
+        // Calculate the next queue number for this date
+        Integer nextQueueNumber = getNextQueueNumber(request.getDate());
+
+        return appointmentRepository.save(
+                Appointment.builder()
+                        .queueNumber(nextQueueNumber)
+                        .date(request.getDate())
+                        .time(request.getTime())
+                        .appointmentType(request.getAppointmentType())
+                        .notes(request.getNotes())
+                        .appointmentStatus("PENDING")
+                        .patient(patient)
+                        .build()
+        );
+    }
+
+    // New method for dispensers to create appointments for patients
+    public Appointment createAppointmentForPatient(Long patientId, AppointmentRequest request) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
 
         validateAppointmentTime(request.getTime());
         validateAppointmentType(request.getAppointmentType());
@@ -134,7 +163,7 @@ public class AppointmentService {
         return appointmentRepository.findByDateBetween(startDate, endDate);
     }
 
-    // New method to get available time slots for a given date
+    // Method to get available time slots for a given date
     public List<LocalTime> getAvailableTimeSlots(LocalDate date) {
         // Generate all possible time slots from 9:00 to 14:55 in 5-minute intervals
         List<LocalTime> allTimeSlots = generateAllTimeSlots();
@@ -150,6 +179,28 @@ public class AppointmentService {
 
     public List<Appointment> getAppointmentsByDate(LocalDate date) {
         return appointmentRepository.findByDateOrderByQueueNumberAsc(date);
+    }
+
+    // New method to update appointment status
+    public Appointment updateAppointmentStatus(Long appointmentId, String status) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+
+        validateAppointmentStatus(status);
+        appointment.setAppointmentStatus(status);
+
+        return appointmentRepository.save(appointment);
+    }
+
+    // New method to cancel all appointments for a specific date
+    @Transactional
+    public void cancelAllAppointmentsByDate(LocalDate date) {
+        List<Appointment> appointments = appointmentRepository.findByDateOrderByQueueNumberAsc(date);
+
+        for (Appointment appointment : appointments) {
+            appointment.setAppointmentStatus("CANCELLED");
+            appointmentRepository.save(appointment);
+        }
     }
 
     private List<LocalTime> generateAllTimeSlots() {
@@ -175,6 +226,13 @@ public class AppointmentService {
         List<String> validTypes = Arrays.asList("CHECKUP", "TAKE_MEDICINE", "GET_ADVICE", "REPORT_CHECKING", "OTHER");
         if (type == null || !validTypes.contains(type.toUpperCase())) {
             throw new IllegalArgumentException("Invalid appointment type. Valid types are: Checkup, Take Medicine, Get Advice, Report Checking, Other");
+        }
+    }
+
+    private void validateAppointmentStatus(String status) {
+        List<String> validStatuses = Arrays.asList("PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW");
+        if (status == null || !validStatuses.contains(status.toUpperCase())) {
+            throw new IllegalArgumentException("Invalid appointment status. Valid statuses are: PENDING, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW");
         }
     }
 

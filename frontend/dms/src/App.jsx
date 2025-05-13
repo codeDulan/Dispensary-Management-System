@@ -20,7 +20,7 @@ import Payment from './components/Dashboard/Doctor/Payment/PaymentList';
 // Dispenser Routes
 import Dashboard_dispenser from './pages/Dispenser_Dashboard';
 import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription';
-
+import DispenserAppointments from './components/Dashboard/Dispenser/Appoinments/DispenserAppointments';
 // Customer Routes
 import Dashboard_customer from './pages/Customer_Dashboard';
 import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
@@ -105,6 +105,10 @@ const App = () => {
           <Route
             path="/dispenser/payments"
             element={<DispenserRoute element={<PaymentList />} />}
+          />
+          <Route
+            path="/dispenser/appointments"
+            element={<DispenserRoute element={<DispenserAppointments />} />}
           />
 
           {/* Customer Protected Routes */}
