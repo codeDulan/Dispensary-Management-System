@@ -1,13 +1,31 @@
 
 W
-java:S1854 ";Remove this useless assignment to local variable "patient".(Æ‹¡8µüÚåã2
+java:S1854#";Remove this useless assignment to local variable "patient".(Æ‹¡8£©ÛÎì2
 H
-java:S1481 ",Remove this unused "patient" local variable.(Æ‹¡8î¢„öä2
+java:S1481#",Remove this unused "patient" local variable.(Æ‹¡8£©ÛÎì2
 H
-java:S1452."&Remove usage of generic wildcard type.( …Ïšüÿÿÿÿ8·ˆ­úã2
-g
-java:S1128"KRemove this unused import 'com.codedulan.dms.repository.PatientRepository'.(ä‡¯y8Œòˆå2
+java:S14521"&Remove usage of generic wildcard type.( …Ïšüÿÿÿÿ8£©ÛÎì2
+^
+java:S1854Q"BRemove this useless assignment to local variable "updatedPatient".(ùĞşS8£©ÛÎì2
+H
+java:S1452L"&Remove usage of generic wildcard type.(Šµ÷´øÿÿÿÿ8£©ÛÎì2
+O
+java:S1481Q"3Remove this unused "updatedPatient" local variable.(ùĞşS8¬©ÛÎì2
+]
+java:S1854c";Remove this useless assignment to local variable "success".(ôåº„ıÿÿÿÿ8­©ÛÎì2
+A
+java:S1452Y"&Remove usage of generic wildcard type.(¤¯8­©ÛÎì2
+N
+java:S1481c",Remove this unused "success" local variable.(ôåº„ıÿÿÿÿ8®©ÛÎì2
+`
+java:S1854­"BRemove this useless assignment to local variable "updatedPatient".(ÙòÅ—8¶©ÛÎì2
+D
+java:S1452©"&Remove usage of generic wildcard type.(…¢¼’8¶©ÛÎì2
+Q
+java:S1481­"3Remove this unused "updatedPatient" local variable.(ÙòÅ—8·©ÛÎì2
+D
+java:S1452·"&Remove usage of generic wildcard type.(Ä‚˜¢8¸©ÛÎì2
 d
-java:S1128"HRemove this unused import 'org.springframework.security.oauth2.jwt.Jwt'.(’¹•98Œòˆå2
+java:S1128"HRemove this unused import 'org.springframework.security.oauth2.jwt.Jwt'.(’¹•98¸©ÛÎì2
 Z
-java:S1128"8Remove this unused import 'java.util.stream.Collectors'.(Óóº´úÿÿÿÿ8Œòˆå2
+java:S1128"8Remove this unused import 'java.util.stream.Collectors'.(Óóº´úÿÿÿÿ8¸©ÛÎì2

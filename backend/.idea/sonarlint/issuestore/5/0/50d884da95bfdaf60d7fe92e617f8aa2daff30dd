@@ -1,10 +1,8 @@
 
-g	java:S112~"FDefine and throw a dedicated exception instead of using a generic one.(Ñ²Šäûÿÿÿÿ8Õşİòå2
-h	java:S112—"FDefine and throw a dedicated exception instead of using a generic one.(Âîäãıÿÿÿÿ8Õşİòå2
-h	java:S112¡"FDefine and throw a dedicated exception instead of using a generic one.(âüÁÁüÿÿÿÿ8Õşİòå2
+g	java:S112|"FDefine and throw a dedicated exception instead of using a generic one.(Ñ²Šäûÿÿÿÿ8Õşİòå2
+h	java:S112•"FDefine and throw a dedicated exception instead of using a generic one.(Âîäãıÿÿÿÿ8Õşİòå2
+h	java:S112Ÿ"FDefine and throw a dedicated exception instead of using a generic one.(âüÁÁüÿÿÿÿ8Õşİòå2
+u
+java:S1192œ"RDefine a constant instead of duplicating this literal "Patient not found" 5 times.(—¦²Èûÿÿÿÿ8¹Ç¤ì2
 p
-java:S6204¾"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8Šÿİòå2
-]
-java:S1128";Remove this unused import 'com.codedulan.dms.entity.Users'.(ó©×ïûÿÿÿÿ8Ï¡òˆå2
-‚
-java:S1128"`Remove this unused import 'org.springframework.security.authentication.BadCredentialsException'.(Òòîƒÿÿÿÿÿ8Ï¡òˆå2
+java:S6204¼"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8Šÿİòå2

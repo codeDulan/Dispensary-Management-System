@@ -105,3 +105,61 @@ body {
 .signup-text a:hover {
   text-decoration: underline;
 }
+
+/* Password field styling to add to your existing Login.css */
+
+.password-field-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 30px; /* Match your other input fields */
+}
+
+.password-field-container .input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-bottom: 0; /* Override the default margin since the container has margin */
+}
+
+.password-toggle-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  transition: color 0.2s ease;
+  padding: 5px;
+  z-index: 5;
+}
+
+.password-toggle-button:hover {
+  color: #538e58; /* Match your button hover color */
+}
+
+.password-toggle-button:focus {
+  outline: none;
+}
+
+/* Fix for the button width to match input field */
+.login-button {
+  width: 100%; /* Changed from 100.4% */
+  padding: 10px; /* Match your input field padding */
+}
+
+/* Error message styling */
+.error-message {
+  color: #d32f2f;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(211, 47, 47, 0.1);
+  border-radius: 5px;
+  font-size: 14px;
+}
