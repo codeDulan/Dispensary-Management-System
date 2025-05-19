@@ -107,78 +107,58 @@ const RevenueChart = ({ data = [] }) => {
   );
 };
 
-// Fixed PatientAgeDistribution component to avoid undefined color errors
+// PatientAgeDistribution with only percentage labels - minimal change
 
 const PatientAgeDistribution = ({ data = [] }) => {
   const theme = useTheme();
-  const colors =
-    theme.palette.mode === "dark"
-      ? { bgColor: "#1F2A40", textColor: "#e0e0e0", gridColor: "#3d3d3d" }
-      : { bgColor: "#ffffff", textColor: "#141414", gridColor: "#c2c2c2" };
-
-  // Use only colors that are guaranteed to exist in the theme
-  // Avoid using theme.palette.orangeAccent which might be undefined
+  const colors = theme.palette.mode === 'dark' 
+    ? { bgColor: '#1F2A40', textColor: '#e0e0e0', gridColor: '#3d3d3d' }
+    : { bgColor: '#ffffff', textColor: '#141414', gridColor: '#c2c2c2' };
+  
+  // Use hardcoded colors to ensure they always work
   const CHART_COLORS = [
-    "#4cceac", // greenAccent - hardcoded to avoid potential undefined issues
-    "#6870fa", // blueAccent
-    "#db4f4a", // redAccent
-    "#ffa726", // orange - hardcoded
-    "#a1a4ab", // grey
+    '#4cceac', // greenAccent
+    '#6870fa', // blueAccent 
+    '#db4f4a', // redAccent
+    '#ffa726', // orange
+    '#a1a4ab'  // grey
   ];
-
+  
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        p: 3,
-        height: "100%",
+    <Paper 
+      elevation={3} 
+      sx={{ 
+        p: 3, 
+        height: "100%", 
         backgroundColor: colors.bgColor,
-        color: colors.textColor,
+        color: colors.textColor
       }}
     >
-      <Typography variant="h6" mb={2} color={colors.textColor}>
-        Patient Age Distribution
-      </Typography>
+      <Typography variant="h6" mb={2} color={colors.textColor}>Patient Age Distribution</Typography>
       {data.length === 0 ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height="250px"
-        >
-          <Typography color={colors.textColor}>
-            No patient age data available
-          </Typography>
+        <Box display="flex" justifyContent="center" alignItems="center" height="250px">
+          <Typography color={colors.textColor}>No patient age data available</Typography>
         </Box>
       ) : (
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
+            <Pie 
+              data={data} 
+              cx="50%" 
+              cy="50%" 
               labelLine={false}
-              label={({ name, percent }) =>
-                `${name}: ${(percent * 100).toFixed(0)}%`
-              }
-              outerRadius={80}
-              fill="#8884d8"
+              label={({ percent }) => `${(percent * 100).toFixed(0)}%`} // Show only percentages
+              outerRadius={80} 
+              fill="#8884d8" 
               dataKey="value"
             >
               {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={CHART_COLORS[index % CHART_COLORS.length]}
-                />
+                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip
+            <Tooltip 
               formatter={(value) => `${value} patients`}
-              contentStyle={{
-                backgroundColor: colors.bgColor,
-                color: colors.textColor,
-                border: `1px solid ${colors.gridColor}`,
-              }}
+              contentStyle={{ backgroundColor: colors.bgColor, color: colors.textColor, border: `1px solid ${colors.gridColor}` }}
               labelStyle={{ color: colors.textColor }}
             />
             <Legend wrapperStyle={{ color: colors.textColor }} />
