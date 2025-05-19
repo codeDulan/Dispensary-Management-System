@@ -23,6 +23,67 @@ const dashboardService = {
       throw error;
     }
   },
+
+
+
+  async getPatientAgeDistribution() {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/patients', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
+      // Get all patients
+      const patients = await response.json();
+      
+      // Calculate age distribution
+      const ageGroups = {
+        'Under 18': 0,
+        '18-30': 0,
+        '31-45': 0,
+        '46-60': 0, 
+        'Over 60': 0
+      };
+      
+      // Count patients in each age group
+      patients.forEach(patient => {
+        const age = patient.age;
+        
+        if (age === null || age === undefined) {
+          // Skip patients with no age data
+          return;
+        }
+        
+        if (age < 18) {
+          ageGroups['Under 18']++;
+        } else if (age <= 30) {
+          ageGroups['18-30']++;
+        } else if (age <= 45) {
+          ageGroups['31-45']++;
+        } else if (age <= 60) {
+          ageGroups['46-60']++;
+        } else {
+          ageGroups['Over 60']++;
+        }
+      });
+      
+      // Convert to array format suitable for charts
+      return Object.keys(ageGroups).map(group => ({
+        name: group,
+        value: ageGroups[group]
+      }));
+    } catch (error) {
+      console.error('Failed to fetch patient age distribution:', error);
+      throw error;
+    }
+  },
+
   
   // INVENTORY
   async getAllInventory() {
@@ -103,6 +164,27 @@ const dashboardService = {
       return await response.json();
     } catch (error) {
       console.error('Failed to fetch appointments:', error);
+      throw error;
+    }
+  },
+  
+  // New method to get appointments for a specific date
+  async getAppointmentsByDate(date) {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/appointments/daily-queue?date=${date}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch appointments for date:', error);
       throw error;
     }
   },
