@@ -1,17 +1,17 @@
 
 q
-java:S1192"NDefine a constant instead of duplicating this literal ". Available: " 3 times.(ห๊๚ÿÿÿÿ8ไ์2
+java:S1192ช"NDefine a constant instead of duplicating this literal ". Available: " 3 times.(ห๊๚ÿÿÿÿ8ไ์2
 o
-java:S6204#"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ฉไ์2
+java:S6204%"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8๚ฬๅศ๎2
 o
-java:S62042"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ซไ์2
+java:S62044"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8อๅศ๎2
 o
-java:S6204;"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ฌไ์2
+java:S6204="RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8อๅศ๎2
 o
-java:S6204D"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ฎไ์2
+java:S6204F"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8อๅศ๎2
 o
-java:S6204Q"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ฏไ์2
+java:S6204S"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8อๅศ๎2
 o
-java:S6204^"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8ฐไ์2
+java:S6204`"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ชจน8อๅศ๎2
 u
-java:S3776ร"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ฬ๊Ûÿÿÿÿÿ8ทไ์2
+java:S3776ฮ"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ฬ๊Ûÿÿÿÿÿ8ทไ์2

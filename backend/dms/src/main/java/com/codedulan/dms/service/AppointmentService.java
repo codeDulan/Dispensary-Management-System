@@ -35,12 +35,12 @@ public class AppointmentService {
             throw new IllegalArgumentException("Time slot already booked");
         }
 
-        // Calculate the next queue number for this date
-        Integer nextQueueNumber = getNextQueueNumber(request.getDate());
+        // Calculate appropriate queue number based on time, not booking order
+        Integer queueNumber = calculateQueueNumberBasedOnTime(request.getDate(), request.getTime());
 
         return appointmentRepository.save(
                 Appointment.builder()
-                        .queueNumber(nextQueueNumber)
+                        .queueNumber(queueNumber)
                         .date(request.getDate())
                         .time(request.getTime())
                         .appointmentType(request.getAppointmentType())
@@ -63,12 +63,12 @@ public class AppointmentService {
             throw new IllegalArgumentException("Time slot already booked");
         }
 
-        // Calculate the next queue number for this date
-        Integer nextQueueNumber = getNextQueueNumber(request.getDate());
+        // Calculate appropriate queue number based on time, not booking order
+        Integer queueNumber = calculateQueueNumberBasedOnTime(request.getDate(), request.getTime());
 
         return appointmentRepository.save(
                 Appointment.builder()
-                        .queueNumber(nextQueueNumber)
+                        .queueNumber(queueNumber)
                         .date(request.getDate())
                         .time(request.getTime())
                         .appointmentType(request.getAppointmentType())
@@ -112,9 +112,14 @@ public class AppointmentService {
                 throw new IllegalArgumentException("Time slot already booked");
             }
 
-            // If changing the date, assign a new queue number
-            if (!appointment.getDate().equals(request.getDate())) {
-                appointment.setQueueNumber(getNextQueueNumber(request.getDate()));
+            // If changing the date or time, recalculate queue number
+            if (!appointment.getDate().equals(request.getDate()) ||
+                    !appointment.getTime().equals(request.getTime())) {
+                Integer newQueueNumber = calculateQueueNumberBasedOnTime(request.getDate(), request.getTime());
+                appointment.setQueueNumber(newQueueNumber);
+
+                // After changing this appointment's queue number, we need to reorganize other appointments
+                reorganizeQueueNumbers(request.getDate());
             }
         }
 
@@ -136,7 +141,11 @@ public class AppointmentService {
             throw new IllegalArgumentException("You can only delete your own appointments");
         }
 
+        LocalDate appointmentDate = appointment.getDate();
         appointmentRepository.delete(appointment);
+
+        // After deleting an appointment, reorganize the queue numbers to ensure continuity
+        reorganizeQueueNumbers(appointmentDate);
     }
 
     public List<Appointment> getAllAppointments() {
@@ -178,7 +187,7 @@ public class AppointmentService {
     }
 
     public List<Appointment> getAppointmentsByDate(LocalDate date) {
-        return appointmentRepository.findByDateOrderByQueueNumberAsc(date);
+        return appointmentRepository.findByDateOrderByTimeAsc(date);
     }
 
     // New method to update appointment status
@@ -195,7 +204,7 @@ public class AppointmentService {
     // New method to cancel all appointments for a specific date
     @Transactional
     public void cancelAllAppointmentsByDate(LocalDate date) {
-        List<Appointment> appointments = appointmentRepository.findByDateOrderByQueueNumberAsc(date);
+        List<Appointment> appointments = appointmentRepository.findByDateOrderByTimeAsc(date);
 
         for (Appointment appointment : appointments) {
             appointment.setAppointmentStatus("CANCELLED");
@@ -236,8 +245,78 @@ public class AppointmentService {
         }
     }
 
-    private Integer getNextQueueNumber(LocalDate date) {
-        Integer maxQueueNumber = appointmentRepository.findMaxQueueNumberByDate(date);
-        return (maxQueueNumber == null) ? 1 : maxQueueNumber + 1;
+    /**
+     * Calculate queue number based on appointment time - earlier times get lower numbers
+     */
+    private Integer calculateQueueNumberBasedOnTime(LocalDate date, LocalTime time) {
+        // Get all existing appointments for the date
+        List<Appointment> existingAppointments = appointmentRepository.findByDateOrderByTimeAsc(date);
+
+        // Find the correct position for this time
+        int position = 1;
+        for (Appointment existing : existingAppointments) {
+            if (existing.getTime().isBefore(time)) {
+                position++;
+            } else {
+                // We need to adjust all appointments with times after this one
+                existing.setQueueNumber(existing.getQueueNumber() + 1);
+                appointmentRepository.save(existing);
+            }
+        }
+
+        return position;
+    }
+
+    /**
+     * Reorganize queue numbers to ensure they are sequential based on appointment times
+     * This should be called after updates or deletes to ensure consistency
+     */
+    @Transactional
+    public void reorganizeQueueNumbers(LocalDate date) {
+        List<Appointment> appointments = appointmentRepository.findByDateOrderByTimeAsc(date);
+
+        // Reassign queue numbers based on time order
+        int queueNumber = 1;
+        for (Appointment appointment : appointments) {
+            appointment.setQueueNumber(queueNumber++);
+            appointmentRepository.save(appointment);
+        }
+    }
+
+    // New method to ensure appointments are returned with correct queue numbers
+    public List<Appointment> getPatientAppointmentsByTime(LocalDate startDate, LocalDate endDate, String token) {
+        String email = jwtUtils.extractUsername(token);
+        Patient patient = patientRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        // Default date range if not provided
+        if (startDate == null) startDate = LocalDate.now();
+        if (endDate == null) endDate = startDate.plusDays(30);
+
+        // Get patient's appointments in date range
+        List<Appointment> appointments = appointmentRepository.findByDateBetweenAndPatient(startDate, endDate, patient);
+
+        // For each appointment, verify its queue number is correct
+        for (Appointment appt : appointments) {
+            // Get all appointments for this date sorted by time
+            List<Appointment> allApptsForDate = appointmentRepository.findByDateOrderByTimeAsc(appt.getDate());
+
+            // Find this appointment's position in the time-sorted list
+            int correctPosition = 1;
+            for (Appointment other : allApptsForDate) {
+                if (other.getId().equals(appt.getId())) {
+                    break;
+                }
+                correctPosition++;
+            }
+
+            // Update if incorrect
+            if (appt.getQueueNumber() != correctPosition) {
+                appt.setQueueNumber(correctPosition);
+                appointmentRepository.save(appt);
+            }
+        }
+
+        return appointments;
     }
 }

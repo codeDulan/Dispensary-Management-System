@@ -87,7 +87,8 @@ public class AppointmentController {
             @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
-        return ResponseEntity.ok(appointmentService.getPatientAppointmentsInRange(startDate, endDate, token));
+        // Use a method that ensures appointments are sorted by time and have correct queue numbers
+        return ResponseEntity.ok(appointmentService.getPatientAppointmentsByTime(startDate, endDate, token));
     }
 
     // New endpoint to get available time slots

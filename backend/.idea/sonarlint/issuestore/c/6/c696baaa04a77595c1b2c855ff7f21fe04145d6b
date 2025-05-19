@@ -1,15 +1,15 @@
 
 g
-java:S1192-"JDefine a constant instead of duplicating this literal "DISPENSER" 4 times.(êÆÇÙ8ğ©¢Îì2
+java:S1192-"JDefine a constant instead of duplicating this literal "DISPENSER" 4 times.(êÆÇÙ8†ìöÃî2
 e
-java:S1192+"HDefine a constant instead of duplicating this literal "PATIENT" 4 times.(€Ş‘8ğ©¢Îì2
+java:S1192+"HDefine a constant instead of duplicating this literal "PATIENT" 4 times.(€Ş‘8†ìöÃî2
 d
-java:S1192-"GDefine a constant instead of duplicating this literal "DOCTOR" 3 times.(êÆÇÙ8ğ©¢Îì2
-
-java:S3305 "]Inject this field value directly into "authenticationProvider", the only method that uses it.(…ó™îùÿÿÿÿ8÷©¢Îì2
+java:S1192-"GDefine a constant instead of duplicating this literal "DOCTOR" 3 times.(êÆÇÙ8†ìöÃî2
 |
-java:S3305#"ZInject this field value directly into "securityFilterChain", the only method that uses it.(ŠôË‘ûÿÿÿÿ8÷©¢Îì2
+java:S3305#"ZInject this field value directly into "securityFilterChain", the only method that uses it.(ŠôË‘ûÿÿÿÿ8†ìöÃî2
+
+java:S3305 "]Inject this field value directly into "authenticationProvider", the only method that uses it.(…ó™îùÿÿÿÿ8†ìöÃî2
 l
-java:S1128"ORemove this unused import 'org.springframework.security.oauth2.jwt.JwtDecoder'.(¸½œÚ8ÔÈÕÎì2
+java:S1128"ORemove this unused import 'org.springframework.security.oauth2.jwt.JwtDecoder'.(¸½œÚ8–ìöÃî2
 r
-java:S1128"URemove this unused import 'org.springframework.security.oauth2.jwt.NimbusJwtDecoder'.(ûè“³8ÕÈÕÎì2
+java:S1128"URemove this unused import 'org.springframework.security.oauth2.jwt.NimbusJwtDecoder'.(ûè“³8–ìöÃî2

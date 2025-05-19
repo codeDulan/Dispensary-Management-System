@@ -27,5 +27,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a.time FROM Appointment a WHERE a.date = :date")
     List<LocalTime> findTimesByDate(@Param("date") LocalDate date);
 
+    // Changed from findByDateOrderByQueueNumberAsc to findByDateOrderByTimeAsc
+    List<Appointment> findByDateOrderByTimeAsc(LocalDate date);
+
+    // Added a new query to find appointments for a date ordered by queue number (original query)
     List<Appointment> findByDateOrderByQueueNumberAsc(LocalDate date);
 }
