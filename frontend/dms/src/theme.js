@@ -60,6 +60,18 @@ export const tokens = (mode) => ({
           800: "#2a2d64",
           900: "#151632"
         },
+        // Adding the missing orangeAccent palette
+        orangeAccent: {
+          100: "#fff3e0",
+          200: "#ffe0b2",
+          300: "#ffcc80",
+          400: "#ffb74d",
+          500: "#ffa726",
+          600: "#fb8c00",
+          700: "#f57c00",
+          800: "#ef6c00",
+          900: "#e65100"
+        },
       } : {
         grey: {
           100: "#141414",
@@ -115,6 +127,18 @@ export const tokens = (mode) => ({
           700: "#a4a9fc",
           800: "#c3c6fd",
           900: "#e1e2fe",
+        },
+        // Adding the missing orangeAccent palette for light mode
+        orangeAccent: {
+          100: "#e65100",
+          200: "#ef6c00",
+          300: "#f57c00",
+          400: "#fb8c00",
+          500: "#ffa726",
+          600: "#ffb74d",
+          700: "#ffcc80",
+          800: "#ffe0b2",
+          900: "#fff3e0",
         },
       }
   ),
