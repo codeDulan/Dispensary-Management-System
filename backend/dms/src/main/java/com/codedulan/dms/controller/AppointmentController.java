@@ -102,7 +102,7 @@ public class AppointmentController {
     }
 
     // New endpoint to get daily queue
-    @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader)")
+    @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
     @GetMapping("/daily-queue")
     public ResponseEntity<List<Appointment>> getDailyQueue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,

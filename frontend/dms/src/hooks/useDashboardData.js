@@ -1,4 +1,4 @@
-// src/hooks/useDashboardData.js
+
 
 import { useState, useEffect } from 'react';
 import dashboardService from '../services/dashboardService';
@@ -15,13 +15,12 @@ export const useDashboardData = (refreshKey = 0) => {
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     revenueData: [],
-    paymentDistribution: [],
-    inventoryStats: [],
-    patientTrends: [],
+    patientAgeDistribution: [], // Changed from paymentDistribution to patientAgeDistribution
     stats: {
       totalPatients: 0,
       appointmentsThisWeek: 0,
-      monthlyRevenue: 0,
+      appointmentsToday: 0,
+      todayRevenue: 0,
       inventoryItems: 0,
       lowStockItems: 0
     }
@@ -37,14 +36,16 @@ export const useDashboardData = (refreshKey = 0) => {
         const sixMonthsAgo = subMonths(today, 6);
         const startDate = formatDateForApi(startOfMonth(sixMonthsAgo));
         const endDate = formatDateForApi(endOfMonth(today));
-        
+        const todayDate = formatDateForApi(today);
         
         // Initial data objects
         let payments = [];
         let inventory = [];
         let patients = [];
         let appointments = [];
+        let todayAppointments = [];
         let lowStockItems = [];
+        let patientAgeData = []; // New array for patient age distribution
         let successfulApiCalls = false;
         
         // Try to fetch payments
@@ -54,8 +55,7 @@ export const useDashboardData = (refreshKey = 0) => {
           console.log("Payments data:", payments);
         } catch (error) {
           console.log("Failed to fetch payments:", error.response?.status, error.response?.data || error.message);
-          // Use fallback data if API fails
-          payments = generateFallbackPaymentData();
+          payments = [];
         }
         
         // Try to fetch inventory
@@ -65,7 +65,7 @@ export const useDashboardData = (refreshKey = 0) => {
           console.log("Inventory data:", inventory);
         } catch (error) {
           console.log("Failed to fetch inventory:", error.response?.status, error.response?.data || error.message);
-          inventory = generateFallbackInventoryData();
+          inventory = [];
         }
         
         // Try to fetch patients
@@ -75,17 +75,37 @@ export const useDashboardData = (refreshKey = 0) => {
           console.log("Patients data:", patients);
         } catch (error) {
           console.log("Failed to fetch patients:", error.response?.status, error.response?.data || error.message);
-          patients = generateFallbackPatientData();
+          patients = [];
+        }
+        
+        // Try to fetch patient age distribution
+        try {
+          patientAgeData = await dashboardService.getPatientAgeDistribution();
+          successfulApiCalls = true;
+          console.log("Patient age distribution:", patientAgeData);
+        } catch (error) {
+          console.log("Failed to fetch patient age distribution:", error.response?.status, error.response?.data || error.message);
+          patientAgeData = [];
         }
         
         // Try to fetch appointments
         try {
-          // Skip appointments for now due to 403 error
-          console.log("Skipping appointments fetch due to known authorization issues");
-          appointments = generateFallbackAppointmentData();
+          appointments = await dashboardService.getAllAppointments();
+          successfulApiCalls = true;
+          console.log("All appointments:", appointments);
         } catch (error) {
           console.log("Failed to fetch appointments:", error.response?.status, error.response?.data || error.message);
-          appointments = generateFallbackAppointmentData();
+          appointments = [];
+        }
+        
+        // Try to fetch today's appointments specifically
+        try {
+          todayAppointments = await dashboardService.getAppointmentsByDate(todayDate);
+          successfulApiCalls = true;
+          console.log("Today's appointments:", todayAppointments);
+        } catch (error) {
+          console.log("Failed to fetch today's appointments:", error.response?.status, error.response?.data || error.message);
+          todayAppointments = [];
         }
         
         // Try to fetch low stock items
@@ -95,7 +115,7 @@ export const useDashboardData = (refreshKey = 0) => {
           console.log("Low stock items:", lowStockItems);
         } catch (error) {
           console.log("Failed to fetch low stock items:", error.response?.status, error.response?.data || error.message);
-          lowStockItems = generateFallbackLowStockData();
+          lowStockItems = [];
         }
         
         // If no API call succeeded, throw an error
@@ -106,41 +126,29 @@ export const useDashboardData = (refreshKey = 0) => {
         // Process revenue data by month
         const revenueByMonth = processRevenueData(payments);
         
-        // Process payment methods distribution
-        const paymentDistribution = processPaymentMethods(payments);
-        
-        // Process inventory by category
-        const inventoryByCategory = processInventoryByCategory(inventory);
-        
-        // Process patient trends data
-        const patientTrends = processPatientTrends(patients, appointments);
-        
         // Calculate summary statistics
-        const stats = calculateStats(patients, appointments, payments, inventory, lowStockItems);
+        const stats = calculateStats(patients, appointments, payments, inventory, lowStockItems, todayAppointments);
         
         setDashboardData({
           revenueData: revenueByMonth,
-          paymentDistribution,
-          inventoryStats: inventoryByCategory,
-          patientTrends,
+          patientAgeDistribution: patientAgeData, // Set the patient age distribution
           stats
         });
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError(err.message || "Failed to fetch dashboard data");
         
-        // Even if there's an error, use fallback data
+        // Return empty data instead of fallback data
         setDashboardData({
-          revenueData: generateFallbackRevenueData(),
-          paymentDistribution: generateFallbackPaymentDistributionData(),
-          inventoryStats: generateFallbackInventoryStats(),
-          patientTrends: generateFallbackPatientTrends(),
+          revenueData: [],
+          patientAgeDistribution: [], // Empty array for patient age distribution
           stats: {
-            totalPatients: 1254,
-            appointmentsThisWeek: 42,
-            monthlyRevenue: 12546,
-            inventoryItems: 370,
-            lowStockItems: 23
+            totalPatients: 0,
+            appointmentsThisWeek: la0,
+            appointmentsToday: 0,
+            todayRevenue: 0,
+            inventoryItems: 0,
+            lowStockItems: 0
           }
         });
       } finally {
@@ -149,7 +157,7 @@ export const useDashboardData = (refreshKey = 0) => {
     };
     
     fetchDashboardData();
-  }, [refreshKey]); // Add refreshKey dependency to re-fetch data when refreshed
+  }, [refreshKey]);
   
   return { loading, error, dashboardData };
 };
@@ -178,107 +186,8 @@ const processRevenueData = (payments) => {
   }));
 };
 
-// Process payments to get distribution by payment method
-const processPaymentMethods = (payments) => {
-  const methodCounts = {};
-  
-  payments.forEach(payment => {
-    const method = payment.paymentMethod || 'Other';
-    
-    if (!methodCounts[method]) {
-      methodCounts[method] = 0;
-    }
-    
-    methodCounts[method] += payment.totalAmount || 0;
-  });
-  
-  // Convert to array format for charts
-  return Object.keys(methodCounts).map(name => ({
-    name,
-    value: methodCounts[name]
-  }));
-};
-
-// Process inventory data by category
-const processInventoryByCategory = (inventory) => {
-  const categories = {};
-  
-  inventory.forEach(item => {
-    // Extract category from the medicine name, or use a default
-    const medicineName = item.medicineName || '';
-    let category = 'General';
-    
-    if (medicineName.includes('Antibiotic')) category = 'Antibiotics';
-    else if (medicineName.includes('Pain')) category = 'Pain Relief';
-    else if (medicineName.includes('Vitamin')) category = 'Vitamins';
-    else if (medicineName.includes('Supplement')) category = 'Supplements';
-    else category = 'Other Medicines';
-    
-    if (!categories[category]) {
-      categories[category] = 0;
-    }
-    
-    categories[category] += item.quantity || 0;
-  });
-  
-  // Convert to array format for charts
-  return Object.keys(categories).map(category => ({
-    category,
-    count: categories[category]
-  }));
-};
-
-// Process patient and appointment data for trends
-const processPatientTrends = (patients, appointments) => {
-  // Group patients by registration month
-  const patientsByMonth = {};
-  const appointmentsByMonth = {};
-  
-  // Get last 6 months
-  const today = new Date();
-  let months = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = subMonths(today, i);
-    const month = format(d, 'MMM');
-    months.push(month);
-    patientsByMonth[month] = { new: 0, returning: 0 };
-  }
-  
-  // Count new patients by month
-  patients.forEach(patient => {
-    if (patient.createdDate) {
-      const date = new Date(patient.createdDate);
-      const month = format(date, 'MMM');
-      
-      if (patientsByMonth[month]) {
-        patientsByMonth[month].new += 1;
-      }
-    }
-  });
-  
-  // Count appointments by month and patient
-  appointments.forEach(appointment => {
-    if (appointment.date) {
-      const date = new Date(appointment.date);
-      const month = format(date, 'MMM');
-      
-      if (patientsByMonth[month]) {
-        // Increment returning patients count based on appointments
-        patientsByMonth[month].returning += 1;
-      }
-    }
-  });
-  
-  // Convert to array format for charts
-  return months.map(month => ({
-    month,
-    new: patientsByMonth[month]?.new || 0,
-    returning: patientsByMonth[month]?.returning || 0
-  }));
-};
-
 // Calculate summary statistics
-const calculateStats = (patients, appointments, payments, inventory, lowStockItems) => {
+const calculateStats = (patients, appointments, payments, inventory, lowStockItems, todayAppointments) => {
   // Total patients
   const totalPatients = patients.length;
   
@@ -293,12 +202,21 @@ const calculateStats = (patients, appointments, payments, inventory, lowStockIte
     return appointmentDate >= startOfWeek && appointmentDate <= today;
   }).length;
   
-  // Monthly revenue
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const monthlyRevenue = payments
+  // Today's appointments count
+  const appointmentsToday = todayAppointments.length;
+  
+  // Today's revenue instead of monthly revenue
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+  
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
+  
+  const todayRevenue = payments
     .filter(payment => {
       if (!payment.paymentDate) return false;
-      return new Date(payment.paymentDate) >= startOfMonth;
+      const paymentDate = new Date(payment.paymentDate);
+      return paymentDate >= todayStart && paymentDate <= todayEnd;
     })
     .reduce((sum, payment) => sum + (payment.totalAmount || 0), 0);
   
@@ -309,92 +227,11 @@ const calculateStats = (patients, appointments, payments, inventory, lowStockIte
   return {
     totalPatients,
     appointmentsThisWeek,
-    monthlyRevenue,
+    appointmentsToday,
+    todayRevenue,
     inventoryItems,
     lowStockItems: lowStockCount
   };
-};
-
-// Fallback data generators for when API calls fail
-const generateFallbackPaymentData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map(month => ({
-    paymentDate: `2023-${months.indexOf(month) + 1}-15`,
-    totalAmount: Math.floor(Math.random() * 5000) + 3000,
-    paymentMethod: ['Cash', 'Credit Card', 'Insurance', 'Online'][Math.floor(Math.random() * 4)]
-  }));
-};
-
-const generateFallbackInventoryData = () => {
-  const categories = ['Medicines', 'Equipment', 'Supplies', 'Instruments', 'PPE'];
-  return categories.map(category => ({
-    medicineName: `Sample ${category} Item`,
-    quantity: Math.floor(Math.random() * 100) + 20
-  }));
-};
-
-const generateFallbackLowStockData = () => {
-  return generateFallbackInventoryData().slice(0, 2).map(item => ({
-    ...item,
-    quantity: Math.floor(Math.random() * 10) + 1
-  }));
-};
-
-const generateFallbackPatientData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map(month => ({
-    createdDate: `2023-${months.indexOf(month) + 1}-15`,
-    firstName: `Patient ${Math.floor(Math.random() * 1000)}`
-  }));
-};
-
-const generateFallbackAppointmentData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map(month => ({
-    date: `2023-${months.indexOf(month) + 1}-15`,
-    patientId: Math.floor(Math.random() * 100)
-  }));
-};
-
-const generateFallbackRevenueData = () => {
-  return [
-    { month: 'Jan', revenue: 4000 },
-    { month: 'Feb', revenue: 3000 },
-    { month: 'Mar', revenue: 5000 },
-    { month: 'Apr', revenue: 7000 },
-    { month: 'May', revenue: 6000 },
-    { month: 'Jun', revenue: 8000 },
-  ];
-};
-
-const generateFallbackPaymentDistributionData = () => {
-  return [
-    { name: 'Cash', value: 4000 },
-    { name: 'Credit Card', value: 3000 },
-    { name: 'Insurance', value: 7000 },
-    { name: 'Online', value: 2000 },
-  ];
-};
-
-const generateFallbackInventoryStats = () => {
-  return [
-    { category: 'Medicines', count: 100 },
-    { category: 'Equipment', count: 30 },
-    { category: 'Supplies', count: 70 },
-    { category: 'Instruments', count: 50 },
-    { category: 'PPE', count: 120 },
-  ];
-};
-
-const generateFallbackPatientTrends = () => {
-  return [
-    { month: 'Jan', new: 40, returning: 24 },
-    { month: 'Feb', new: 30, returning: 28 },
-    { month: 'Mar', new: 45, returning: 32 },
-    { month: 'Apr', new: 50, returning: 35 },
-    { month: 'May', new: 65, returning: 42 },
-    { month: 'Jun', new: 70, returning: 45 },
-  ];
 };
 
 // Hook for fetching recent inventory status
@@ -412,25 +249,17 @@ export const useInventoryStatus = (refreshKey = 0) => {
         setLoading(true);
         
         let lowStock = [];
-        let expiring = [];
         
         try {
           lowStock = await dashboardService.getLowStockItems();
         } catch (error) {
           console.log("Failed to fetch low stock items:", error.message);
-          lowStock = [
-            { id: 1, medicineName: "Paracetamol", quantity: 5, threshold: 20 },
-            { id: 2, medicineName: "Amoxicillin", quantity: 8, threshold: 15 },
-            { id: 3, medicineName: "Ibuprofen", quantity: 3, threshold: 25 }
-          ];
+          lowStock = [];
         }
         
         setInventoryStatus({
           lowStock,
-          expiring: [
-            { id: 4, medicineName: "Cetirizine", quantity: 30, expiryDate: "2023-07-15" },
-            { id: 5, medicineName: "Diazepam", quantity: 12, expiryDate: "2023-07-30" }
-          ]
+          expiring: [] // Empty array instead of dummy data
         });
       } catch (err) {
         console.error("Error fetching inventory status:", err);
@@ -463,13 +292,7 @@ export const useUpcomingAppointments = (refreshKey = 0) => {
           appointmentsData = await dashboardService.getAllAppointments();
         } catch (error) {
           console.log("Failed to fetch appointments:", error.message);
-          appointmentsData = [
-            { id: 1, patientName: "John Doe", date: "2023-06-15", time: "09:30", status: "CONFIRMED" },
-            { id: 2, patientName: "Jane Smith", date: "2023-06-15", time: "10:15", status: "CONFIRMED" },
-            { id: 3, patientName: "Bob Johnson", date: "2023-06-16", time: "11:00", status: "PENDING" },
-            { id: 4, patientName: "Alice Brown", date: "2023-06-17", time: "14:30", status: "CONFIRMED" },
-            { id: 5, patientName: "Mike Wilson", date: "2023-06-18", time: "09:00", status: "CONFIRMED" }
-          ];
+          appointmentsData = []; // Empty array instead of dummy data
         }
         
         setAppointments(appointmentsData);
