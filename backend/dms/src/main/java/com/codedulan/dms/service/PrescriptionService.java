@@ -27,6 +27,8 @@ public class PrescriptionService {
     private final PatientRepository patientRepository;
     private final InventoryRepository inventoryRepository;
     private final InventoryService inventoryService;
+
+    private final DiseaseRepository diseaseRepository;
     private final JWTUtils jwtUtils;
 
     public List<PrescriptionDTO> getAllPrescriptions() {
@@ -138,6 +140,15 @@ public class PrescriptionService {
                 .prescriptionNotes(createDTO.getPrescriptionNotes())
                 .prescriptionItems(new ArrayList<>())
                 .build();
+
+        // Handle disease type
+        if (createDTO.getDiseaseId() != null) {
+            Disease disease = diseaseRepository.findById(createDTO.getDiseaseId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Disease not found with id: " + createDTO.getDiseaseId()));
+            prescription.setDisease(disease);
+        } else if (createDTO.getCustomDisease() != null && !createDTO.getCustomDisease().trim().isEmpty()) {
+            prescription.setCustomDisease(createDTO.getCustomDisease().trim());
+        }
 
         Prescription savedPrescription = prescriptionRepository.save(prescription);
 

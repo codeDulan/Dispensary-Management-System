@@ -31,7 +31,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import InfoIcon from "@mui/icons-material/Info";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SaveIcon from "@mui/icons-material/Save";
-import DeleteIcon from "@mui/icons-material/Delete"; 
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -43,6 +43,10 @@ const QuickPrescription = () => {
   const medicineRefs = useRef([]);
 
   // Form state
+  const [diseases, setDiseases] = useState([]);
+  const [selectedDisease, setSelectedDisease] = useState("");
+  const [customDisease, setCustomDisease] = useState("");
+  const [showCustomDiseaseField, setShowCustomDiseaseField] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [patientId, setPatientId] = useState("");
   const [age, setAge] = useState("");
@@ -167,7 +171,40 @@ const QuickPrescription = () => {
     fetchPatients();
     fetchInventoryItems();
     fetchTemplates();
+    fetchDiseases();
   }, []);
+
+  // Fetch diseases from API
+  const fetchDiseases = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_BASE_URL}/diseases/common`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Disease data:", response.data);
+      setDiseases(response.data);
+    } catch (error) {
+      console.error("Error fetching diseases:", error);
+      showNotification("Failed to load common diseases", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle disease selection
+  const handleDiseaseChange = (event) => {
+    const value = event.target.value;
+    setSelectedDisease(value);
+
+    // Show custom disease field if "Other" is selected
+    setShowCustomDiseaseField(value === "other");
+
+    // Clear custom disease if a predefined disease is selected
+    if (value !== "other") {
+      setCustomDisease("");
+    }
+  };
 
   // Fetch patients from API
   const fetchPatients = async () => {
@@ -241,37 +278,35 @@ const QuickPrescription = () => {
   };
 
   const handleDeleteTemplate = async (templateId) => {
-      if (!templateId) return;
+    if (!templateId) return;
 
-      try {
-        setSaving(true);
-        const token = localStorage.getItem("token");
-        await axios.delete(
-          `${API_BASE_URL}/prescription-templates/${templateId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `${API_BASE_URL}/prescription-templates/${templateId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        // Remove the deleted template from the state
-        setTemplates(
-          templates.filter((template) => template.id !== templateId)
-        );
+      // Remove the deleted template from the state
+      setTemplates(templates.filter((template) => template.id !== templateId));
 
-        // If the deleted template was selected, clear selection
-        if (selectedTemplate?.id === templateId) {
-          setSelectedTemplate(null);
-        }
-
-        showNotification("Template deleted successfully", "success");
-      } catch (error) {
-        console.error("Error deleting template:", error);
-        showNotification(
-          error.response?.data?.message || "Failed to delete template",
-          "error"
-        );
-      } finally {
-        setSaving(false);
+      // If the deleted template was selected, clear selection
+      if (selectedTemplate?.id === templateId) {
+        setSelectedTemplate(null);
       }
-    };
+
+      showNotification("Template deleted successfully", "success");
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      showNotification(
+        error.response?.data?.message || "Failed to delete template",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Close notification
   const handleCloseNotification = () => {
@@ -681,12 +716,18 @@ const QuickPrescription = () => {
       prescriptionNotes: prescriptionNotes.trim(),
       items: validMedicines.map((med) => ({
         inventoryItemId: med.inventoryItemId,
-        quantity: parseInt(med.quantity) || 0, // Send quantity per dose to backend
+        quantity: parseInt(med.quantity) || 0,
         dosageInstructions: med.dosageInstructions || `Take as directed`,
         daysSupply: parseInt(med.daysSupply) || 7,
       })),
     };
 
+    // Add disease information
+    if (selectedDisease && selectedDisease !== "other") {
+      prescriptionData.diseaseId = parseInt(selectedDisease);
+    } else if (customDisease.trim()) {
+      prescriptionData.customDisease = customDisease.trim();
+    }
     try {
       setSaving(true);
       const token = localStorage.getItem("token");
@@ -806,6 +847,44 @@ const QuickPrescription = () => {
               >
                 {/* Left Section - Diagnosis and Investigation */}
                 <Box flex={1}>
+                  <Box mb={4}>
+                    <Typography fontWeight={600} mb={1}>
+                      Disease Type
+                    </Typography>
+                    <FormControl fullWidth margin="dense">
+                      <InputLabel>Select Disease</InputLabel>
+                      <Select
+                        value={selectedDisease}
+                        onChange={handleDiseaseChange}
+                        label="Select Disease"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {diseases.map((disease) => (
+                          <MenuItem
+                            key={disease.id}
+                            value={disease.id.toString()}
+                          >
+                            {disease.name}
+                          </MenuItem>
+                        ))}
+                        <MenuItem value="other">Other (specify)</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    {showCustomDiseaseField && (
+                      <TextField
+                        fullWidth
+                        margin="dense"
+                        label="Specify Disease"
+                        value={customDisease}
+                        onChange={(e) => setCustomDisease(e.target.value)}
+                        placeholder="Enter disease name"
+                      />
+                    )}
+                  </Box>
+
                   <Box mb={4}>
                     <Typography fontWeight={600} mb={1}>
                       Diagnosis

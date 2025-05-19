@@ -16,6 +16,10 @@ public class CreatePrescriptionDTO {
     @NotNull(message = "Patient ID is required")
     private Long patientId;
 
+    private Long diseaseId;
+
+    private String customDisease;
+
     private String prescriptionNotes;
 
     @NotEmpty(message = "At least one medicine item is required")

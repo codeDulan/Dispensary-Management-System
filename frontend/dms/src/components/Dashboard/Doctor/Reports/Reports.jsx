@@ -19,11 +19,31 @@ import {
   Paper,
   CircularProgress,
 } from "@mui/material";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, getYear, startOfYear, endOfYear } from 'date-fns';
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachMonthOfInterval,
+  subMonths,
+  getYear,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -34,13 +54,26 @@ import { ColorModeContext, useMode, tokens } from "../../../../theme";
 import DoctorSidebar from "../Sidebar/DoctorSidebar";
 import Topbar from "../Topbar/Topbar";
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 const Reports = () => {
   const [theme, colorMode] = useMode();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
+
   // Data states
   const [loading, setLoading] = useState(false);
   const [revenueData, setRevenueData] = useState([]);
@@ -50,28 +83,130 @@ const Reports = () => {
     totalPayments: 0,
     pendingPayments: 0,
   });
-  
+
   // Filter states
   const [startDate, setStartDate] = useState(subMonths(new Date(), 12));
   const [endDate, setEndDate] = useState(new Date());
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
   const [filterApplied, setFilterApplied] = useState(false);
   const [timeframe, setTimeframe] = useState("yearly"); // yearly, monthly, custom
-  
+
+  const [diseaseData, setDiseaseData] = useState([]);
+  const [diseaseDateRange, setDiseaseDateRange] = useState("month"); // 'week', 'month', 'year', 'custom'
+  const [diseaseStartDate, setDiseaseStartDate] = useState(
+    startOfMonth(new Date())
+  );
+  const [diseaseEndDate, setDiseaseEndDate] = useState(endOfMonth(new Date()));
+  const [loadingDiseases, setLoadingDiseases] = useState(false);
+
   // Notification states
   const [notification, setNotification] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-  
+
   // API base URL
   const API_BASE_URL = "http://localhost:8080/api";
 
   // Fetch data on component mount
   useEffect(() => {
     fetchRevenueData();
+    fetchDiseaseData();
   }, []);
+
+  // Fetch disease data
+  const fetchDiseaseData = async () => {
+    try {
+      setLoadingDiseases(true);
+      const token = localStorage.getItem("token");
+
+      // Set date range based on selected filter
+      let startDate, endDate;
+      const currentDate = new Date();
+
+      switch (diseaseDateRange) {
+        case "week":
+          startDate = startOfWeek(currentDate);
+          endDate = endOfWeek(currentDate);
+          break;
+        case "month":
+          startDate = startOfMonth(currentDate);
+          endDate = endOfMonth(currentDate);
+          break;
+        case "year":
+          startDate = startOfYear(currentDate);
+          endDate = endOfYear(currentDate);
+          break;
+        case "custom":
+          startDate = diseaseStartDate;
+          endDate = diseaseEndDate;
+          break;
+        default:
+          startDate = startOfMonth(currentDate);
+          endDate = endOfMonth(currentDate);
+      }
+
+      // Format dates for API
+      const formattedStartDate = format(startDate, "yyyy-MM-dd");
+      const formattedEndDate = format(endDate, "yyyy-MM-dd");
+
+      // Fetch disease statistics
+      const response = await axios.get(
+        `${API_BASE_URL}/prescriptions/top-diseases?startDate=${formattedStartDate}&endDate=${formattedEndDate}&limit=5`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Format the data for the chart
+      const formattedData = response.data.map((disease) => ({
+        name: disease.name,
+        count: disease.count,
+      }));
+
+      setDiseaseData(formattedData);
+    } catch (error) {
+      console.error("Error fetching disease data:", error);
+      showNotification("Failed to load disease statistics", "error");
+    } finally {
+      setLoadingDiseases(false);
+    }
+  };
+
+  const handleDateRangeChange = (range) => {
+    setDiseaseDateRange(range);
+
+    const currentDate = new Date();
+    let startDate, endDate;
+
+    switch (range) {
+      case "week":
+        startDate = startOfWeek(currentDate);
+        endDate = endOfWeek(currentDate);
+        break;
+      case "month":
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+        break;
+      case "year":
+        startDate = startOfYear(currentDate);
+        endDate = endOfYear(currentDate);
+        break;
+      case "custom":
+        // Keep existing custom dates
+        return;
+      default:
+        startDate = startOfMonth(currentDate);
+        endDate = endOfMonth(currentDate);
+    }
+
+    setDiseaseStartDate(startDate);
+    setDiseaseEndDate(endDate);
+
+    // Fetch data with new date range
+    setTimeout(() => fetchDiseaseData(), 0);
+  };
 
   // Fetch revenue data
   const fetchRevenueData = async () => {
@@ -81,7 +216,7 @@ const Reports = () => {
 
       // Set date range based on selected timeframe
       let apiStartDate, apiEndDate;
-      
+
       if (timeframe === "yearly") {
         apiStartDate = startOfYear(new Date(selectedYear, 0, 1));
         apiEndDate = endOfYear(new Date(selectedYear, 0, 1));
@@ -94,11 +229,11 @@ const Reports = () => {
         apiStartDate = startDate;
         apiEndDate = endDate;
       }
-      
+
       // Format dates for API
-      const formattedStartDate = format(apiStartDate, 'yyyy-MM-dd');
-      const formattedEndDate = format(apiEndDate, 'yyyy-MM-dd');
-      
+      const formattedStartDate = format(apiStartDate, "yyyy-MM-dd");
+      const formattedEndDate = format(apiEndDate, "yyyy-MM-dd");
+
       // Fetch payments by date range
       const response = await axios.get(
         `${API_BASE_URL}/payments/by-date-range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
@@ -106,7 +241,7 @@ const Reports = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       // Process the data for charts
       processPaymentData(response.data, apiStartDate, apiEndDate);
       setFilterApplied(true);
@@ -137,9 +272,9 @@ const Reports = () => {
       (sum, payment) => sum + (payment.totalAmount || 0),
       0
     );
-    
+
     const averagePayment = totalRevenue / payments.length;
-    
+
     const pendingPayments = payments.filter(
       (payment) => payment.status === "PENDING"
     ).length;
@@ -160,27 +295,30 @@ const Reports = () => {
   // Generate monthly data for charts
   const generateMonthlyData = (payments, startDate, endDate) => {
     // Create an array of all months in the date range
-    const monthsInRange = eachMonthOfInterval({ start: startDate, end: endDate });
-    
+    const monthsInRange = eachMonthOfInterval({
+      start: startDate,
+      end: endDate,
+    });
+
     // Initialize data for each month
-    const monthlyData = monthsInRange.map(date => {
-      const monthStr = format(date, 'MMM yyyy');
+    const monthlyData = monthsInRange.map((date) => {
+      const monthStr = format(date, "MMM yyyy");
       return {
         name: monthStr,
         revenue: 0,
         doctorFees: 0,
         medicinesCost: 0,
-        count: 0
+        count: 0,
       };
     });
-    
+
     // Populate with actual payment data
-    payments.forEach(payment => {
+    payments.forEach((payment) => {
       const paymentDate = new Date(payment.paymentDate);
-      const monthStr = format(paymentDate, 'MMM yyyy');
-      
+      const monthStr = format(paymentDate, "MMM yyyy");
+
       // Find the corresponding month in our data array
-      const monthData = monthlyData.find(item => item.name === monthStr);
+      const monthData = monthlyData.find((item) => item.name === monthStr);
       if (monthData) {
         monthData.revenue += payment.totalAmount || 0;
         monthData.doctorFees += payment.doctorFee || 0;
@@ -188,7 +326,7 @@ const Reports = () => {
         monthData.count += 1;
       }
     });
-    
+
     return monthlyData;
   };
 
@@ -229,32 +367,35 @@ const Reports = () => {
 
   // Generate a PDF report
   // Replace your existing generatePdfReport function with this implementation:
-const generatePdfReport = () => {
-  try {
-    showNotification("Generating report...", "info");
+  const generatePdfReport = () => {
+    try {
+      showNotification("Generating report...", "info");
 
-    // Determine the report period text
-    let reportPeriod = "";
-    if (timeframe === "yearly") {
-      reportPeriod = `Year: ${selectedYear}`;
-    } else if (timeframe === "monthly") {
-      reportPeriod = "Last 6 Months";
-    } else {
-      reportPeriod = `${format(startDate, 'MMM dd, yyyy')} - ${format(endDate, 'MMM dd, yyyy')}`;
-    }
+      // Determine the report period text
+      let reportPeriod = "";
+      if (timeframe === "yearly") {
+        reportPeriod = `Year: ${selectedYear}`;
+      } else if (timeframe === "monthly") {
+        reportPeriod = "Last 6 Months";
+      } else {
+        reportPeriod = `${format(startDate, "MMM dd, yyyy")} - ${format(
+          endDate,
+          "MMM dd, yyyy"
+        )}`;
+      }
 
-    // Create a new window for the report
-    const printWindow = window.open('', '_blank');
-    
-    // Get theme colors for the report
-    const currentMode = theme.palette.mode;
-    const currentColors = tokens(currentMode);
-    
-    // Write the HTML content
-    printWindow.document.write(`
+      // Create a new window for the report
+      const printWindow = window.open("", "_blank");
+
+      // Get theme colors for the report
+      const currentMode = theme.palette.mode;
+      const currentColors = tokens(currentMode);
+
+      // Write the HTML content
+      printWindow.document.write(`
       <html>
         <head>
-          <title>Revenue Report - ${format(new Date(), 'yyyy-MM-dd')}</title>
+          <title>Revenue Report - ${format(new Date(), "yyyy-MM-dd")}</title>
           <style>
             body {
               font-family: 'Inter', sans-serif;
@@ -425,20 +566,29 @@ const generatePdfReport = () => {
             <div class="report-meta">
               <div>
                 <div class="report-period">${reportPeriod}</div>
-                <div>Generated: ${format(new Date(), 'MMM dd, yyyy HH:mm')}</div>
+                <div>Generated: ${format(
+                  new Date(),
+                  "MMM dd, yyyy HH:mm"
+                )}</div>
               </div>
             </div>
             
             <div class="summary-cards">
               <div class="summary-card">
                 <div class="card-title">Total Revenue</div>
-                <div class="card-value">${formatCurrency(summaryStats.totalRevenue)}</div>
-                <div class="card-subtitle">${filterApplied ? 'For selected period' : 'All time'}</div>
+                <div class="card-value">${formatCurrency(
+                  summaryStats.totalRevenue
+                )}</div>
+                <div class="card-subtitle">${
+                  filterApplied ? "For selected period" : "All time"
+                }</div>
               </div>
               
               <div class="summary-card">
                 <div class="card-title">Average Payment</div>
-                <div class="card-value">${formatCurrency(summaryStats.averagePayment)}</div>
+                <div class="card-value">${formatCurrency(
+                  summaryStats.averagePayment
+                )}</div>
                 <div class="card-subtitle">Per transaction</div>
               </div>
               
@@ -467,7 +617,9 @@ const generatePdfReport = () => {
                 </tr>
               </thead>
               <tbody>
-                ${revenueData.map(item => `
+                ${revenueData
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item.name}</td>
                     <td>${formatCurrency(item.doctorFees)}</td>
@@ -475,7 +627,9 @@ const generatePdfReport = () => {
                     <td>${formatCurrency(item.revenue)}</td>
                     <td>${item.count}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -510,46 +664,55 @@ const generatePdfReport = () => {
         </body>
       </html>
     `);
-    
-    printWindow.document.close();
-    
-    // Wait for resources to load then trigger print
-    printWindow.addEventListener('load', () => {
-      // Auto-print if desired - uncomment this line
-      // printWindow.print();
-      showNotification("Report generated successfully. Click the print button to print.", "success");
-    });
-    
-  } catch (error) {
-    console.error("Error generating report:", error);
-    showNotification("Failed to generate report", "error");
-  }
-};
+
+      printWindow.document.close();
+
+      // Wait for resources to load then trigger print
+      printWindow.addEventListener("load", () => {
+        // Auto-print if desired - uncomment this line
+        // printWindow.print();
+        showNotification(
+          "Report generated successfully. Click the print button to print.",
+          "success"
+        );
+      });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      showNotification("Failed to generate report", "error");
+    }
+  };
 
   // Export data to CSV
   const exportToCSV = () => {
     // Create CSV content
     let csvContent = "data:text/csv;charset=utf-8,";
-    
+
     // Add headers
     csvContent += "Month,Revenue,Doctor Fees,Medicines Cost,Payment Count\r\n";
-    
+
     // Add data rows
-    revenueData.forEach(item => {
-      csvContent += `${item.name},${item.revenue.toFixed(2)},${item.doctorFees.toFixed(2)},${item.medicinesCost.toFixed(2)},${item.count}\r\n`;
+    revenueData.forEach((item) => {
+      csvContent += `${item.name},${item.revenue.toFixed(
+        2
+      )},${item.doctorFees.toFixed(2)},${item.medicinesCost.toFixed(2)},${
+        item.count
+      }\r\n`;
     });
-    
+
     // Create download link
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `revenue_report_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.setAttribute(
+      "download",
+      `revenue_report_${format(new Date(), "yyyy-MM-dd")}.csv`
+    );
     document.body.appendChild(link);
-    
+
     // Trigger download
     link.click();
     document.body.removeChild(link);
-    
+
     showNotification("CSV report downloaded successfully", "success");
   };
 
@@ -567,20 +730,22 @@ const generatePdfReport = () => {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            backgroundColor: colors.primary[400], 
+        <Paper
+          elevation={3}
+          sx={{
+            backgroundColor: colors.primary[400],
             color: colors.grey[100],
-            p: 1, 
-            border: `1px solid ${colors.primary[300]}` 
+            p: 1,
+            border: `1px solid ${colors.primary[300]}`,
           }}
         >
-          <Typography variant="body2" fontWeight="bold">{label}</Typography>
+          <Typography variant="body2" fontWeight="bold">
+            {label}
+          </Typography>
           {payload.map((entry, index) => (
-            <Typography 
-              key={`tooltip-${index}`} 
-              variant="body2" 
+            <Typography
+              key={`tooltip-${index}`}
+              variant="body2"
               sx={{ color: entry.color }}
             >
               {entry.name}: {formatCurrency(entry.value)}
@@ -590,6 +755,262 @@ const generatePdfReport = () => {
       );
     }
     return null;
+  };
+
+  // Export disease data to CSV
+  const exportDiseaseToCSV = () => {
+    // Create CSV content
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add headers
+    csvContent += "Disease,Number of Cases\r\n";
+
+    // Add data rows
+    diseaseData.forEach((disease) => {
+      csvContent += `${disease.name},${disease.count}\r\n`;
+    });
+
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `disease_statistics_${format(new Date(), "yyyy-MM-dd")}.csv`
+    );
+    document.body.appendChild(link);
+
+    // Trigger download
+    link.click();
+    document.body.removeChild(link);
+
+    showNotification("CSV report downloaded successfully", "success");
+  };
+
+  // Generate PDF for disease report
+  const generateDiseasePdfReport = () => {
+    try {
+      showNotification("Generating disease report...", "info");
+
+      // Determine the report period text
+      let reportPeriod = "";
+      switch (diseaseDateRange) {
+        case "week":
+          reportPeriod = "This Week";
+          break;
+        case "month":
+          reportPeriod = "This Month";
+          break;
+        case "year":
+          reportPeriod = "This Year";
+          break;
+        case "custom":
+          reportPeriod = `${format(
+            diseaseStartDate,
+            "MMM dd, yyyy"
+          )} - ${format(diseaseEndDate, "MMM dd, yyyy")}`;
+          break;
+        default:
+          reportPeriod = "This Month";
+      }
+
+      // Create a new window for the report
+      const printWindow = window.open("", "_blank");
+
+      // Get theme colors for the report
+      const currentMode = theme.palette.mode;
+      const currentColors = tokens(currentMode);
+
+      // Write the HTML content
+      printWindow.document.write(`
+      <html>
+        <head>
+          <title>Disease Statistics Report - ${format(
+            new Date(),
+            "yyyy-MM-dd"
+          )}</title>
+          <style>
+            body {
+              font-family: 'Inter', sans-serif;
+              margin: 0;
+              padding: 20px;
+              color: #333;
+              background-color: #fcfcfc;
+            }
+            .report-container {
+              max-width: 1000px;
+              margin: 0 auto;
+              background-color: white;
+              padding: 30px;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #6870fa;
+              margin-bottom: 30px;
+            }
+            .clinic-name {
+              font-size: 28px;
+              font-weight: bold;
+              margin-bottom: 5px;
+              color: #141b2d;
+            }
+            .report-title {
+              font-size: 20px;
+              margin-bottom: 10px;
+              color: #4cceac;
+            }
+            .report-meta {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 30px;
+              font-size: 14px;
+            }
+            .report-period {
+              font-weight: bold;
+            }
+            .disease-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+            }
+            .disease-table th, .disease-table td {
+              border: 1px solid #ddd;
+              padding: 12px;
+              text-align: left;
+            }
+            .disease-table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            .disease-table tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            .chart-container {
+              margin-top: 30px;
+              margin-bottom: 30px;
+              height: 400px;
+              background-color: #f5f5f5;
+              border-radius: 8px;
+              padding: 20px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+            }
+            .chart-placeholder {
+              width: 100%;
+              height: 300px;
+              background-color: #eee;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-style: italic;
+              color: #666;
+            }
+            .chart-title {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 20px;
+              color: #141b2d;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+            @media print {
+              body {
+                background-color: white;
+              }
+              .report-container {
+                box-shadow: none;
+                padding: 0;
+              }
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="report-container">
+            <div class="header">
+              <div class="clinic-name">Sahanaya Medical Center</div>
+              <div class="report-title">Top 5 Diseases Report</div>
+            </div>
+            
+            <div class="report-meta">
+              <div>
+                <div class="report-period">Period: ${reportPeriod}</div>
+                <div>Generated: ${format(
+                  new Date(),
+                  "MMM dd, yyyy HH:mm"
+                )}</div>
+              </div>
+            </div>
+            
+            <div class="chart-title">Disease Distribution</div>
+            
+            <table class="disease-table">
+              <thead>
+                <tr>
+                  <th>Disease</th>
+                  <th>Number of Cases</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${diseaseData
+                  .map(
+                    (disease) => `
+                  <tr>
+                    <td>${disease.name}</td>
+                    <td>${disease.count}</td>
+                  </tr>
+                `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+            
+            <div class="chart-container">
+              <div class="chart-placeholder">
+                Bar chart visualization would appear here in the app
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>This report was generated by Sahanaya Medical Clinic Management System</p>
+              <p>© ${new Date().getFullYear()} Sahanaya Medical Center. All rights reserved.</p>
+            </div>
+            
+            <div class="no-print" style="margin-top: 30px; text-align: center;">
+              <button onclick="window.print()" style="padding: 10px 20px; background-color: #4cceac; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Print Report
+              </button>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+
+      printWindow.document.close();
+
+      // Wait for resources to load then trigger print
+      printWindow.addEventListener("load", () => {
+        showNotification(
+          "Disease report generated successfully. Click the print button to print.",
+          "success"
+        );
+      });
+    } catch (error) {
+      console.error("Error generating disease report:", error);
+      showNotification("Failed to generate disease report", "error");
+    }
   };
 
   return (
@@ -625,15 +1046,15 @@ const generatePdfReport = () => {
                 >
                   Revenue Reports
                 </Typography>
-                
+
                 <Box display="flex" gap={2}>
                   <Button
                     variant="contained"
                     startIcon={<DownloadIcon />}
                     onClick={exportToCSV}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.greenAccent[600],
-                      '&:hover': { backgroundColor: colors.greenAccent[700] }
+                      "&:hover": { backgroundColor: colors.greenAccent[700] },
                     }}
                   >
                     Export CSV
@@ -642,9 +1063,9 @@ const generatePdfReport = () => {
                     variant="contained"
                     startIcon={<PictureAsPdfIcon />}
                     onClick={generatePdfReport}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.redAccent[600],
-                      '&:hover': { backgroundColor: colors.redAccent[700] }
+                      "&:hover": { backgroundColor: colors.redAccent[700] },
                     }}
                   >
                     Generate PDF
@@ -659,7 +1080,7 @@ const generatePdfReport = () => {
                   p: 2,
                   mb: 3,
                   backgroundColor: colors.primary[400],
-                  borderRadius: 1
+                  borderRadius: 1,
                 }}
               >
                 <Grid container spacing={2} alignItems="center">
@@ -677,8 +1098,8 @@ const generatePdfReport = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  
-                  {timeframe === 'yearly' && (
+
+                  {timeframe === "yearly" && (
                     <Grid item xs={12} md={2}>
                       <FormControl fullWidth size="small">
                         <InputLabel>Year</InputLabel>
@@ -687,15 +1108,17 @@ const generatePdfReport = () => {
                           onChange={(e) => setSelectedYear(e.target.value)}
                           label="Year"
                         >
-                          {generateYearOptions().map(year => (
-                            <MenuItem key={year} value={year}>{year}</MenuItem>
+                          {generateYearOptions().map((year) => (
+                            <MenuItem key={year} value={year}>
+                              {year}
+                            </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
                     </Grid>
                   )}
-                  
-                  {timeframe === 'custom' && (
+
+                  {timeframe === "custom" && (
                     <>
                       <Grid item xs={12} md={3}>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -703,12 +1126,14 @@ const generatePdfReport = () => {
                             label="Start Date"
                             value={startDate}
                             onChange={(newValue) => setStartDate(newValue)}
-                            renderInput={(params) => <TextField {...params} fullWidth size="small" />}
+                            renderInput={(params) => (
+                              <TextField {...params} fullWidth size="small" />
+                            )}
                             slotProps={{
                               textField: {
                                 size: "small",
-                                fullWidth: true
-                              }
+                                fullWidth: true,
+                              },
                             }}
                           />
                         </LocalizationProvider>
@@ -719,29 +1144,33 @@ const generatePdfReport = () => {
                             label="End Date"
                             value={endDate}
                             onChange={(newValue) => setEndDate(newValue)}
-                            renderInput={(params) => <TextField {...params} fullWidth size="small" />}
+                            renderInput={(params) => (
+                              <TextField {...params} fullWidth size="small" />
+                            )}
                             slotProps={{
                               textField: {
                                 size: "small",
-                                fullWidth: true
-                              }
+                                fullWidth: true,
+                              },
                             }}
                           />
                         </LocalizationProvider>
                       </Grid>
                     </>
                   )}
-                  
-                  <Grid item xs={12} md={timeframe === 'custom' ? 3 : 7}>
+
+                  <Grid item xs={12} md={timeframe === "custom" ? 3 : 7}>
                     <Box display="flex" gap={2}>
                       <Button
                         variant="contained"
                         fullWidth
                         onClick={applyFilters}
                         startIcon={<FilterAltIcon />}
-                        sx={{ 
+                        sx={{
                           backgroundColor: colors.blueAccent[500],
-                          '&:hover': { backgroundColor: colors.blueAccent[600] }
+                          "&:hover": {
+                            backgroundColor: colors.blueAccent[600],
+                          },
                         }}
                       >
                         Apply Filter
@@ -754,10 +1183,10 @@ const generatePdfReport = () => {
                         sx={{
                           borderColor: colors.grey[100],
                           color: colors.grey[100],
-                          '&:hover': {
+                          "&:hover": {
                             borderColor: colors.grey[300],
                             color: colors.grey[300],
-                          }
+                          },
                         }}
                       >
                         Reset
@@ -770,48 +1199,64 @@ const generatePdfReport = () => {
               {/* Summary Cards */}
               <Grid container spacing={3} mb={3}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card 
+                  <Card
                     elevation={3}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.primary[400],
-                      height: '100%'
+                      height: "100%",
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" color={colors.grey[300]} gutterBottom>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        gutterBottom
+                      >
                         Total Revenue
                       </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={colors.greenAccent[500]}>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color={colors.greenAccent[500]}
+                      >
                         {formatCurrency(summaryStats.totalRevenue)}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color={colors.grey[300]}
                         sx={{ mt: 1 }}
                       >
-                        {filterApplied ? 'For selected period' : 'All time'}
+                        {filterApplied ? "For selected period" : "All time"}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card 
+                  <Card
                     elevation={3}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.primary[400],
-                      height: '100%'
+                      height: "100%",
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" color={colors.grey[300]} gutterBottom>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        gutterBottom
+                      >
                         Average Payment
                       </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={colors.blueAccent[500]}>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color={colors.blueAccent[500]}
+                      >
                         {formatCurrency(summaryStats.averagePayment)}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color={colors.grey[300]}
                         sx={{ mt: 1 }}
                       >
@@ -820,24 +1265,32 @@ const generatePdfReport = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card 
+                  <Card
                     elevation={3}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.primary[400],
-                      height: '100%'
+                      height: "100%",
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" color={colors.grey[300]} gutterBottom>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        gutterBottom
+                      >
                         Total Payments
                       </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={colors.grey[100]}>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color={colors.grey[100]}
+                      >
                         {summaryStats.totalPayments}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color={colors.grey[300]}
                         sx={{ mt: 1 }}
                       >
@@ -846,24 +1299,32 @@ const generatePdfReport = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6} md={3}>
-                  <Card 
+                  <Card
                     elevation={3}
-                    sx={{ 
+                    sx={{
                       backgroundColor: colors.primary[400],
-                      height: '100%'
+                      height: "100%",
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" color={colors.grey[300]} gutterBottom>
+                      <Typography
+                        variant="h6"
+                        color={colors.grey[300]}
+                        gutterBottom
+                      >
                         Pending Payments
                       </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={colors.orangeAccent[500]}>
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color={colors.orangeAccent[500]}
+                      >
                         {summaryStats.pendingPayments}
                       </Typography>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         color={colors.grey[300]}
                         sx={{ mt: 1 }}
                       >
@@ -875,15 +1336,29 @@ const generatePdfReport = () => {
               </Grid>
 
               {/* Main Revenue Chart */}
-              <Paper elevation={3} sx={{ backgroundColor: colors.primary[400], borderRadius: 1, p: 3 }}>
+              <Paper
+                elevation={3}
+                sx={{
+                  backgroundColor: colors.primary[400],
+                  borderRadius: 1,
+                  p: 3,
+                }}
+              >
                 <Box height="400px">
                   {loading ? (
-                    <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      height="100%"
+                    >
                       <CircularProgress />
                     </Box>
                   ) : (
                     <>
-                      <Typography variant="h6" mb={2}>Monthly Revenue Breakdown</Typography>
+                      <Typography variant="h6" mb={2}>
+                        Monthly Revenue Breakdown
+                      </Typography>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                           data={revenueData}
@@ -894,22 +1369,302 @@ const generatePdfReport = () => {
                             bottom: 60,
                           }}
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke={colors.grey[800]} />
-                          <XAxis 
-                            dataKey="name" 
-                            angle={-45} 
-                            textAnchor="end" 
-                            height={70} 
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke={colors.grey[800]}
+                          />
+                          <XAxis
+                            dataKey="name"
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
                             tick={{ fill: colors.grey[100] }}
                           />
                           <YAxis tick={{ fill: colors.grey[100] }} />
                           <Tooltip content={<CustomTooltip />} />
                           <Legend wrapperStyle={{ marginTop: 20 }} />
-                          <Bar dataKey="doctorFees" name="Doctor Fees" stackId="a" fill={colors.blueAccent[500]} />
-                          <Bar dataKey="medicinesCost" name="Medicines Cost" stackId="a" fill={colors.greenAccent[500]} />
+                          <Bar
+                            dataKey="doctorFees"
+                            name="Doctor Fees"
+                            stackId="a"
+                            fill={colors.blueAccent[500]}
+                          />
+                          <Bar
+                            dataKey="medicinesCost"
+                            name="Medicines Cost"
+                            stackId="a"
+                            fill={colors.greenAccent[500]}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </>
+                  )}
+                </Box>
+              </Paper>
+
+              {/* Disease Statistics */}
+
+              <Paper
+                elevation={3}
+                sx={{
+                  backgroundColor: colors.primary[400],
+                  borderRadius: 1,
+                  p: 3,
+                  mt: 3,
+                }}
+              >
+                {/* Title and Export Buttons */}
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={2}
+                >
+                  <Typography variant="h5">Top 5 Diseases</Typography>
+
+                  <Box display="flex" gap={2}>
+                    <Button
+                      variant="contained"
+                      startIcon={<DownloadIcon />}
+                      onClick={exportDiseaseToCSV}
+                      disabled={diseaseData.length === 0}
+                      sx={{
+                        backgroundColor: colors.greenAccent[600],
+                        "&:hover": { backgroundColor: colors.greenAccent[700] },
+                      }}
+                    >
+                      Export CSV
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<PictureAsPdfIcon />}
+                      onClick={generateDiseasePdfReport}
+                      disabled={diseaseData.length === 0}
+                      sx={{
+                        backgroundColor: colors.redAccent[600],
+                        "&:hover": { backgroundColor: colors.redAccent[700] },
+                      }}
+                    >
+                      Generate PDF
+                    </Button>
+                  </Box>
+                </Box>
+
+                {/* Date filters */}
+                <Box display="flex" gap={2} mb={3} flexWrap="wrap">
+                  <Button
+                    variant={
+                      diseaseDateRange === "week" ? "contained" : "outlined"
+                    }
+                    onClick={() => handleDateRangeChange("week")}
+                    sx={{
+                      backgroundColor:
+                        diseaseDateRange === "week"
+                          ? colors.greenAccent[600]
+                          : "transparent",
+                      color:
+                        diseaseDateRange === "week"
+                          ? colors.grey[900]
+                          : colors.grey[100],
+                      "&:hover": {
+                        backgroundColor:
+                          diseaseDateRange === "week"
+                            ? colors.greenAccent[700]
+                            : colors.primary[300],
+                      },
+                    }}
+                  >
+                    This Week
+                  </Button>
+
+                  <Button
+                    variant={
+                      diseaseDateRange === "month" ? "contained" : "outlined"
+                    }
+                    onClick={() => handleDateRangeChange("month")}
+                    sx={{
+                      backgroundColor:
+                        diseaseDateRange === "month"
+                          ? colors.greenAccent[600]
+                          : "transparent",
+                      color:
+                        diseaseDateRange === "month"
+                          ? colors.grey[900]
+                          : colors.grey[100],
+                      "&:hover": {
+                        backgroundColor:
+                          diseaseDateRange === "month"
+                            ? colors.greenAccent[700]
+                            : colors.primary[300],
+                      },
+                    }}
+                  >
+                    This Month
+                  </Button>
+
+                  <Button
+                    variant={
+                      diseaseDateRange === "year" ? "contained" : "outlined"
+                    }
+                    onClick={() => handleDateRangeChange("year")}
+                    sx={{
+                      backgroundColor:
+                        diseaseDateRange === "year"
+                          ? colors.greenAccent[600]
+                          : "transparent",
+                      color:
+                        diseaseDateRange === "year"
+                          ? colors.grey[900]
+                          : colors.grey[100],
+                      "&:hover": {
+                        backgroundColor:
+                          diseaseDateRange === "year"
+                            ? colors.greenAccent[700]
+                            : colors.primary[300],
+                      },
+                    }}
+                  >
+                    This Year
+                  </Button>
+
+                  <Button
+                    variant={
+                      diseaseDateRange === "custom" ? "contained" : "outlined"
+                    }
+                    onClick={() => setDiseaseDateRange("custom")}
+                    sx={{
+                      backgroundColor:
+                        diseaseDateRange === "custom"
+                          ? colors.greenAccent[600]
+                          : "transparent",
+                      color:
+                        diseaseDateRange === "custom"
+                          ? colors.grey[900]
+                          : colors.grey[100],
+                      "&:hover": {
+                        backgroundColor:
+                          diseaseDateRange === "custom"
+                            ? colors.greenAccent[700]
+                            : colors.primary[300],
+                      },
+                    }}
+                  >
+                    Custom
+                  </Button>
+
+                  {diseaseDateRange === "custom" && (
+                    <Box
+                      display="flex"
+                      gap={2}
+                      alignItems="center"
+                      flexWrap="wrap"
+                    >
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          label="Start Date"
+                          value={diseaseStartDate}
+                          onChange={(newValue) => setDiseaseStartDate(newValue)}
+                          slotProps={{
+                            textField: {
+                              size: "small",
+                              sx: {
+                                backgroundColor: colors.primary[300],
+                                width: 150,
+                              },
+                            },
+                          }}
+                        />
+                        <DatePicker
+                          label="End Date"
+                          value={diseaseEndDate}
+                          onChange={(newValue) => setDiseaseEndDate(newValue)}
+                          slotProps={{
+                            textField: {
+                              size: "small",
+                              sx: {
+                                backgroundColor: colors.primary[300],
+                                width: 150,
+                              },
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
+
+                      <Button
+                        variant="contained"
+                        onClick={fetchDiseaseData}
+                        sx={{
+                          backgroundColor: colors.blueAccent[500],
+                          "&:hover": {
+                            backgroundColor: colors.blueAccent[600],
+                          },
+                        }}
+                      >
+                        Apply
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Disease Bar Chart */}
+                <Box height="400px">
+                  {loadingDiseases ? (
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      height="100%"
+                    >
+                      <CircularProgress />
+                    </Box>
+                  ) : diseaseData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={diseaseData}
+                        margin={{
+                          top: 20,
+                          right: 30,
+                          left: 20,
+                          bottom: 60,
+                        }}
+                        layout="vertical"
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke={colors.grey[800]}
+                        />
+                        <XAxis
+                          type="number"
+                          tick={{ fill: colors.grey[100] }}
+                        />
+                        <YAxis
+                          dataKey="name"
+                          type="category"
+                          width={150}
+                          tick={{ fill: colors.grey[100] }}
+                        />
+                        <Tooltip
+                          formatter={(value) => [`${value} cases`, "Count"]}
+                          contentStyle={{
+                            backgroundColor: colors.primary[400],
+                            border: `1px solid ${colors.grey[800]}`,
+                            color: colors.grey[100],
+                          }}
+                        />
+                        <Bar dataKey="count" fill={colors.greenAccent[500]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      height="100%"
+                    >
+                      <Typography variant="body1" color={colors.grey[300]}>
+                        No disease data available for the selected period
+                      </Typography>
+                    </Box>
                   )}
                 </Box>
               </Paper>
