@@ -1,45 +1,58 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import UserService from './services/UserService';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import UserService from "./services/UserService";
 
 // Pages
-import LandingPage from './pages/LandingPage';
-import Login from './components/Login Page/Doctor/Login';
-import Signup from './components/Signup Page/SignupPage';
+import LandingPage from "./pages/LandingPage";
+import Login from "./components/Login Page/Doctor/Login";
+import Signup from "./components/Signup Page/SignupPage";
 
 // Doctor Routes
-import Dashboard_doctor from './pages/Doctor_Dashboard';
-import Patient from './components/Dashboard/Doctor/Patient/Patient';
-import AddPatient from './components/Dashboard/Doctor/Patient/AddPatient/AddPatient';
-import QuickPrescription from './components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription';
-import Medicine from './components/Dashboard/Doctor/Medicine/Medicine';
-import Inventory from './components/Dashboard/Doctor/Inventory/Inventory';
-import Prescription from './components/Dashboard/Doctor/Prescription/Prescription';
-import Payment from './components/Dashboard/Doctor/Payment/PaymentList';
+import Dashboard_doctor from "./pages/Doctor_Dashboard";
+import Patient from "./components/Dashboard/Doctor/Patient/Patient";
+import AddPatient from "./components/Dashboard/Doctor/Patient/AddPatient/AddPatient";
+import QuickPrescription from "./components/Dashboard/Doctor/Prescription/QuickPrescription/QuickPrescription";
+import Medicine from "./components/Dashboard/Doctor/Medicine/Medicine";
+import Inventory from "./components/Dashboard/Doctor/Inventory/Inventory";
+import Prescription from "./components/Dashboard/Doctor/Prescription/Prescription";
+import Payment from "./components/Dashboard/Doctor/Payment/PaymentList";
+import Reports from "./components/Dashboard/Doctor/Reports/Reports";
 
 // Dispenser Routes
-import Dashboard_dispenser from './pages/Dispenser_Dashboard';
-import ViewPrescription from './components/Dashboard/Dispenser/ViewPrescription/ViewPrescription';
-import DispenserAppointments from './components/Dashboard/Dispenser/Appoinments/DispenserAppointments';
+import Dashboard_dispenser from "./pages/Dispenser_Dashboard";
+import ViewPrescription from "./components/Dashboard/Dispenser/ViewPrescription/ViewPrescription";
+import DispenserAppointments from "./components/Dashboard/Dispenser/Appoinments/DispenserAppointments";
 // Customer Routes
-import Dashboard_customer from './pages/Customer_Dashboard';
-import Appoinment from './components/Dashboard/Customer/Appoinment/Appoinment';
-import AddMedicine from './components/Dashboard/Doctor/Medicine/AddMedicine/AddMedicine';
-import AddInventory from './components/Dashboard/Doctor/Inventory/AddInventory/AddInventory';
-import PaymentList from './components/Dashboard/Dispenser/Payment/PaymentList';
+import Dashboard_customer from "./pages/Customer_Dashboard";
+import Appoinment from "./components/Dashboard/Customer/Appoinment/Appoinment";
+import AddMedicine from "./components/Dashboard/Doctor/Medicine/AddMedicine/AddMedicine";
+import AddInventory from "./components/Dashboard/Doctor/Inventory/AddInventory/AddInventory";
+import PaymentList from "./components/Dashboard/Dispenser/Payment/PaymentList";
 
 const App = () => {
   // Protected Route Components
   const DoctorRoute = ({ element }) => {
-    return UserService.doctorOnly() ? element : <Navigate to="/login" replace />;
+    return UserService.doctorOnly() ? (
+      element
+    ) : (
+      <Navigate to="/login" replace />
+    );
   };
 
   const DispenserRoute = ({ element }) => {
-    return UserService.isDispenser() ? element : <Navigate to="/login" replace />;
+    return UserService.isDispenser() ? (
+      element
+    ) : (
+      <Navigate to="/login" replace />
+    );
   };
 
   const CustomerRoute = ({ element }) => {
-    return UserService.isCustomer() ? element : <Navigate to="/login" replace />;
+    return UserService.isCustomer() ? (
+      element
+    ) : (
+      <Navigate to="/login" replace />
+    );
   };
 
   return (
@@ -91,6 +104,11 @@ const App = () => {
           <Route
             path="/quickPrescription"
             element={<DoctorRoute element={<QuickPrescription />} />}
+          />
+
+          <Route
+            path="/reports"
+            element={<DoctorRoute element={<Reports />} />}
           />
 
           {/* Dispenser Protected Routes */}
