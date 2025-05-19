@@ -22,6 +22,13 @@ public class Prescription {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
+    @ManyToOne
+    @JoinColumn(name = "disease_id")
+    private Disease disease;
+
+    @Column(name = "custom_disease")
+    private String customDisease;
+
     @Column(name = "issue_date", nullable = false)
     private LocalDateTime issueDate;
 
@@ -34,4 +41,3 @@ public class Prescription {
     @EqualsAndHashCode.Exclude
     private List<PrescriptionItem> prescriptionItems = new ArrayList<>();
 }
-

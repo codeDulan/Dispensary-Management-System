@@ -1,11 +1,7 @@
 package com.codedulan.dms.dto;
 
 import com.codedulan.dms.entity.Prescription;
-import com.codedulan.dms.entity.PrescriptionItem;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,6 +17,9 @@ public class PrescriptionDTO {
     private Long id;
     private Long patientId;
     private String patientName;
+    private Long diseaseId;
+    private String diseaseName;
+    private String customDisease;
     private LocalDateTime issueDate;
     private String prescriptionNotes;
     private List<PrescriptionItemDTO> items = new ArrayList<>();
@@ -30,7 +29,7 @@ public class PrescriptionDTO {
                 .map(PrescriptionItemDTO::fromEntity)
                 .collect(Collectors.toList());
 
-        return PrescriptionDTO.builder()
+        PrescriptionDTO dto = PrescriptionDTO.builder()
                 .id(prescription.getId())
                 .patientId(prescription.getPatient().getPatientId())
                 .patientName(prescription.getPatient().getFirstName() + " " + prescription.getPatient().getLastName())
@@ -38,6 +37,16 @@ public class PrescriptionDTO {
                 .prescriptionNotes(prescription.getPrescriptionNotes())
                 .items(itemDTOs)
                 .build();
+
+        if (prescription.getDisease() != null) {
+            dto.setDiseaseId(prescription.getDisease().getId());
+            dto.setDiseaseName(prescription.getDisease().getName());
+        }
+
+        if (prescription.getCustomDisease() != null) {
+            dto.setCustomDisease(prescription.getCustomDisease());
+        }
+
+        return dto;
     }
 }
-
