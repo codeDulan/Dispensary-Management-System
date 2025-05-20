@@ -1,18 +1,18 @@
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  Card, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
-  ThemeProvider, 
-  CssBaseline, 
-  Grid, 
+import {
+  Box,
+  Button,
+  Typography,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  ThemeProvider,
+  CssBaseline,
+  Grid,
   CircularProgress,
   Select,
   MenuItem,
@@ -21,7 +21,7 @@ import {
   Snackbar,
   Alert,
   TextField,
-  Chip
+  Chip,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { ColorModeContext, useMode, tokens } from "../../../../theme";
@@ -38,19 +38,23 @@ const PrescriptionView = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [currentPrescriptionIndex, setCurrentPrescriptionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [filterOption, setFilterOption] = useState("all");
   const [filterDate, setFilterDate] = useState("");
-  
+
   // New state variables
   const [doctorFee, setDoctorFee] = useState(300);
-  
+
   // Load processed prescriptions from localStorage to persist across refreshes
   const [processedPrescriptions, setProcessedPrescriptions] = useState(() => {
-    const savedProcessed = localStorage.getItem('processedPrescriptions');
+    const savedProcessed = localStorage.getItem("processedPrescriptions");
     return savedProcessed ? new Set(JSON.parse(savedProcessed)) : new Set();
   });
-  
+
   // API base URL
   const API_BASE_URL = "http://localhost:8080/api";
 
@@ -63,12 +67,12 @@ const PrescriptionView = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
       let url = `${API_BASE_URL}/prescriptions`;
-      
+
       // Apply filters
       if (filterOption === "today") {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString().split("T")[0];
         url = `${API_BASE_URL}/prescriptions/by-date?date=${today}`;
       } else if (filterOption === "date" && filterDate) {
         url = `${API_BASE_URL}/prescriptions/by-date?date=${filterDate}`;
@@ -76,13 +80,15 @@ const PrescriptionView = () => {
         const today = new Date();
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay());
-        url = `${API_BASE_URL}/prescriptions/by-date-range?startDate=${startOfWeek.toISOString().split('T')[0]}`;
+        url = `${API_BASE_URL}/prescriptions/by-date-range?startDate=${
+          startOfWeek.toISOString().split("T")[0]
+        }`;
       }
-      
+
       const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       // Debug to see the structure of the response
       console.log("Prescriptions Response:", response.data);
       if (response.data.length > 0) {
@@ -93,16 +99,16 @@ const PrescriptionView = () => {
           console.log("Medicine properties:", {
             medicineName: response.data[0].items[0].medicineName,
             medicineWeight: response.data[0].items[0].medicineWeight,
-            medicine: response.data[0].items[0].medicine
+            medicine: response.data[0].items[0].medicine,
           });
         }
       }
-      
+
       // Sort prescriptions by issue date (newest first)
-      const sortedPrescriptions = response.data.sort((a, b) => 
-        new Date(b.issueDate) - new Date(a.issueDate)
+      const sortedPrescriptions = response.data.sort(
+        (a, b) => new Date(b.issueDate) - new Date(a.issueDate)
       );
-      
+
       setPrescriptions(sortedPrescriptions);
       setCurrentPrescriptionIndex(0);
     } catch (error) {
@@ -118,7 +124,7 @@ const PrescriptionView = () => {
     setNotification({
       open: true,
       message,
-      severity
+      severity,
     });
   };
 
@@ -132,7 +138,9 @@ const PrescriptionView = () => {
 
   // Check if current prescription is processed
   const isCurrentPrescriptionProcessed = () => {
-    return currentPrescription && processedPrescriptions.has(currentPrescription.id);
+    return (
+      currentPrescription && processedPrescriptions.has(currentPrescription.id)
+    );
   };
 
   // Handle doctor fee change
@@ -146,15 +154,19 @@ const PrescriptionView = () => {
     // Check all possible locations based on your DTO structure
     if (item.medicineWeight) return item.medicineWeight;
     if (item.medicine && item.medicine.weight) return item.medicine.weight;
-    if (typeof item.medicine === 'string' && item.medicineDetails && item.medicineDetails.weight) 
+    if (
+      typeof item.medicine === "string" &&
+      item.medicineDetails &&
+      item.medicineDetails.weight
+    )
       return item.medicineDetails.weight;
-    
+
     // Try to extract from the medicine name if it contains weight information
     if (item.medicineName) {
       const weightMatch = item.medicineName.match(/(\d+)\s*mg/i);
       if (weightMatch) return weightMatch[1];
     }
-    
+
     return null;
   };
 
@@ -162,8 +174,9 @@ const PrescriptionView = () => {
   const getUnitPrice = (item) => {
     // Check where the sell price might be located in your DTO
     if (item.sellPrice) return item.sellPrice;
-    if (item.inventoryItem && item.inventoryItem.sellPrice) return item.inventoryItem.sellPrice;
-    
+    if (item.inventoryItem && item.inventoryItem.sellPrice)
+      return item.inventoryItem.sellPrice;
+
     // Default fallback
     return 100;
   };
@@ -171,18 +184,31 @@ const PrescriptionView = () => {
   // Helper function to estimate doses per day based on dosage instructions
   const getDosesPerDay = (dosageInstructions) => {
     if (!dosageInstructions) return 1; // Default to 1 if no instructions
-    
+
     const instruction = String(dosageInstructions).toUpperCase();
-    
-    if (instruction.includes('OD') || instruction.includes('ONCE DAILY') || 
-        instruction.includes('MANE') || instruction.includes('NOCTE')) {
+
+    if (
+      instruction.includes("OD") ||
+      instruction.includes("ONCE DAILY") ||
+      instruction.includes("MANE") ||
+      instruction.includes("NOCTE")
+    ) {
       return 1;
-    } else if (instruction.includes('BD') || instruction.includes('TWICE DAILY')) {
+    } else if (
+      instruction.includes("BD") ||
+      instruction.includes("TWICE DAILY")
+    ) {
       return 2;
-    } else if (instruction.includes('TDS') || instruction.includes('THREE TIMES DAILY')) {
+    } else if (
+      instruction.includes("TDS") ||
+      instruction.includes("THREE TIMES DAILY")
+    ) {
       return 3;
-    } else if (instruction.includes('QDS') || instruction.includes('QID') || 
-              instruction.includes('FOUR TIMES DAILY')) {
+    } else if (
+      instruction.includes("QDS") ||
+      instruction.includes("QID") ||
+      instruction.includes("FOUR TIMES DAILY")
+    ) {
       return 4;
     } else {
       return 1; // Default for other instructions
@@ -192,47 +218,56 @@ const PrescriptionView = () => {
   // Calculate total quantity for an item
   const calculateTotalQuantity = (item) => {
     if (!item) return 0;
-    
+
     // Extract quantity per dose (default to 1 if not provided)
     const quantityPerDose = parseInt(item.quantity) || 1;
-    
+
     // Get number of doses per day based on dosage instructions
     const dosesPerDay = getDosesPerDay(item.dosageInstructions);
-    
+
     // Get number of days for the prescription
     const daysSupply = parseInt(item.daysSupply) || 7;
-    
+
     // Calculate total: quantity per dose * doses per day * days
     const totalQuantity = quantityPerDose * dosesPerDay * daysSupply;
-    console.log(`Calculation for ${item.medicineName}: ${quantityPerDose} × ${dosesPerDay} × ${daysSupply} = ${totalQuantity}`);
-    
+    console.log(
+      `Calculation for ${item.medicineName}: ${quantityPerDose} × ${dosesPerDay} × ${daysSupply} = ${totalQuantity}`
+    );
+
     return totalQuantity;
   };
 
   // Calculate total price - Updated to account for days supply
   const calculateTotalPrice = () => {
     if (!currentPrescription || !currentPrescription.items) return doctorFee;
-    
-    console.log("Calculating total price for prescription:", currentPrescription);
-    
+
+    console.log(
+      "Calculating total price for prescription:",
+      currentPrescription
+    );
+
     const medicinesTotal = currentPrescription.items.reduce((total, item) => {
       // Get unit price
       const unitPrice = getUnitPrice(item);
-      
+
       // Calculate total quantity needed
       const totalQuantity = calculateTotalQuantity(item);
-      
+
       // Calculate cost for this item
       const itemCost = unitPrice * totalQuantity;
-      
-      console.log(`Item: ${item.medicineName}, Unit Price: ${unitPrice}, Total Quantity: ${totalQuantity}, Cost: ${itemCost}`);
-      
+
+      console.log(
+        `Item: ${item.medicineName}, Unit Price: ${unitPrice}, Total Quantity: ${totalQuantity}, Cost: ${itemCost}`
+      );
+
       return total + itemCost;
     }, 0);
-    
+
     const finalTotal = medicinesTotal + doctorFee;
-    console.log(`Medicines Total: ${medicinesTotal}, Doctor Fee: ${doctorFee}, Final Total: ${finalTotal}`);
-    
+    console.log(
+      `Medicines Total: ${medicinesTotal}, Doctor Fee: ${doctorFee}, Final Total: ${finalTotal}`
+    );
+
     return finalTotal;
   };
 
@@ -252,15 +287,15 @@ const PrescriptionView = () => {
   // Handle prescription completion
   const markAsDone = async () => {
     if (!currentPrescription) return;
-    
+
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
       // Create payment record
       const medicinesCost = calculateTotalPrice() - doctorFee;
       const totalAmount = calculateTotalPrice();
-      
+
       const paymentData = {
         patientId: currentPrescription.patientId,
         prescriptionId: currentPrescription.id,
@@ -269,22 +304,26 @@ const PrescriptionView = () => {
         totalAmount: totalAmount,
         paymentMethod: "CASH",
         transactionReference: `PRESC-${currentPrescription.id}`,
-        notes: "Payment recorded by dispenser"
+        notes: "Payment recorded by dispenser",
       };
-      
-      await axios.post(
-        `${API_BASE_URL}/payments`,
-        paymentData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
+
+      await axios.post(`${API_BASE_URL}/payments`, paymentData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       // Mark the prescription as processed
-      const updatedProcessed = new Set([...processedPrescriptions, currentPrescription.id]);
+      const updatedProcessed = new Set([
+        ...processedPrescriptions,
+        currentPrescription.id,
+      ]);
       setProcessedPrescriptions(updatedProcessed);
-      
+
       // Save to localStorage for persistence
-      localStorage.setItem('processedPrescriptions', JSON.stringify([...updatedProcessed]));
-      
+      localStorage.setItem(
+        "processedPrescriptions",
+        JSON.stringify([...updatedProcessed])
+      );
+
       showNotification("Payment recorded successfully");
       fetchPrescriptions();
     } catch (error) {
@@ -298,11 +337,11 @@ const PrescriptionView = () => {
   // Handle prescription rejection
   const rejectPrescription = async () => {
     if (!currentPrescription) return;
-    
+
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      
+
       // Create a cancelled payment record
       const paymentData = {
         patientId: currentPrescription.patientId,
@@ -313,22 +352,26 @@ const PrescriptionView = () => {
         paymentMethod: "CASH",
         status: "CANCELLED",
         transactionReference: `REJECTED-${currentPrescription.id}`,
-        notes: "Prescription rejected by dispenser - no payment collected"
+        notes: "Prescription rejected by dispenser - no payment collected",
       };
-      
-      await axios.post(
-        `${API_BASE_URL}/payments`,
-        paymentData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
+
+      await axios.post(`${API_BASE_URL}/payments`, paymentData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       // Mark the prescription as processed
-      const updatedProcessed = new Set([...processedPrescriptions, currentPrescription.id]);
+      const updatedProcessed = new Set([
+        ...processedPrescriptions,
+        currentPrescription.id,
+      ]);
       setProcessedPrescriptions(updatedProcessed);
-      
+
       // Save to localStorage for persistence
-      localStorage.setItem('processedPrescriptions', JSON.stringify([...updatedProcessed]));
-      
+      localStorage.setItem(
+        "processedPrescriptions",
+        JSON.stringify([...updatedProcessed])
+      );
+
       showNotification("Prescription marked as rejected in payment records");
       fetchPrescriptions();
     } catch (error) {
@@ -342,11 +385,11 @@ const PrescriptionView = () => {
   // Print bill
   const printBill = () => {
     if (!currentPrescription) return;
-    
-    const printContent = document.getElementById('bill-content');
+
+    const printContent = document.getElementById("bill-content");
     if (!printContent) return;
-    
-    const printWindow = window.open('', '_blank');
+
+    const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
@@ -365,7 +408,9 @@ const PrescriptionView = () => {
           <h1>Sahanaya Medical Center</h1>
           <h2>Prescription Bill</h2>
           <p><strong>Patient:</strong> ${currentPrescription.patientName}</p>
-          <p><strong>Date:</strong> ${new Date(currentPrescription.issueDate).toLocaleString()}</p>
+          <p><strong>Date:</strong> ${new Date(
+            currentPrescription.issueDate
+          ).toLocaleString()}</p>
           
           <table>
             <thead>
@@ -379,22 +424,28 @@ const PrescriptionView = () => {
               </tr>
             </thead>
             <tbody>
-              ${currentPrescription.items.map(item => {
-                const totalQty = calculateTotalQuantity(item);
-                const unitPrice = getUnitPrice(item);
-                const itemTotal = unitPrice * totalQty;
-                const medicineWeight = getMedicineWeight(item);
-                return `
+              ${currentPrescription.items
+                .map((item) => {
+                  const totalQty = calculateTotalQuantity(item);
+                  const unitPrice = getUnitPrice(item);
+                  const itemTotal = unitPrice * totalQty;
+                  const medicineWeight = getMedicineWeight(item);
+                  return `
                   <tr>
-                    <td>${item.medicineName}${medicineWeight ? ` (${medicineWeight} mg)` : ''}</td>
-                    <td>${item.dosageInstructions || 'As directed'} for ${item.daysSupply} days</td>
+                    <td>${item.medicineName}${
+                    medicineWeight ? ` (${medicineWeight} mg)` : ""
+                  }</td>
+                    <td>${item.dosageInstructions || "As directed"} for ${
+                    item.daysSupply
+                  } days</td>
                     <td>${item.quantity} per dose</td>
                     <td>${totalQty}</td>
                     <td>Rs. ${unitPrice.toFixed(2)}</td>
                     <td>Rs. ${itemTotal.toFixed(2)}</td>
                   </tr>
                 `;
-              }).join('')}
+                })
+                .join("")}
               <tr>
                 <td colspan="5">Doctor Fee</td>
                 <td>Rs. ${doctorFee.toFixed(2)}</td>
@@ -471,12 +522,12 @@ const PrescriptionView = () => {
                   />
                 )}
 
-                <Button 
+                <Button
                   variant="contained"
                   onClick={fetchPrescriptions}
                   sx={{
                     backgroundColor: colors.blueAccent[500],
-                    '&:hover': { backgroundColor: colors.blueAccent[600] }
+                    "&:hover": { backgroundColor: colors.blueAccent[600] },
                   }}
                 >
                   Refresh
@@ -495,20 +546,52 @@ const PrescriptionView = () => {
               ) : (
                 <>
                   {/* Patient Card */}
-                  <Card sx={{ 
-                    backgroundColor: colors.primary[theme.palette.mode === 'dark' ? 400 : 50],
-                    padding: 2,
-                    boxShadow: theme.shadows[2],
-                    mb: 2
-                  }}>
-                    <Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                      Patient Name: <strong>{currentPrescription?.patientName}</strong>
+                  <Card
+                    sx={{
+                      backgroundColor:
+                        colors.primary[
+                          theme.palette.mode === "dark" ? 400 : 50
+                        ],
+                      padding: 2,
+                      boxShadow: theme.shadows[2],
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark"
+                            ? colors.grey[100]
+                            : "#000000",
+                      }}
+                    >
+                      Patient Name:{" "}
+                      <strong>{currentPrescription?.patientName}</strong>
                     </Typography>
-                    <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                      Prescription Date: {formatDate(currentPrescription?.issueDate)}
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark"
+                            ? colors.grey[100]
+                            : "#000000",
+                      }}
+                    >
+                      Prescription Date:{" "}
+                      {formatDate(currentPrescription?.issueDate)}
                     </Typography>
                     {currentPrescription?.prescriptionNotes && (
-                      <Typography variant="body2" sx={{ mt: 2, color: theme.palette.mode === 'dark' ? colors.grey[300] : '#333333' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 2,
+                          color:
+                            theme.palette.mode === "dark"
+                              ? colors.grey[300]
+                              : "#333333",
+                        }}
+                      >
                         Notes: {currentPrescription.prescriptionNotes}
                       </Typography>
                     )}
@@ -519,69 +602,179 @@ const PrescriptionView = () => {
                     <Grid container spacing={2}>
                       {/* Medicines Section - Left Side */}
                       <Grid item xs={12} md={8}>
-                        <Card sx={{ 
-                          backgroundColor: colors.primary[theme.palette.mode === 'dark' ? 400 : 50],
-                          padding: 2,
-                          boxShadow: theme.shadows[2],
-                          height: '100%'
-                        }}>
-                          <Typography variant="h6" fontWeight={600} sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }} gutterBottom>
+                        <Card
+                          sx={{
+                            backgroundColor:
+                              colors.primary[
+                                theme.palette.mode === "dark" ? 400 : 50
+                              ],
+                            padding: 2,
+                            boxShadow: theme.shadows[2],
+                            height: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
+                            fontWeight={600}
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? colors.grey[100]
+                                  : "#000000",
+                            }}
+                            gutterBottom
+                          >
                             Prescribed Medicines
                           </Typography>
-                          <TableContainer component={Paper} sx={{ 
-                            boxShadow: 0,
-                            backgroundColor: theme.palette.mode === 'dark' ? colors.primary[500] : 'ffffff'
-                          }}>
+                          <TableContainer
+                            component={Paper}
+                            sx={{
+                              boxShadow: 0,
+                              backgroundColor:
+                                theme.palette.mode === "dark"
+                                  ? colors.primary[500]
+                                  : "ffffff",
+                            }}
+                          >
                             <Table>
                               <TableHead>
-                                <TableRow sx={{ 
-                                  backgroundColor: theme.palette.mode === 'dark' ? colors.blueAccent[700] : colors.blueAccent[50]
-                                }}>
-                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Medicine</TableCell>
-                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Dosage Instructions</TableCell>
-                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Quantity</TableCell>
-                                  <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold' }}>Total Quantity</TableCell>
+                                <TableRow
+                                  sx={{
+                                    backgroundColor:
+                                      theme.palette.mode === "dark"
+                                        ? colors.blueAccent[700]
+                                        : colors.blueAccent[50],
+                                  }}
+                                >
+                                  <TableCell
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? colors.grey[100]
+                                          : "#000000",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    Medicine
+                                  </TableCell>
+                                  <TableCell
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? colors.grey[100]
+                                          : "#000000",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    Dosage Instructions
+                                  </TableCell>
+                                  <TableCell
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? colors.grey[100]
+                                          : "#000000",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    Quantity
+                                  </TableCell>
+                                  <TableCell
+                                    sx={{
+                                      color:
+                                        theme.palette.mode === "dark"
+                                          ? colors.grey[100]
+                                          : "#000000",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    Total Quantity
+                                  </TableCell>
                                 </TableRow>
                               </TableHead>
                               <TableBody>
-                                {currentPrescription?.items?.map((item, index) => {
-                                  const medicineWeight = getMedicineWeight(item);
-                                  console.log(`Item ${index} weight:`, medicineWeight);
-                                  return (
-                                    <TableRow key={index}>
-                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                                        <Box>
-                                          <Typography variant="body2">{item.medicineName}</Typography>
-                                          {medicineWeight && (
-                                            <Chip
-                                              label={`${medicineWeight} mg`}
-                                              size="small"
-                                              color="primary"
-                                              variant="outlined"
-                                              sx={{ mt: 0.5 }}
-                                            />
-                                          )}
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                                        {item.dosageInstructions || 'As directed'} 
-                                        <Typography variant="caption" display="block">
-                                          For {item.daysSupply} days
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                                        {item.quantity} per dose
-                                      </TableCell>
-                                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
-                                        <Chip
-                                          label={calculateTotalQuantity(item)}
-                                          color="secondary"
-                                          size="small"
-                                        />
-                                      </TableCell>
-                                    </TableRow>
-                                  );
-                                })}
+                                {currentPrescription?.items?.map(
+                                  (item, index) => {
+                                    const medicineWeight =
+                                      getMedicineWeight(item);
+                                    console.log(
+                                      `Item ${index} weight:`,
+                                      medicineWeight
+                                    );
+                                    return (
+                                      <TableRow key={index}>
+                                        <TableCell
+                                          sx={{
+                                            color:
+                                              theme.palette.mode === "dark"
+                                                ? colors.grey[100]
+                                                : "#000000",
+                                          }}
+                                        >
+                                          <Box>
+                                            <Typography variant="body2">
+                                              {item.medicineName}
+                                            </Typography>
+                                            {medicineWeight && (
+                                              <Chip
+                                                label={`${medicineWeight} mg`}
+                                                size="small"
+                                                color="primary"
+                                                variant="outlined"
+                                                sx={{
+                                                  mt: 0.5,
+                                                  color: "white",
+                                                  borderColor: "white",
+                                                }}
+                                              />
+                                            )}
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            color:
+                                              theme.palette.mode === "dark"
+                                                ? colors.grey[100]
+                                                : "#000000",
+                                          }}
+                                        >
+                                          {item.dosageInstructions ||
+                                            "As directed"}
+                                          <Typography
+                                            variant="caption"
+                                            display="block"
+                                          >
+                                            For {item.daysSupply} days
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            color:
+                                              theme.palette.mode === "dark"
+                                                ? colors.grey[100]
+                                                : "#000000",
+                                          }}
+                                        >
+                                          {item.quantity} per dose
+                                        </TableCell>
+                                        <TableCell
+                                          sx={{
+                                            color:
+                                              theme.palette.mode === "dark"
+                                                ? colors.grey[100]
+                                                : "#000000",
+                                          }}
+                                        >
+                                          <Chip
+                                            label={calculateTotalQuantity(item)}
+                                            color="secondary"
+                                            size="small"
+                                          />
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  }
+                                )}
                               </TableBody>
                             </Table>
                           </TableContainer>
@@ -590,24 +783,57 @@ const PrescriptionView = () => {
 
                       {/* Payment Section - Right Side */}
                       <Grid item xs={12} md={4}>
-                        <Card sx={{ 
-                          backgroundColor: theme.palette.mode === 'dark' ? colors.greenAccent[700] : colors.greenAccent[50],
-                          padding: 2,
-                          boxShadow: theme.shadows[2],
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column'
-                        }}>
-                          <Typography variant="h6" fontWeight={600} sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000' }}>
+                        <Card
+                          sx={{
+                            backgroundColor:
+                              theme.palette.mode === "dark"
+                                ? colors.greenAccent[700]
+                                : colors.greenAccent[50],
+                            padding: 2,
+                            boxShadow: theme.shadows[2],
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
+                            fontWeight={600}
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? colors.grey[100]
+                                  : "#000000",
+                            }}
+                          >
                             Payment
                           </Typography>
-                          <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mt: 2 }}>
-                            Medicines Cost: Rs. {(calculateTotalPrice() - doctorFee).toFixed(2)}
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? colors.grey[100]
+                                  : "#000000",
+                              mt: 2,
+                            }}
+                          >
+                            Medicines Cost: Rs.{" "}
+                            {(calculateTotalPrice() - doctorFee).toFixed(2)}
                           </Typography>
-                          
+
                           {/* Editable Doctor Fee */}
                           <Box display="flex" alignItems="center" mt={1} mb={1}>
-                            <Typography variant="body1" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', mr: 2 }}>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color:
+                                  theme.palette.mode === "dark"
+                                    ? colors.grey[100]
+                                    : "#000000",
+                                mr: 2,
+                              }}
+                            >
                               Doctor Fee: Rs.
                             </Typography>
                             <TextField
@@ -617,67 +843,95 @@ const PrescriptionView = () => {
                               size="small"
                               disabled={isCurrentPrescriptionProcessed()}
                               InputProps={{
-                                sx: { 
-                                  width: '100px',
-                                  color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000'
-                                }
+                                sx: {
+                                  width: "100px",
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? colors.grey[100]
+                                      : "#000000",
+                                },
                               }}
                             />
                           </Box>
-                          
-                          <Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000', fontWeight: 'bold', mt: 2 }}>
+
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? colors.grey[100]
+                                  : "#000000",
+                              fontWeight: "bold",
+                              mt: 2,
+                            }}
+                          >
                             Total Amount: Rs. {calculateTotalPrice().toFixed(2)}
                           </Typography>
-                          
+
                           {isCurrentPrescriptionProcessed() ? (
-                            <Box 
-                              display="flex" 
-                              justifyContent="center" 
-                              alignItems="center" 
+                            <Box
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
                               mt="auto"
                               p={2}
                               sx={{
-                                backgroundColor: theme.palette.mode === 'dark' ? colors.greenAccent[800] : colors.greenAccent[50],
-                                border: `1px solid ${theme.palette.mode === 'dark' ? colors.greenAccent[400] : colors.greenAccent[500]}`,
+                                backgroundColor:
+                                  theme.palette.mode === "dark"
+                                    ? colors.greenAccent[800]
+                                    : colors.greenAccent[50],
+                                border: `1px solid ${
+                                  theme.palette.mode === "dark"
+                                    ? colors.greenAccent[400]
+                                    : colors.greenAccent[500]
+                                }`,
                                 borderRadius: 1,
-                                boxShadow: 'none'
+                                boxShadow: "none",
                               }}
                             >
                               <Typography
                                 variant="h6"
-                                sx={{ 
-                                  color: theme.palette.mode === 'dark' ? colors.greenAccent[400] : colors.greenAccent[800],
-                                  fontWeight: 'bold',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1
+                                sx={{
+                                  color:
+                                    theme.palette.mode === "dark"
+                                      ? colors.greenAccent[400]
+                                      : colors.greenAccent[800],
+                                  fontWeight: "bold",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
                                 }}
                               >
-                                <span style={{ fontSize: '1.2rem' }}>✓</span> Saved Successfully
+                                <span style={{ fontSize: "1.2rem" }}>✓</span>{" "}
+                                Saved Successfully
                               </Typography>
                             </Box>
                           ) : (
                             <Box display="flex" gap={2} mt="auto">
-                              <Button 
+                              <Button
                                 variant="contained"
                                 fullWidth
                                 onClick={rejectPrescription}
                                 disabled={loading}
                                 sx={{
                                   backgroundColor: colors.redAccent[500],
-                                  '&:hover': { backgroundColor: colors.redAccent[600] }
+                                  "&:hover": {
+                                    backgroundColor: colors.redAccent[600],
+                                  },
                                 }}
                               >
                                 Reject
                               </Button>
-                              <Button 
+                              <Button
                                 variant="contained"
                                 fullWidth
                                 onClick={markAsDone}
                                 disabled={loading}
                                 sx={{
                                   backgroundColor: colors.greenAccent[500],
-                                  '&:hover': { backgroundColor: colors.greenAccent[600] }
+                                  "&:hover": {
+                                    backgroundColor: colors.greenAccent[600],
+                                  },
                                 }}
                               >
                                 Done
@@ -695,45 +949,66 @@ const PrescriptionView = () => {
                     justifyContent="flex-end"
                     mt={4}
                     p={2}
-                    sx={{ 
-                      backgroundColor: colors.primary[theme.palette.mode === 'dark' ? 500 : 50]
+                    sx={{
+                      backgroundColor:
+                        colors.primary[
+                          theme.palette.mode === "dark" ? 500 : 50
+                        ],
                     }}
                   >
                     <Box display="flex" gap={2}>
-                      <Button 
+                      <Button
                         variant="contained"
                         onClick={goToPreviousPrescription}
-                        disabled={currentPrescriptionIndex >= prescriptions.length - 1}
+                        disabled={
+                          currentPrescriptionIndex >= prescriptions.length - 1
+                        }
                         sx={{
                           backgroundColor: colors.blueAccent[500],
-                          '&:hover': { backgroundColor: colors.blueAccent[600] },
-                          padding: '12px 15px'
+                          "&:hover": {
+                            backgroundColor: colors.blueAccent[600],
+                          },
+                          padding: "12px 15px",
                         }}
                       >
                         Previous Prescription
                       </Button>
-                      <Button 
+                      <Button
                         variant="outlined"
                         onClick={printBill}
                         disabled={!currentPrescription}
                         sx={{
-                          color: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000',
-                          borderColor: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000',
-                          '&:hover': {
-                            backgroundColor: colors.primary[theme.palette.mode === 'dark' ? 600 : 100],
-                            borderColor: theme.palette.mode === 'dark' ? colors.grey[100] : '#000000'
-                          }
+                          color:
+                            theme.palette.mode === "dark"
+                              ? colors.grey[100]
+                              : "#000000",
+                          borderColor:
+                            theme.palette.mode === "dark"
+                              ? colors.grey[100]
+                              : "#000000",
+                          "&:hover": {
+                            backgroundColor:
+                              colors.primary[
+                                theme.palette.mode === "dark" ? 600 : 100
+                              ],
+                            borderColor:
+                              theme.palette.mode === "dark"
+                                ? colors.grey[100]
+                                : "#000000",
+                          },
                         }}
                       >
                         Print Bill
                       </Button>
-                      <Button 
+                      <Button
                         variant="contained"
                         onClick={goToNextPrescription}
                         disabled={currentPrescriptionIndex <= 0}
                         sx={{
                           backgroundColor: colors.greenAccent[500],
-                          '&:hover': { backgroundColor: colors.greenAccent[600] }
+                          "&:hover": {
+                            backgroundColor: colors.greenAccent[600],
+                          },
                         }}
                       >
                         Next Prescription
@@ -751,12 +1026,12 @@ const PrescriptionView = () => {
           open={notification.open}
           autoHideDuration={6000}
           onClose={handleCloseNotification}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         >
-          <Alert 
-            onClose={handleCloseNotification} 
+          <Alert
+            onClose={handleCloseNotification}
             severity={notification.severity}
-            sx={{ width: '100%' }}
+            sx={{ width: "100%" }}
           >
             {notification.message}
           </Alert>

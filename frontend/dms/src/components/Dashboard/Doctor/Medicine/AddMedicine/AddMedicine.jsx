@@ -27,12 +27,12 @@ const medicineSchema = yup.object().shape({
   description: yup.string().required("Description is required"),
   lethalDosagePerKg: yup
     .number()
-    .positive("Must be a positive number")
-    .required("Lethal dosage is required"),
+    .positive("Must be a positive number"),
+    
   weight: yup
     .number()
     .positive("Must be a positive number")
-    .required("Medicine weight is required"), // Added validation for weight
+    
 });
 
 const AddMedicine = () => {

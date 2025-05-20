@@ -185,14 +185,7 @@ const Sidebar = () => {
                 scrollbarColor: `${colors.greenAccent[500]} ${colors.primary[400]}`, // Firefox thumb and track color
               }}
             >
-              {/* Dashboard */}
-              <Item
-                title="Dashboard"
-                to="/dispenser/dashboard"
-                icon={<DashboardOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
+              
               
               {/* Add the Appointments item here */}
               <Item

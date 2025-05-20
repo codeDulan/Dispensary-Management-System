@@ -768,7 +768,9 @@ const QuickPrescription = () => {
                 <Autocomplete
                   options={patients}
                   getOptionLabel={(option) =>
-                    `${option.firstName} ${option.lastName || ""}`
+                    `${option.firstName} ${option.lastName || ""} (${
+                      option.email || "No email"
+                    })`
                   }
                   onChange={handlePatientSelect}
                   renderInput={(params) => (
@@ -1059,11 +1061,12 @@ const QuickPrescription = () => {
                                     label={`${option.medicineWeight} mg`}
                                     color="primary"
                                     variant="outlined"
+                                    sx={{ color: 'white', borderColor: 'white' }}
                                   />
                                 )}
                                 <Typography
                                   variant="body2"
-                                  color="text.secondary"
+                                  color="white"
                                 >
                                   {option.remainingQuantity || 0} available
                                 </Typography>

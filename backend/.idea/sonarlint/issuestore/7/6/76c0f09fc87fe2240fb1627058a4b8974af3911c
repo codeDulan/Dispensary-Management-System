@@ -1,13 +1,5 @@
 
 {
 java:S1192#"YDefine a constant instead of duplicating this literal "Time slot already booked" 3 times.(ÎŸÅûÿÿÿÿ8•ú•Îì2
-e
-java:S11920"HDefine a constant instead of duplicating this literal "PENDING" 3 times.(Åè‚È8–ú•Îì2
-s
-java:S1192`"VDefine a constant instead of duplicating this literal "Appointment not found" 3 times.(ªÌàë8—ú•Îì2
 k
-java:S1192"NDefine a constant instead of duplicating this literal "Invalid token" 4 times.(Ç‹Ü¡8—ú•Îì2
-]
-java:S1854\";Remove this useless assignment to local variable "patient".(Ïãù¬ıÿÿÿÿ8°ú•Îì2
-N
-java:S1481\",Remove this unused "patient" local variable.(Ïãù¬ıÿÿÿÿ8°ú•Îì2
+java:S1192"NDefine a constant instead of duplicating this literal "Invalid token" 5 times.(Ç‹Ü¡8—ú•Îì2

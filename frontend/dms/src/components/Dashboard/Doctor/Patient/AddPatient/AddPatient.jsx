@@ -22,7 +22,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 
-
 import UserService from "../../../../../services/UserService";
 
 const initialValues = {
@@ -59,6 +58,7 @@ const AddPatient = () => {
   const [theme, colorMode] = useMode();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isNonMobile = useMediaQuery("(min-width:600px)");
 
@@ -68,11 +68,13 @@ const AddPatient = () => {
       alert("You must be logged in as a doctor to perform this action");
       return;
     }
-  
+
     try {
+      setIsSubmitting(true);
+
       // Calculate age from dateOfBirth
       const age = calculateAge(values.dateOfBirth);
-      
+
       const patientData = {
         firstName: values.firstName,
         lastName: values.lastName,
@@ -82,17 +84,19 @@ const AddPatient = () => {
         gender: values.gender,
         age: age, // Calculated age
         weight: parseFloat(values.weight) || 0, // Convert to number
-        medicalNotes: values.medicalNotes // Field name must match
+        medicalNotes: values.medicalNotes, // Field name must match
       };
-  
+
       await UserService.doctorRegisterPatient(patientData);
       alert("Patient registered successfully!");
     } catch (error) {
       console.error("Registration Error:", error);
       alert(error.response?.data?.message || "Failed to register patient");
+    } finally {
+      setIsSubmitting(false); // Reset submitting state regardless of success/failure
     }
   };
-  
+
   // Add this helper function
   const calculateAge = (birthDate) => {
     if (!birthDate) return 0;
@@ -100,12 +104,14 @@ const AddPatient = () => {
     const birthDateObj = new Date(birthDate);
     let age = today.getFullYear() - birthDateObj.getFullYear();
     const monthDiff = today.getMonth() - birthDateObj.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDateObj.getDate())
+    ) {
       age--;
     }
     return age;
   };
-
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -318,9 +324,10 @@ const AddPatient = () => {
                         type="submit"
                         color="secondary"
                         variant="contained"
+                        disabled={isSubmitting} // Disable the button while submitting
                         sx={{ py: 1.5, px: 3 }}
                       >
-                        Create New User
+                        {isSubmitting ? "Creating..." : "Create New User"}
                       </Button>
                     </Box>
                   </Form>

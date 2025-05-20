@@ -43,7 +43,7 @@ const Login = () => {
         if (userType === "DOCTOR") {
           navigate("/dashboard");
         } else if (userType === "DISPENSER") {
-          navigate("/dispenser/dashboard");
+          navigate("/dispenser/appointments");
         } else if (userType === "PATIENT") {
           navigate("/customer/dashboard");
         } else {

@@ -4,7 +4,7 @@ java:S1192-"JDefine a constant instead of duplicating this literal "DISPENSER" 
 e
 java:S1192+"HDefine a constant instead of duplicating this literal "PATIENT" 4 times.(€Ş‘8†ìöÃî2
 d
-java:S1192-"GDefine a constant instead of duplicating this literal "DOCTOR" 3 times.(êÆÇÙ8†ìöÃî2
+java:S1192-"GDefine a constant instead of duplicating this literal "DOCTOR" 4 times.(êÆÇÙ8†ìöÃî2
 |
 java:S3305#"ZInject this field value directly into "securityFilterChain", the only method that uses it.(ŠôË‘ûÿÿÿÿ8†ìöÃî2
 

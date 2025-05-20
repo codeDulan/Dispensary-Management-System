@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ import UserService from "../../../../services/UserService";
 const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  
   
   // If onClick is provided, use it, otherwise use the default behavior
   const handleClick = onClick ? () => onClick() : () => setSelected(to);
@@ -59,6 +60,10 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
   const navigate = useNavigate();
+
+
+  
+
   
   // Logout handler function
   const handleLogout = () => {
