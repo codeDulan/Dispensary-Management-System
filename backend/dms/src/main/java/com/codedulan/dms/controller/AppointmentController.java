@@ -40,12 +40,12 @@ public class AppointmentController {
 
         String token = authHeader.substring(7);
 
-        // If date is provided, use single date lookup
+
         if (date != null) {
             return ResponseEntity.ok(appointmentService.getPatientAppointments(date, token));
         }
 
-        // Return appointments within date range for the patient only
+
         return ResponseEntity.ok(appointmentService.getPatientAppointmentsInRange(startDate, endDate, token));
     }
 
@@ -87,11 +87,11 @@ public class AppointmentController {
             @RequestHeader("Authorization") String authHeader) {
 
         String token = authHeader.substring(7);
-        // Use a method that ensures appointments are sorted by time and have correct queue numbers
+
         return ResponseEntity.ok(appointmentService.getPatientAppointmentsByTime(startDate, endDate, token));
     }
 
-    // New endpoint to get available time slots
+    // endpoint to get available time slots
     @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader)")
     @GetMapping("/available-slots")
     public ResponseEntity<List<LocalTime>> getAvailableTimeSlots(
@@ -101,7 +101,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAvailableTimeSlots(date));
     }
 
-    // New endpoint to get daily queue
+    // endpoint to get daily queue
     @PreAuthorize("@accessControl.isPatient(#authHeader) or @accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
     @GetMapping("/daily-queue")
     public ResponseEntity<List<Appointment>> getDailyQueue(
@@ -111,7 +111,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentsByDate(date));
     }
 
-    // New endpoint for dispenser to create appointment for a patient
+    // endpoint for dispenser to create appointment for a patient
     @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
     @PostMapping("/create-for-patient/{patientId}")
     public ResponseEntity<Appointment> createAppointmentForPatient(
@@ -122,7 +122,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.createAppointmentForPatient(patientId, request));
     }
 
-    // New endpoint to update appointment status
+    // endpoint to update appointment status
     @PreAuthorize("@accessControl.isDispenser(#authHeader) or @accessControl.isDoctor(#authHeader)")
     @PutMapping("/{id}/status")
     public ResponseEntity<Appointment> updateAppointmentStatus(

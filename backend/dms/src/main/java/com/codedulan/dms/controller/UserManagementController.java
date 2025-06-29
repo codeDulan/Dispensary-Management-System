@@ -64,7 +64,6 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.deleteUser(userId));
     }
 
-    // Add this endpoint to your UserManagementController class
 
     @PutMapping("/user/change-password")
     public ResponseEntity<ReqRes> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {

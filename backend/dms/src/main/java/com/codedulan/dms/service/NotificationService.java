@@ -30,58 +30,51 @@ public class NotificationService {
     private final InventoryRepository inventoryRepository;
 
     // Cache to prevent frequent notifications for the same items
-    // Key: inventoryItemId-type, Value: timestamp of last notification
     private final Map<String, LocalDateTime> lastNotificationMap = new ConcurrentHashMap<>();
 
-    /**
-     * Get all notifications
-     */
+
+    //Get all notifications
     public List<NotificationDTO> getAllNotifications() {
         return notificationRepository.findByReadFalseOrderByCreatedAtDesc().stream()
                 .map(NotificationDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Mark notification as read
-     */
+    //mark notification as read
     public void markAsRead(Long id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         notification.setRead(true);
         notificationRepository.save(notification);
 
-        // Also remove from cache to allow new notifications if conditions persist
+
         String cacheKey = notification.getInventoryItemId() + "-" + notification.getType();
         lastNotificationMap.remove(cacheKey);
     }
 
-    /**
-     * Mark all notifications as read
-     */
+
+    //mark all notifications as read
     public void markAllAsRead() {
         List<Notification> unreadNotifications = notificationRepository.findByReadFalse();
         unreadNotifications.forEach(notification -> {
             notification.setRead(true);
 
-            // Also remove from cache to allow new notifications if conditions persist
+
             String cacheKey = notification.getInventoryItemId() + "-" + notification.getType();
             lastNotificationMap.remove(cacheKey);
         });
         notificationRepository.saveAll(unreadNotifications);
     }
 
-    /**
-     * Get unread notification count
-     */
+
+    //get unread notification count
     public long getUnreadCount() {
         return notificationRepository.countByReadFalse();
     }
 
-    /**
-     * Scheduled job to check for low stock and expiring items
-     * Runs at midnight every day
-     */
+
+     //scheduled job to check for low stock and expiring items
+     //runs at midnight every day
     @Scheduled(cron = "0 0 0 * * ?")
     public void checkInventoryStatus() {
         log.info("Running daily inventory check for notifications...");
@@ -89,9 +82,8 @@ public class NotificationService {
         checkExpiringItems();
     }
 
-    /**
-     * Check for low stock items
-     */
+
+    //check for low stock items
     private void checkLowStockItems() {
         List<InventoryItem> lowStockItems = inventoryRepository.findLowStockItems();
 
@@ -100,18 +92,16 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Create low stock notification if needed and not already notified recently
-     */
+    //Create low stock notification if needed and not already notified recently
     private void createLowStockNotificationIfNeeded(InventoryItem item) {
         String cacheKey = item.getId() + "-" + NotificationType.LOW_STOCK;
 
-        // Check if we've already notified about this within the last 24 hours
+        //check if already notified about this within the last 24 hours
         if (isRecentlyNotified(cacheKey)) {
             return;
         }
 
-        // Check if there's already an unread notification for this
+        //check if there's already an unread notification for this
         boolean notificationExists = notificationRepository.existsByInventoryItemIdAndTypeAndReadFalse(
                 item.getId(), NotificationType.LOW_STOCK);
 
@@ -128,21 +118,19 @@ public class NotificationService {
 
             notificationRepository.save(notification);
 
-            // Update cache with current timestamp
+            //update cache with current timestamp
             lastNotificationMap.put(cacheKey, LocalDateTime.now());
 
             log.info("Created low stock notification for: {}", item.getMedicine().getName());
         }
     }
 
-    /**
-     * Check for items expiring within 30 days
-     */
+    //check for items expiring within 30 days
     private void checkExpiringItems() {
         LocalDate expiryThreshold = LocalDate.now().plusDays(30);
         List<InventoryItem> expiringItems = inventoryRepository.findByExpiryDateBeforeOrderByExpiryDateAsc(expiryThreshold)
                 .stream()
-                .filter(item -> !item.getExpiryDate().isBefore(LocalDate.now())) // Filter out already expired items
+                .filter(item -> !item.getExpiryDate().isBefore(LocalDate.now()))
                 .collect(Collectors.toList());
 
         for (InventoryItem item : expiringItems) {
@@ -150,18 +138,16 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Create expiring notification if needed and not already notified recently
-     */
+    //create expiring notification if needed and not already notified recently
     private void createExpiringNotificationIfNeeded(InventoryItem item) {
         String cacheKey = item.getId() + "-" + NotificationType.EXPIRING_SOON;
 
-        // Check if we've already notified about this within the last 24 hours
+        //check if already notified about this within the last 24 hours
         if (isRecentlyNotified(cacheKey)) {
             return;
         }
 
-        // Check if there's already an unread notification for this
+        //check if there's already an unread notification for this
         boolean notificationExists = notificationRepository.existsByInventoryItemIdAndTypeAndReadFalse(
                 item.getId(), NotificationType.EXPIRING_SOON);
 
@@ -185,18 +171,13 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Check if a notification was recently created for this key
-     * @param cacheKey The cache key (itemId-notificationType)
-     * @return true if a notification was created in the last 24 hours
-     */
     private boolean isRecentlyNotified(String cacheKey) {
         LocalDateTime lastNotified = lastNotificationMap.get(cacheKey);
         if (lastNotified == null) {
             return false;
         }
 
-        // Check if it's been less than 24 hours since the last notification
+        //check if it's been less than 24 hours since the last notification
         long hoursSinceLastNotification = ChronoUnit.HOURS.between(lastNotified, LocalDateTime.now());
         return hoursSinceLastNotification < 24;
     }

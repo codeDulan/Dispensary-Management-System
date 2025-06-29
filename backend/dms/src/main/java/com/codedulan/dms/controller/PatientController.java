@@ -134,8 +134,7 @@ public class PatientController {
     }
 
 
-    //Doctor updates patient profile
-    // Get a specific patient by ID (for doctors)
+    //doctor updates patient profile
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('DOCTOR') or hasAuthority('DISPENSER')")
     public ResponseEntity<PatientDto> getPatientById(@PathVariable Long id) {

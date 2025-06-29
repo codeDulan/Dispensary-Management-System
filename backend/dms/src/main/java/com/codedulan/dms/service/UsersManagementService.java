@@ -215,8 +215,6 @@ public class UsersManagementService {
 
     }
 
-    //Change password
-    // Add this method to your UsersManagementService class
 
     public ReqRes changePassword(String email, PasswordChangeDto passwordChangeDto) {
         ReqRes reqRes = new ReqRes();

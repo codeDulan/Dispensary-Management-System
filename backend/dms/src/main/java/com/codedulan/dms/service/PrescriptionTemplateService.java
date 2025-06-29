@@ -141,7 +141,7 @@ public class PrescriptionTemplateService {
         log.info("Deleted prescription template with id: {}", id);
     }
 
-    // Method to convert a template to a CreatePrescriptionDTO
+    //convert a template to a CreatePrescriptionDTO
     public CreatePrescriptionDTO convertTemplateToCreatePrescriptionDTO(Long templateId) {
         PrescriptionTemplate template = templateRepository.findById(templateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription template not found with id: " + templateId));
@@ -149,12 +149,8 @@ public class PrescriptionTemplateService {
         // Collect all items and convert to CreatePrescriptionItemDTO
         List<CreatePrescriptionItemDTO> items = template.getTemplateItems().stream()
                 .map(item -> {
-                    // Find latest inventory item for this medicine - would need to be adjusted based on your inventory system
-                    // This is a simplified version
+
                     CreatePrescriptionItemDTO prescriptionItem = new CreatePrescriptionItemDTO();
-                    // Note: In a real implementation, you would need to find the appropriate inventory item for this medicine
-                    // Simplified placeholder for demonstration:
-                    // prescriptionItem.setInventoryItemId(inventoryRepository.findTopByMedicineOrderByExpiryDateDesc(item.getMedicine()).getId());
                     prescriptionItem.setQuantity(item.getQuantity());
                     prescriptionItem.setDosageInstructions(item.getDosageInstructions());
                     prescriptionItem.setDaysSupply(item.getDaysSupply());
@@ -166,7 +162,7 @@ public class PrescriptionTemplateService {
         CreatePrescriptionDTO prescriptionDTO = new CreatePrescriptionDTO();
         prescriptionDTO.setItems(items);
 
-        // Add notes about the condition from the template if available
+        //add notes about the condition from the template if available
         String notes = "";
         if (template.getConditionName() != null && !template.getConditionName().isEmpty()) {
             notes += "Condition: " + template.getConditionName() + "\n\n";

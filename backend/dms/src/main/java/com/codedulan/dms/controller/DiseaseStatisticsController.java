@@ -59,14 +59,14 @@ public class DiseaseStatisticsController {
 
                 result.add(diseaseMap);
 
-                // Break if we have enough results
+
                 if (result.size() >= limit) {
                     break;
                 }
             }
         }
 
-        // If we don't have enough results, query for custom diseases
+        // query for custom diseases
         if (result.size() < limit) {
             int remaining = limit - result.size();
 

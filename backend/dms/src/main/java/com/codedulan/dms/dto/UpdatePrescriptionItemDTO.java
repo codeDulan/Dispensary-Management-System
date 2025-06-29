@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdatePrescriptionItemDTO {
-    private Long id; // Existing item ID
+    private Long id;
     private Integer quantity;
     private String dosageInstructions;
     private Integer daysSupply;
-    private Integer oldQuantity; // Original values for inventory adjustment
+    private Integer oldQuantity;
     private String oldDosageInstructions;
     private Integer oldDaysSupply;
 
-    // Getters and setters
+
 }

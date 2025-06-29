@@ -72,7 +72,7 @@ public class Patient {
     @Column(precision = 5, scale = 2)
     private BigDecimal weight;
 
-    private String barcode; // Will store the unique barcode
+    private String barcode;
 
     @Column(length = 1000)
     private String medicalNotes;

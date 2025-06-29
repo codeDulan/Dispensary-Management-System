@@ -58,7 +58,7 @@ public class PatientService {
 
         Patient savedPatient = patientRepository.save(patient);
 
-        // Send barcode as email
+        //send barcode as email
         sendBarcodeEmail(savedPatient.getEmail(), barcodeBase64);
 
         return savedPatient;
@@ -70,13 +70,13 @@ public class PatientService {
             throw new IllegalStateException("Email already taken");
         }
 
-        // 1. Generate random password
+        //generate random password
         String tempPassword = RandomStringUtils.randomAlphanumeric(8);
 
-        // 2. Generate barcode from email
+        //generate barcode from email
         String barcodeBase64 = barcodeService.generateBarcode(request.getEmail());
 
-        // 3. Create and save patient
+        //create and save patient
         Patient patient = Patient.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -94,7 +94,7 @@ public class PatientService {
 
         Patient savedPatient = patientRepository.save(patient);
 
-        // 4. Send email with barcode and temp password
+        //send email with barcode and temp password
         sendBarcodeAndPasswordEmail(savedPatient.getEmail(), barcodeBase64, tempPassword);
 
         return savedPatient;
@@ -133,7 +133,7 @@ public class PatientService {
             helper.setTo(toEmail);
             helper.setSubject("Your Patient Barcode");
 
-            // Email HTML with <img src="cid:barcode">
+
             String htmlContent = "<p>Thank you for registering SAHANAYA Medical Center.</p>" +
                     "<p>Your barcode is shown below. Please present this during your next visit:</p>" +
                     "<img src='cid:barcodeImage' />";
@@ -168,7 +168,7 @@ public class PatientService {
 
         return PatientDto.builder()
                 .firstName(patient.getFirstName())
-                .lastName(patient.getLastName() != null ? patient.getLastName() : "") // Handle null lastName
+                .lastName(patient.getLastName() != null ? patient.getLastName() : "")
                 .email(patient.getEmail())
                 .build();
     }
@@ -178,7 +178,7 @@ public class PatientService {
                 .map(patient -> PatientDto.builder()
                         .id(patient.getPatientId())
                         .firstName(patient.getFirstName())
-                        .lastName(patient.getLastName() != null ? patient.getLastName() : "") // Handle null lastName
+                        .lastName(patient.getLastName() != null ? patient.getLastName() : "")
                         .email(patient.getEmail())
                         .gender(patient.getGender())
                         .age(patient.getAge())

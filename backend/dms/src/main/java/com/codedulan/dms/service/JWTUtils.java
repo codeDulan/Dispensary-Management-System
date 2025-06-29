@@ -42,7 +42,7 @@ public class JWTUtils {
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(user.getUsername()) // use user.getUsername() if applicable
+                .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(Key)
@@ -65,9 +65,9 @@ public class JWTUtils {
     public String generateTokenForPatient(Patient patient) {
         HashMap<String, Object> claims = new HashMap<>();
         
-        claims.put("role", "PATIENT");             // Used in your filter
-        claims.put("name", patient.getFirstName());     // 👈 Add this so frontend can use it
-        claims.put("email", patient.getEmail());   // Optional
+        claims.put("role", "PATIENT");
+        claims.put("name", patient.getFirstName());
+        claims.put("email", patient.getEmail());
 
         return Jwts.builder()
                 .claims(claims)
@@ -107,17 +107,17 @@ public class JWTUtils {
 
 
     public String extractEmail(String token) {
-        // First, try to get email from claims if it exists
+
         try {
             String email = extractClaims(token, claims -> claims.get("email", String.class));
             if (email != null && !email.isEmpty()) {
                 return email;
             }
         } catch (Exception ignored) {
-            // If email claim doesn't exist, fall back to subject
+
         }
 
-        // Fall back to subject which should contain the email for patient tokens
+
         return extractUsername(token);
     }
 

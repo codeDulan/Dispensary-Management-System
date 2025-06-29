@@ -12,6 +12,6 @@ import java.util.List;
 public class UpdatePrescriptionDTO {
     private String prescriptionNotes;
 
-    private List<UpdatePrescriptionItemDTO> updatedItems; // For existing items
+    private List<UpdatePrescriptionItemDTO> updatedItems;
     private List<CreatePrescriptionItemDTO> newItems;
 }

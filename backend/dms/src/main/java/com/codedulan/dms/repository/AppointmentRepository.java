@@ -30,6 +30,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Changed from findByDateOrderByQueueNumberAsc to findByDateOrderByTimeAsc
     List<Appointment> findByDateOrderByTimeAsc(LocalDate date);
 
-    // Added a new query to find appointments for a date ordered by queue number (original query)
     List<Appointment> findByDateOrderByQueueNumberAsc(LocalDate date);
 }

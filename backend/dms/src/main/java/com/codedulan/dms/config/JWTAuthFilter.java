@@ -60,19 +60,19 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
 
-            String role = jwtUtils.extractRole(jwtToken); // You’ll need to add this method to JWTUtils
+            String role = jwtUtils.extractRole(jwtToken);
 
             if ("PATIENT".equals(role)) {
-                // Trust token and set authentication manually
+
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        userEmail, null, List.of(() -> "PATIENT") // or use AuthorityUtils.createAuthorityList("PATIENT")
+                        userEmail, null, List.of(() -> "PATIENT")
                 );
                 token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(token);
                 SecurityContextHolder.setContext(context);
             } else {
-                // Existing behavior for DOCTOR, DISPENSER, etc.
+
                 UserDetails userDetails = ourUserDetailsService.loadUserByUsername(userEmail);
                 if (jwtUtils.isTokenValid(jwtToken, userDetails)) {
                     UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(

@@ -71,7 +71,7 @@ public class PrescriptionService {
     }
 
     public List<PrescriptionDTO> getMyPrescriptions(String authHeader) {
-        // Extract token from auth header (remove "Bearer " prefix)
+
         String token = authHeader.substring(7).trim();
 
         String email = jwtUtils.extractEmail(token);
@@ -96,14 +96,7 @@ public class PrescriptionService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Calculate the total quantity needed based on dosage instructions.
-     *
-     * @param dosageInstructions The dosage instructions text
-     * @param quantityPerDose The quantity per dose
-     * @param daysSupply Number of days the medicine should be taken
-     * @return The total quantity needed
-     */
+
     private int calculateTotalQuantity(String dosageInstructions, int quantityPerDose, int daysSupply) {
         // Default to 1 dose per day if no instructions
         int dosesPerDay = 1;
@@ -164,7 +157,7 @@ public class PrescriptionService {
 
             int totalQuantityNeeded = calculateTotalQuantity(dosageInstructions, quantityPerDose, daysSupply);
 
-            // Check if there's enough quantity available
+            // Check if there is enough quantity available
             if (inventoryItem.getRemainingQuantity() < totalQuantityNeeded) {
                 throw new BusinessLogicException("Insufficient quantity available for " +
                         inventoryItem.getMedicine().getName() + ". Available: " +
@@ -178,7 +171,7 @@ public class PrescriptionService {
             PrescriptionItem item = PrescriptionItem.builder()
                     .prescription(savedPrescription)
                     .inventoryItem(inventoryItem)
-                    .quantity(quantityPerDose) // Store the per-dose quantity in the entity
+                    .quantity(quantityPerDose)
                     .dosageInstructions(dosageInstructions)
                     .daysSupply(daysSupply)
                     .build();
@@ -279,7 +272,7 @@ public class PrescriptionService {
                         itemDTO.getDaysSupply()
                 );
 
-                // Check if there's enough inventory
+                // Check if there is enough inventory
                 if (inventoryItem.getRemainingQuantity() < totalQtyNeeded) {
                     throw new BusinessLogicException("Not enough inventory for " +
                             inventoryItem.getMedicine().getName() + ". Available: " +

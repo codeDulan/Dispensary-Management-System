@@ -24,10 +24,9 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
 
 
 
-    /**
-     * Count prescriptions by disease for a date range
-     */
-    @Query("SELECT p.disease, COUNT(p) as count " +
+
+     // Count prescriptions by disease for a date range
+   @Query("SELECT p.disease, COUNT(p) as count " +
             "FROM Prescription p " +
             "WHERE p.disease IS NOT NULL " +
             "AND p.issueDate BETWEEN :startDate AND :endDate " +
@@ -37,9 +36,8 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
-    /**
-     * Count prescriptions with custom disease for a date range
-     */
+
+     // Count prescriptions with custom disease for a date range
     @Query("SELECT p.customDisease, COUNT(p) as count " +
             "FROM Prescription p " +
             "WHERE p.customDisease IS NOT NULL " +
