@@ -195,7 +195,7 @@ const PaymentList = () => {
 
   // Handle opening edit modal
   const handleEditPayment = (payment) => {
-    // First set the payment, then set form data
+    
     const paymentToEdit = payment || selectedPayment;
     if (!paymentToEdit) return;
     
@@ -209,10 +209,10 @@ const PaymentList = () => {
       notes: paymentToEdit.notes || ""
     });
     
-    // Close view modal if it's open first
+    
     if (viewModalOpen) {
       setViewModalOpen(false);
-      // Use setTimeout to avoid focus issues when opening a new dialog right after closing one
+      
       setTimeout(() => {
         setEditModalOpen(true);
       }, 300);
@@ -228,7 +228,7 @@ const PaymentList = () => {
     
     setSelectedPayment(paymentToDelete);
     
-    // Close view modal if it's open first
+    
     if (viewModalOpen) {
       setViewModalOpen(false);
       // Use setTimeout to avoid focus issues
@@ -263,7 +263,7 @@ const PaymentList = () => {
       setDeleteConfirmOpen(false);
       showNotification("Payment deleted successfully");
       
-      // Remove deleted payment from state instead of refetching
+     
       setPayments(prevPayments => prevPayments.filter(p => p.id !== selectedPayment.id));
     } catch (error) {
       console.error("Error deleting payment:", error);
@@ -279,15 +279,15 @@ const PaymentList = () => {
     
     // Handle numeric values with safe parsing
     if (name === "doctorFee" || name === "medicinesCost" || name === "totalAmount") {
-      // Use safe parsing to avoid NaN issues
+      
       const safeValue = value === "" ? "0" : value;
       
-      // Convert string to number but keep it as state value
+      
       setEditFormData(prev => {
         const doctorFee = name === "doctorFee" ? safeValue : prev.doctorFee || "0";
         const medicinesCost = name === "medicinesCost" ? safeValue : prev.medicinesCost || "0";
         
-        // Calculate total only if not directly editing total
+        
         const calculatedTotal = name !== "totalAmount" 
           ? (parseFloat(doctorFee) + parseFloat(medicinesCost)).toString()
           : safeValue;
@@ -295,7 +295,7 @@ const PaymentList = () => {
         return {
           ...prev,
           [name]: safeValue,
-          // Auto-calculate total amount if either doctor fee or medicines cost changes
+          
           ...(name !== "totalAmount" ? { totalAmount: calculatedTotal } : {})
         };
       });

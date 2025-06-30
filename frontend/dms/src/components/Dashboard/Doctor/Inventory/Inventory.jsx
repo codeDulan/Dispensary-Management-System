@@ -155,9 +155,9 @@ const Inventory = () => {
     }
   };
 
-  // Add this helper function to check if enough time has passed since the last check
+  
   const shouldCheckNotifications = () => {
-    // If we've never checked, or it's been more than an hour, we should check
+    
     if (!lastNotificationCheck) {
       return true;
     }
@@ -208,7 +208,7 @@ const Inventory = () => {
   const handleEdit = (id) => {
     const itemToEdit = inventoryItems.find((item) => item.id === id);
     if (itemToEdit) {
-      // Log the item for debugging
+      
       console.log("Editing item:", itemToEdit);
 
       setEditItem({
@@ -218,7 +218,7 @@ const Inventory = () => {
         batchNumber: itemToEdit.batchNumber || "",
         expiryDate: itemToEdit.expiryDate
           ? itemToEdit.expiryDate.substring(0, 10)
-          : "", // Format date for input
+          : "", 
         quantity: itemToEdit.quantity || "",
         sellPrice: itemToEdit.sellPrice || "",
         buyPrice: itemToEdit.buyPrice || "",
@@ -228,7 +228,7 @@ const Inventory = () => {
     }
   };
 
-  // Handle edit dialog close
+  
   const handleEditDialogClose = () => {
     setEditDialogOpen(false);
   };
@@ -254,7 +254,7 @@ const Inventory = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Prepare data for API - only include fields that can be updated
+      
       const dataToSend = {
         batchNumber: editItem.batchNumber,
         expiryDate: editItem.expiryDate,
@@ -272,10 +272,10 @@ const Inventory = () => {
         }
       );
 
-      // Refresh inventory data
+      
       fetchInventoryItems();
 
-      // Close dialog and show success notification
+      
       setEditDialogOpen(false);
       setNotification({
         open: true,
@@ -293,19 +293,19 @@ const Inventory = () => {
     }
   };
 
-  // Handle close notification
+  
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
   };
 
-  // Format date for display
+  
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
-  // Format price for display
+  
   const formatCurrency = (amount) => {
     if (amount == null) return "N/A";
     return `Rs. ${parseFloat(amount).toFixed(2)}`;
@@ -611,16 +611,16 @@ const Inventory = () => {
                 <DataGrid
                   getRowId={(row) => row.id}
                   rows={filteredRows.map((row) => {
-                    // Debug: Add console log to check what's in the row
+                    
                     console.log(
                       `Row ${row.id} medicine: ${row.medicineName}, weight: ${row.medicineWeight}`
                     );
 
-                    // Ensure all necessary fields exist and are formatted
+                    
                     return {
                       ...row,
                       medicineName: row.medicineName || "Unknown",
-                      // Try to get weight from various possible properties
+                      
                       medicineWeight:
                         row.medicineWeight ||
                         (row.medicine && row.medicine.weight) ||

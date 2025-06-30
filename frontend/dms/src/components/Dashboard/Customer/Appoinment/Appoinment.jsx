@@ -73,7 +73,7 @@ const Appointment = () => {
     const token = localStorage.getItem("token");
 
     try {
-      // Fetch my appointments
+      // Fetch appointments
       const myAppointmentsResponse = await axios.get(
         "http://localhost:8080/api/appointments/my-appointments",
         {
@@ -115,7 +115,7 @@ const Appointment = () => {
     const token = localStorage.getItem("token");
 
     try {
-      // Clear previous slots first
+      
       setAvailableSlots([]);
       setBookedSlots([]);
 
@@ -141,10 +141,10 @@ const Appointment = () => {
       const startTime = new Date(`${date}T09:00:00`);
       const endTime = new Date(`${date}T15:00:00`);
 
-      // Generate all time slots
+      
       let currentTime = new Date(startTime);
       while (currentTime < endTime) {
-        // Format time as HH:MM:SS
+        
         const hours = String(currentTime.getHours()).padStart(2, "0");
         const minutes = String(currentTime.getMinutes()).padStart(2, "0");
         const timeString = `${hours}:${minutes}:00`;
@@ -153,7 +153,7 @@ const Appointment = () => {
         currentTime.setMinutes(currentTime.getMinutes() + 5);
       }
 
-      // Create a set of available time slots for faster lookup
+      
       const availableTimeSet = new Set(slots);
 
       // Create events for available slots
@@ -163,13 +163,13 @@ const Appointment = () => {
         start: `${date}T${timeSlot}`,
         end: `${date}T${timeSlot}`,
         allDay: false,
-        color: "#4caf50", // Green color
+        color: "#4caf50", 
         extendedProps: {
           isAvailableSlot: true,
         },
       }));
 
-      // Create events for booked slots (all slots not in available slots)
+      // Create events for booked slots
       const bookedEvents = allTimeSlots
         .filter((time) => !availableTimeSet.has(time))
         .map((timeSlot) => ({
@@ -219,7 +219,7 @@ const Appointment = () => {
     // Format the selected time to match the format from the backend
     const selectedDate = selectInfo.startStr.split("T")[0];
 
-    // Format hours and minutes with leading zeros if needed
+    
     const formattedHours = hours.toString().padStart(2, "0");
     const formattedMinutes = minutes.toString().padStart(2, "0");
 
@@ -265,13 +265,13 @@ const Appointment = () => {
   const handleEventClick = (clickInfo) => {
     const event = clickInfo.event;
 
-    // If it's a booked slot, show a message
+    
     if (event.extendedProps.isBookedSlot) {
       toast.info("This time slot is already booked");
       return;
     }
 
-    // If it's an available slot, treat it as a selection
+    
     if (event.extendedProps.isAvailableSlot) {
       handleDateSelect({
         startStr: event.startStr,
@@ -370,7 +370,7 @@ const Appointment = () => {
         const endDate = view.activeEnd.toISOString().split("T")[0];
         fetchAppointments(startDate, endDate);
 
-        // Also update available slots for the current date
+        
         const currentDate = currentAppointment.start.split("T")[0];
         fetchAvailableSlots(currentDate);
       }
@@ -407,10 +407,10 @@ const Appointment = () => {
 
   useEffect(() => {
     if (calendarApi) {
-      // Get the current date in the calendar view (in local timezone)
+      
       const currentViewDate = calendarApi.getDate();
 
-      // Format it as YYYY-MM-DD string in the local timezone
+      
       const currentDateFormatted = `${currentViewDate.getFullYear()}-${String(
         currentViewDate.getMonth() + 1
       ).padStart(2, "0")}-${String(currentViewDate.getDate()).padStart(
@@ -418,7 +418,7 @@ const Appointment = () => {
         "0"
       )}`;
 
-      // Get the date range for appointments
+      
       const view = calendarApi.view;
       const startDate = view.activeStart.toISOString().split("T")[0];
       const endDate = view.activeEnd.toISOString().split("T")[0];
@@ -547,7 +547,7 @@ const Appointment = () => {
                                       day: "numeric",
                                     })}
                                   </Typography>
-                                  {/* Add this line to show the appointment status */}
+                                  
                                   <Typography
                                     variant="body2"
                                     sx={{
@@ -783,7 +783,7 @@ const Appointment = () => {
                         }}
                         select={handleDateSelect}
                         eventClick={handleEventClick}
-                        events={[...availableSlots, ...bookedSlots]} // Don't include user appointments here
+                        events={[...availableSlots, ...bookedSlots]} 
                         eventContent={(eventInfo) => {
                           // For booked slots
                           if (eventInfo.event.extendedProps.isBookedSlot) {
@@ -870,7 +870,7 @@ const Appointment = () => {
                           fetchAvailableSlots(currentDateFormatted);
                           setSelectedDate(currentDateFormatted);
 
-                          // Also update appointments
+                          
                           const startDate = arg.startStr.split("T")[0];
                           const endDate = arg.endStr.split("T")[0];
                           fetchAppointments(startDate, endDate);

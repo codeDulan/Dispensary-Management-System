@@ -120,7 +120,7 @@ const DispenserAppointments = () => {
       
       console.log("All appointments response:", response.data);
       
-      // Set appointments directly, our getPatientName function will handle all possible structures
+      
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -165,7 +165,7 @@ const DispenserAppointments = () => {
         }
       );
       
-      // Filter out past time slots if it's today
+      
       let slots = response.data;
       const today = new Date();
       if (formattedDate === format(today, 'yyyy-MM-dd')) {
@@ -203,7 +203,7 @@ const DispenserAppointments = () => {
       
       console.log("Daily queue response:", response.data);
       
-      // Set appointments directly, our getPatientName function will handle all possible structures
+      
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching daily queue:", error);
@@ -407,21 +407,20 @@ const DispenserAppointments = () => {
   };
   
   // Helper function to get patient name
-  // Helper function to get patient name
 const getPatientName = (patient) => {
   if (!patient) return "N/A";
   
   console.log("Patient object structure:", patient);
   
-  // If patient has name property, use it directly
+  
   if (patient.name) return patient.name;
   
-  // If patient has firstName/lastName properties
+  
   if (patient.firstName || patient.lastName) {
     return `${patient.firstName || ""} ${patient.lastName || ""}`.trim() || "N/A";
   }
   
-  // If patient has a nested user object (common in JPA/Hibernate mappings)
+  
   if (patient.user) {
     if (patient.user.name) return patient.user.name;
     if (patient.user.firstName || patient.user.lastName) {
@@ -429,15 +428,15 @@ const getPatientName = (patient) => {
     }
   }
   
-  // If patient is the actual ID (due to lazy loading)
+  
   if (typeof patient === 'number' || typeof patient === 'string') {
     return `Patient #${patient}`;
   }
   
-  // If patient has an id but no name information, return placeholder
+  
   if (patient.id) return `Patient #${patient.id}`;
   
-  // Last resort
+  
   return "N/A";
 }
   
@@ -520,7 +519,7 @@ const getPatientName = (patient) => {
                       value={selectedDate}
                       onChange={handleDateChange}
                       renderInput={(params) => <TextField {...params} fullWidth />}
-                      minDate={new Date()} // Prevent selecting past dates
+                      minDate={new Date()} 
                     />
                   </LocalizationProvider>
                   <Typography variant="subtitle1" fontWeight="bold" sx={{ ml: { md: 2 } }}>
@@ -709,7 +708,7 @@ const getPatientName = (patient) => {
                       required
                     />
                   )}
-                  minDate={new Date()} // Prevent selecting past dates
+                  minDate={new Date()} 
                 />
               </LocalizationProvider>
               
@@ -727,7 +726,7 @@ const getPatientName = (patient) => {
                   {availableSlots.length > 0 ? (
                     availableSlots.map((slot) => (
                       <MenuItem key={slot} value={slot}>
-                        {slot.substring(0, 5)} {/* Display only HH:MM */}
+                        {slot.substring(0, 5)} 
                       </MenuItem>
                     ))
                   ) : (

@@ -4,15 +4,15 @@ import Image from "../../../assets/login-logo.png";
 import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import UserService from "../../../services/UserService";
-import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
-  const [userType, setUserType] = useState("DOCTOR"); // default role
+  const [showPassword, setShowPassword] = useState(false); 
+  const [userType, setUserType] = useState("DOCTOR"); 
 
   const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ const Login = () => {
     try {
       let userData;
   
-      // Call the appropriate login function
+      
       if (userType === "PATIENT") {
         userData = await UserService.patientLogin(email, password);
       } else {
@@ -50,16 +50,15 @@ const Login = () => {
           navigate("/");
         }
       } else {
-        // Display user-friendly error message
+       
         setError("Invalid email or password. Please try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
       
-      // Check for specific error types and display user-friendly messages
+      
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // outside of the range of 2xx
+        
         if (error.response.status === 401 || error.response.status === 403) {
           setError("Invalid email or password. Please try again.");
         } else if (error.response.status === 404) {
@@ -70,10 +69,10 @@ const Login = () => {
           setError("Login failed. Please try again later.");
         }
       } else if (error.request) {
-        // The request was made but no response was received
+        
         setError("Unable to connect to the server. Please check your internet connection.");
       } else {
-        // Something happened in setting up the request
+        
         setError("An error occurred during login. Please try again.");
       }
     } finally {

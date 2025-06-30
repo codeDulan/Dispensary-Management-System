@@ -49,13 +49,13 @@ const PrescriptionView = () => {
   // New state variables
   const [doctorFee, setDoctorFee] = useState(300);
 
-  // Load processed prescriptions from localStorage to persist across refreshes
+  
   const [processedPrescriptions, setProcessedPrescriptions] = useState(() => {
     const savedProcessed = localStorage.getItem("processedPrescriptions");
     return savedProcessed ? new Set(JSON.parse(savedProcessed)) : new Set();
   });
 
-  // API base URL
+  
   const API_BASE_URL = "http://localhost:8080/api";
 
   // Fetch prescriptions from API
@@ -89,13 +89,13 @@ const PrescriptionView = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Debug to see the structure of the response
+      
       console.log("Prescriptions Response:", response.data);
       if (response.data.length > 0) {
         console.log("First prescription:", response.data[0]);
         if (response.data[0].items && response.data[0].items.length > 0) {
           console.log("First prescription item:", response.data[0].items[0]);
-          // Check for medicine properties
+          
           console.log("Medicine properties:", {
             medicineName: response.data[0].items[0].medicineName,
             medicineWeight: response.data[0].items[0].medicineWeight,
@@ -104,7 +104,7 @@ const PrescriptionView = () => {
         }
       }
 
-      // Sort prescriptions by issue date (newest first)
+      
       const sortedPrescriptions = response.data.sort(
         (a, b) => new Date(b.issueDate) - new Date(a.issueDate)
       );
@@ -119,7 +119,7 @@ const PrescriptionView = () => {
     }
   };
 
-  // Helper function to show notifications
+  
   const showNotification = (message, severity = "success") => {
     setNotification({
       open: true,
@@ -128,15 +128,15 @@ const PrescriptionView = () => {
     });
   };
 
-  // Close notification
+  
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
   };
 
-  // Current prescription
+  
   const currentPrescription = prescriptions[currentPrescriptionIndex] || null;
 
-  // Check if current prescription is processed
+  
   const isCurrentPrescriptionProcessed = () => {
     return (
       currentPrescription && processedPrescriptions.has(currentPrescription.id)
@@ -151,7 +151,7 @@ const PrescriptionView = () => {
 
   // Helper function to extract medicine weight from the item
   const getMedicineWeight = (item) => {
-    // Check all possible locations based on your DTO structure
+    
     if (item.medicineWeight) return item.medicineWeight;
     if (item.medicine && item.medicine.weight) return item.medicine.weight;
     if (
@@ -161,7 +161,7 @@ const PrescriptionView = () => {
     )
       return item.medicineDetails.weight;
 
-    // Try to extract from the medicine name if it contains weight information
+    
     if (item.medicineName) {
       const weightMatch = item.medicineName.match(/(\d+)\s*mg/i);
       if (weightMatch) return weightMatch[1];
@@ -172,7 +172,7 @@ const PrescriptionView = () => {
 
   // Helper function to get the unit price
   const getUnitPrice = (item) => {
-    // Check where the sell price might be located in your DTO
+    
     if (item.sellPrice) return item.sellPrice;
     if (item.inventoryItem && item.inventoryItem.sellPrice)
       return item.inventoryItem.sellPrice;
@@ -181,9 +181,9 @@ const PrescriptionView = () => {
     return 100;
   };
 
-  // Helper function to estimate doses per day based on dosage instructions
+  
   const getDosesPerDay = (dosageInstructions) => {
-    if (!dosageInstructions) return 1; // Default to 1 if no instructions
+    if (!dosageInstructions) return 1; 
 
     const instruction = String(dosageInstructions).toUpperCase();
 
@@ -211,7 +211,7 @@ const PrescriptionView = () => {
     ) {
       return 4;
     } else {
-      return 1; // Default for other instructions
+      return 1; 
     }
   };
 
@@ -219,16 +219,16 @@ const PrescriptionView = () => {
   const calculateTotalQuantity = (item) => {
     if (!item) return 0;
 
-    // Extract quantity per dose (default to 1 if not provided)
+    
     const quantityPerDose = parseInt(item.quantity) || 1;
 
-    // Get number of doses per day based on dosage instructions
+    
     const dosesPerDay = getDosesPerDay(item.dosageInstructions);
 
-    // Get number of days for the prescription
+    
     const daysSupply = parseInt(item.daysSupply) || 7;
 
-    // Calculate total: quantity per dose * doses per day * days
+    
     const totalQuantity = quantityPerDose * dosesPerDay * daysSupply;
     console.log(
       `Calculation for ${item.medicineName}: ${quantityPerDose} × ${dosesPerDay} × ${daysSupply} = ${totalQuantity}`
@@ -237,7 +237,7 @@ const PrescriptionView = () => {
     return totalQuantity;
   };
 
-  // Calculate total price - Updated to account for days supply
+  // Calculate total price
   const calculateTotalPrice = () => {
     if (!currentPrescription || !currentPrescription.items) return doctorFee;
 
@@ -247,13 +247,13 @@ const PrescriptionView = () => {
     );
 
     const medicinesTotal = currentPrescription.items.reduce((total, item) => {
-      // Get unit price
+      
       const unitPrice = getUnitPrice(item);
 
-      // Calculate total quantity needed
+      
       const totalQuantity = calculateTotalQuantity(item);
 
-      // Calculate cost for this item
+      
       const itemCost = unitPrice * totalQuantity;
 
       console.log(
@@ -311,14 +311,14 @@ const PrescriptionView = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Mark the prescription as processed
+      
       const updatedProcessed = new Set([
         ...processedPrescriptions,
         currentPrescription.id,
       ]);
       setProcessedPrescriptions(updatedProcessed);
 
-      // Save to localStorage for persistence
+      
       localStorage.setItem(
         "processedPrescriptions",
         JSON.stringify([...updatedProcessed])
@@ -366,7 +366,7 @@ const PrescriptionView = () => {
       ]);
       setProcessedPrescriptions(updatedProcessed);
 
-      // Save to localStorage for persistence
+      
       localStorage.setItem(
         "processedPrescriptions",
         JSON.stringify([...updatedProcessed])

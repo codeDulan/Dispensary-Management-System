@@ -100,7 +100,7 @@ const PatientProfilePopup = ({ open, handleClose }) => {
   
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-    // Clear messages when switching tabs
+    
     setSuccessMessage("");
     setErrorMessage("");
   };
@@ -120,7 +120,7 @@ const PatientProfilePopup = ({ open, handleClose }) => {
       [name]: value
     });
     
-    // Clear error for the field being changed
+    
     if (passwordErrors[name]) {
       setPasswordErrors({
         ...passwordErrors,
@@ -174,7 +174,7 @@ const PatientProfilePopup = ({ open, handleClose }) => {
     
     setPasswordErrors(errors);
     
-    // Return true if no errors
+   
     return !Object.values(errors).some(error => error);
   };
   
@@ -205,7 +205,7 @@ const PatientProfilePopup = ({ open, handleClose }) => {
     try {
       await UserService.changePatientPassword(passwordData);
       setSuccessMessage("Password changed successfully");
-      // Reset password form
+      
       setPasswordData({
         currentPassword: "",
         newPassword: "",

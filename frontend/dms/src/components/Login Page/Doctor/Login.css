@@ -1,4 +1,4 @@
-/* General Styling */
+
 body {
   margin: 0;
   padding: 0;
@@ -12,9 +12,9 @@ body {
   position: relative;
 }
 
-/* Left Side (Gradient Background) */
+
 .login-left {
-  flex: 1.2;  /* Slightly larger to overlap the curve */
+  flex: 1.2;  
   background: linear-gradient(to bottom, #b0ca83, #79ac5e);
   display: flex;
   justify-content: center;
@@ -23,16 +23,16 @@ body {
   
 }
 
-/* Logo Styling */
+
 .login-logo {
   width: 500px;
   height: 550px;
-  position: absolute; /* Ensure it's independent of flex positioning */
+  position: absolute; 
   margin-left: 100px;
-  z-index: 10; /* Highest layer to be on top of all elements */
+  z-index: 10; 
 }
 
-/* Right Side (Login Form) */
+
 .login-right {
   flex: 2;
   display: flex;
@@ -45,12 +45,12 @@ body {
   position: relative;
   z-index: 3;
   width: 60%;
-  margin-left: -80px; /* Pulls it slightly into the left side to blend */
+  margin-left: -80px; 
   
-  box-shadow: -20px 0px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for smooth transition */
+  box-shadow: -20px 0px 20px rgba(0, 0, 0, 0.1); 
 }
 
-/* Form Box */
+
 .login-box {
   width: 500px;
   
@@ -106,12 +106,12 @@ body {
   text-decoration: underline;
 }
 
-/* Password field styling to add to your existing Login.css */
+
 
 .password-field-container {
   position: relative;
   width: 100%;
-  margin-bottom: 30px; /* Match your other input fields */
+  margin-bottom: 30px;
 }
 
 .password-field-container .input-field {
@@ -120,7 +120,7 @@ body {
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
-  margin-bottom: 0; /* Override the default margin since the container has margin */
+  margin-bottom: 0; 
 }
 
 .password-toggle-button {
@@ -141,20 +141,20 @@ body {
 }
 
 .password-toggle-button:hover {
-  color: #538e58; /* Match your button hover color */
+  color: #538e58; 
 }
 
 .password-toggle-button:focus {
   outline: none;
 }
 
-/* Fix for the button width to match input field */
+
 .login-button {
-  width: 100%; /* Changed from 100.4% */
-  padding: 10px; /* Match your input field padding */
+  width: 100%; 
+  padding: 10px; 
 }
 
-/* Error message styling */
+
 .error-message {
   color: #d32f2f;
   margin-bottom: 20px;

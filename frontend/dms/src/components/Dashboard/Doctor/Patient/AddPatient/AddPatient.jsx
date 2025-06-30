@@ -78,13 +78,13 @@ const AddPatient = () => {
       const patientData = {
         firstName: values.firstName,
         lastName: values.lastName,
-        address: values.address || values.city, // Combine or separate as needed
+        address: values.address || values.city, 
         contact: values.contact,
         email: values.email,
         gender: values.gender,
-        age: age, // Calculated age
-        weight: parseFloat(values.weight) || 0, // Convert to number
-        medicalNotes: values.medicalNotes, // Field name must match
+        age: age, 
+        weight: parseFloat(values.weight) || 0, 
+        medicalNotes: values.medicalNotes, 
       };
 
       await UserService.doctorRegisterPatient(patientData);
@@ -93,11 +93,11 @@ const AddPatient = () => {
       console.error("Registration Error:", error);
       alert(error.response?.data?.message || "Failed to register patient");
     } finally {
-      setIsSubmitting(false); // Reset submitting state regardless of success/failure
+      setIsSubmitting(false); 
     }
   };
 
-  // Add this helper function
+  
   const calculateAge = (birthDate) => {
     if (!birthDate) return 0;
     const today = new Date();
@@ -324,7 +324,7 @@ const AddPatient = () => {
                         type="submit"
                         color="secondary"
                         variant="contained"
-                        disabled={isSubmitting} // Disable the button while submitting
+                        disabled={isSubmitting} 
                         sx={{ py: 1.5, px: 3 }}
                       >
                         {isSubmitting ? "Creating..." : "Create New User"}

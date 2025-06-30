@@ -89,10 +89,10 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(new Date());
   const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
   const [filterApplied, setFilterApplied] = useState(false);
-  const [timeframe, setTimeframe] = useState("yearly"); // yearly, monthly, custom
+  const [timeframe, setTimeframe] = useState("yearly"); 
 
   const [diseaseData, setDiseaseData] = useState([]);
-  const [diseaseDateRange, setDiseaseDateRange] = useState("month"); // 'week', 'month', 'year', 'custom'
+  const [diseaseDateRange, setDiseaseDateRange] = useState("month"); 
   const [diseaseStartDate, setDiseaseStartDate] = useState(
     startOfMonth(new Date())
   );
@@ -267,7 +267,7 @@ const Reports = () => {
       return;
     }
 
-    // Calculate total revenue, average payment, etc.
+    
     const totalRevenue = payments.reduce(
       (sum, payment) => sum + (payment.totalAmount || 0),
       0
@@ -366,7 +366,6 @@ const Reports = () => {
   };
 
   // Generate a PDF report
-  // Replace your existing generatePdfReport function with this implementation:
   const generatePdfReport = () => {
     try {
       showNotification("Generating report...", "info");
@@ -669,8 +668,7 @@ const Reports = () => {
 
       // Wait for resources to load then trigger print
       printWindow.addEventListener("load", () => {
-        // Auto-print if desired - uncomment this line
-        // printWindow.print();
+        
         showNotification(
           "Report generated successfully. Click the print button to print.",
           "success"
@@ -716,7 +714,7 @@ const Reports = () => {
     showNotification("CSV report downloaded successfully", "success");
   };
 
-  // Generate years for dropdown (last 5 years and current year)
+  // Generate years for dropdown 
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];

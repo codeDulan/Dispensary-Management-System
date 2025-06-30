@@ -1,4 +1,4 @@
-/* FullCalendar Time Grid Fixes */
+
 .fc-timegrid-slots tr {
   height: 20px !important;
 }
@@ -47,7 +47,7 @@
   height: 20px !important;
 }
 
-/* Background events (available slots) styling */
+
 .fc-bg-event {
   opacity: 0.3 !important;
   cursor: pointer !important;
@@ -57,7 +57,7 @@
   opacity: 0.5 !important;
 }
 
-/* Queue number styling */
+
 .queue-number {
   display: flex;
   justify-content: center;
@@ -85,7 +85,7 @@
   font-size: 0.6rem;
 }
 
-/* Queue board styling */
+
 .queue-board {
   display: flex;
   flex-wrap: wrap;
@@ -114,7 +114,7 @@
   font-size: 0.9rem;
 }
 
-/* Appointment type indicators */
+
 .appointment-type-indicator {
   width: 8px;
   height: 8px;
@@ -123,7 +123,7 @@
   margin-right: 6px;
 }
 
-/* Responsive sidebar */
+
 @media (max-width: 768px) {
   .appointment-sidebar {
     max-height: 300px;
@@ -131,7 +131,7 @@
   }
 }
 
-/* Time indicator */
+
 .time-indicator {
   display: flex;
   align-items: center;
@@ -144,7 +144,7 @@
   margin-right: 4px;
 }
 
-/* Dialog styling */
+
 .appointment-dialog-title {
   font-size: 1.5rem !important;
   padding: 16px 24px !important;
@@ -167,7 +167,7 @@
   margin-bottom: 4px !important;
 }
 
-/* Empty state */
+
 .empty-list {
   display: flex;
   flex-direction: column;
@@ -183,7 +183,7 @@
   opacity: 0.5;
 }
 
-/* Enhanced calendar */
+
 .fc-day-today {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }

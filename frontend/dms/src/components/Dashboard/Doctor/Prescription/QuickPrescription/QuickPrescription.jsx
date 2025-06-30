@@ -107,7 +107,7 @@ const QuickPrescription = () => {
 
   // Helper function to get doses per day based on dosage instructions
   const getDosesPerDay = (dosageInstructions) => {
-    if (!dosageInstructions) return 1; // Default to 1 if no instructions
+    if (!dosageInstructions) return 1; 
 
     const instruction = String(dosageInstructions || "").toUpperCase();
 
@@ -138,14 +138,14 @@ const QuickPrescription = () => {
       instruction.includes("STAT") ||
       instruction.includes("IMMEDIATELY")
     ) {
-      return 1; // One-time dose
+      return 1; 
     } else if (
       instruction.includes("PRN") ||
       instruction.includes("WHEN REQUIRED")
     ) {
-      return 1; // Assume once daily for PRN
+      return 1; 
     } else {
-      return 1; // Default for other instructions
+      return 1; 
     }
   };
 
@@ -235,7 +235,7 @@ const QuickPrescription = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Debug log
+      
       console.log("Inventory Items:", response.data);
 
       setInventoryItems(response.data);
@@ -268,7 +268,7 @@ const QuickPrescription = () => {
     }
   };
 
-  // Helper function to show notifications
+  
   const showNotification = (message, severity = "success") => {
     setNotification({
       open: true,
@@ -288,10 +288,10 @@ const QuickPrescription = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Remove the deleted template from the state
+      
       setTemplates(templates.filter((template) => template.id !== templateId));
 
-      // If the deleted template was selected, clear selection
+      
       if (selectedTemplate?.id === templateId) {
         setSelectedTemplate(null);
       }
@@ -345,11 +345,11 @@ const QuickPrescription = () => {
       setNotes(selectedTemplate.templateNotes);
     }
 
-    // Handle items - need to convert template medicines to inventory items
+    
     if (selectedTemplate.items && selectedTemplate.items.length > 0) {
       const newMedicines = selectedTemplate.items
         .map((item) => {
-          // Find matching inventory items for this medicine
+          
           const matchingInventory = inventoryItems.filter(
             (inv) => inv.medicineId === item.medicineId
           );
@@ -358,7 +358,7 @@ const QuickPrescription = () => {
             const bestMatch = matchingInventory[0];
             return {
               inventoryItemId: bestMatch.id,
-              name: bestMatch.medicineName || item.medicineName, // Ensure name is set
+              name: bestMatch.medicineName || item.medicineName, 
               type: "",
               dosageInstructions: item.dosageInstructions,
               quantity: item.quantity.toString(),
@@ -374,9 +374,9 @@ const QuickPrescription = () => {
 
       if (newMedicines.length > 0) {
         setMedicines(newMedicines);
-        console.log("Loaded medicines:", newMedicines); // Debug log
+        console.log("Loaded medicines:", newMedicines); 
       } else {
-        // If no matches were found, keep one empty row
+        
         setMedicines([
           {
             inventoryItemId: "",
@@ -401,7 +401,7 @@ const QuickPrescription = () => {
   };
   // Save template dialog handlers
   const handleOpenSaveTemplateDialog = () => {
-    // Default template name to first diagnosis if available
+    
     if (diagnosis[0] && diagnosis[0].trim()) {
       setTemplateCondition(diagnosis[0].trim());
       setNewTemplateName(`${diagnosis[0].trim()} Treatment`);
@@ -450,7 +450,7 @@ const QuickPrescription = () => {
             daysSupply: parseInt(med.daysSupply) || 7,
           };
         })
-        .filter((item) => item.medicineId), // Filter out items where we couldn't find the medicine ID
+        .filter((item) => item.medicineId), 
     };
 
     try {
@@ -464,7 +464,7 @@ const QuickPrescription = () => {
 
       showNotification("Template saved successfully!", "success");
       setSaveTemplateDialogOpen(false);
-      fetchTemplates(); // Refresh the templates list
+      fetchTemplates(); 
     } catch (error) {
       console.error("Error saving template:", error);
       showNotification(
@@ -738,7 +738,7 @@ const QuickPrescription = () => {
       );
 
       showNotification("Prescription saved successfully!");
-      // Navigate back to prescriptions list after successful save
+      
       setTimeout(() => navigate("/prescriptions"), 1500);
     } catch (error) {
       console.error("Error saving prescription:", error);
@@ -1303,7 +1303,7 @@ const QuickPrescription = () => {
                         right: 8,
                       }}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering template selection
+                        e.stopPropagation(); 
                         if (
                           window.confirm(
                             `Are you sure you want to delete the template "${template.templateName}"?`

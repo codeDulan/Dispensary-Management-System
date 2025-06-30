@@ -62,7 +62,7 @@ const Medicine = () => {
     const fetchMedicines = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token"); // Get auth token
+        const token = localStorage.getItem("token"); 
         const response = await axios.get("http://localhost:8080/api/medicines", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ const Medicine = () => {
         // Process the data to handle null values for new fields
         const processedData = response.data.map(medicine => ({
           ...medicine,
-          // Ensure weight property exists even if null in database
+          
           weight: medicine.weight || null
         }));
         
@@ -127,7 +127,7 @@ const Medicine = () => {
         id: medicineToEdit.id,
         description: medicineToEdit.description || "",
         lethalDosagePerKg: medicineToEdit.lethalDosagePerKg || "",
-        weight: medicineToEdit.weight || "" // Ensure undefined or null is converted to empty string
+        weight: medicineToEdit.weight || "" 
       });
       setEditDialogOpen(true);
     }
@@ -157,7 +157,7 @@ const Medicine = () => {
     try {
       const token = localStorage.getItem("token");
       
-      // Prepare data for API - convert empty strings to null
+      
       const dataToSend = {
         ...editMedicine,
         weight: editMedicine.weight === "" ? null : editMedicine.weight,
@@ -207,7 +207,7 @@ const Medicine = () => {
     setNotification({...notification, open: false});
   };
 
-  // Columns Configuration - only include fields that exist in your entity
+  
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     { field: "name", headerName: "Name", flex: 1 },

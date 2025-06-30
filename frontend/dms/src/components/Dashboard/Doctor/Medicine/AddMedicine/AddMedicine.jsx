@@ -10,7 +10,7 @@ import { ColorModeContext, useMode, tokens } from "../../../../../theme";
 import { Form, Formik } from "formik";
 import * as yup from "yup";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import Topbar from "./Topbar"; // Assuming Topbar is for medicine page
+import Topbar from "./Topbar"; 
 import DoctorSidebar from "../../Sidebar/DoctorSidebar";
 
 import UserService from "../../../../../services/UserService";
@@ -19,7 +19,7 @@ const initialValues = {
   name: "",
   description: "",
   lethalDosagePerKg: "",
-  weight: "", // Added new weight field
+  weight: "", 
 };
 
 const medicineSchema = yup.object().shape({

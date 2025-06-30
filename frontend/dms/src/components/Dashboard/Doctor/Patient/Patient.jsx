@@ -87,10 +87,10 @@ const Patient = () => {
         },
       });
       
-      // Make sure each row has an id field for DataGrid
+      
       const patientsWithId = response.data.map(patient => ({
         ...patient,
-        id: patient.id || patient.patientId // Ensure id exists
+        id: patient.id || patient.patientId 
       }));
       
       setPatients(patientsWithId);
@@ -152,7 +152,7 @@ const Patient = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Prepare data for API - convert empty strings to null
+      
       const dataToSend = {
         ...editPatient,
         weight: editPatient.weight === "" ? null : editPatient.weight,
@@ -169,12 +169,12 @@ const Patient = () => {
         }
       );
 
-      // Update local state
+     
       setPatients(patients.map(patient => 
         patient.id === editPatient.id ? { ...patient, ...dataToSend } : patient
       ));
       
-      // Close dialog and show success notification
+      
       setEditDialogOpen(false);
       setNotification({
         open: true,

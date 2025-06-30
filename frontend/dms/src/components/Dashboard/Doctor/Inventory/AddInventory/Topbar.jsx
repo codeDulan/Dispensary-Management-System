@@ -136,12 +136,12 @@ const Topbar = () => {
   useEffect(() => {
     fetchUnreadCount();
     
-    // Set up interval to check for new notifications
+   
     const intervalId = setInterval(() => {
       fetchUnreadCount();
-    }, 60000); // Check every minute
+    }, 60000); 
     
-    // Clean up interval on component unmount
+    
     return () => clearInterval(intervalId);
   }, []);
 

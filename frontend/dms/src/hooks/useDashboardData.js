@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import dashboardService from '../services/dashboardService';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
-// Helper to get ISO date strings for API requests
+
 const formatDateForApi = (date) => {
   return format(date, 'yyyy-MM-dd');
 };
@@ -15,7 +15,7 @@ export const useDashboardData = (refreshKey = 0) => {
   const [error, setError] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     revenueData: [],
-    patientAgeDistribution: [], // Changed from paymentDistribution to patientAgeDistribution
+    patientAgeDistribution: [], 
     stats: {
       totalPatients: 0,
       appointmentsThisWeek: 0,
@@ -45,10 +45,10 @@ export const useDashboardData = (refreshKey = 0) => {
         let appointments = [];
         let todayAppointments = [];
         let lowStockItems = [];
-        let patientAgeData = []; // New array for patient age distribution
+        let patientAgeData = [];
         let successfulApiCalls = false;
         
-        // Try to fetch payments
+        // fetch payments
         try {
           payments = await dashboardService.getPayments();
           successfulApiCalls = true;
@@ -58,7 +58,7 @@ export const useDashboardData = (refreshKey = 0) => {
           payments = [];
         }
         
-        // Try to fetch inventory
+        // fetch inventory
         try {
           inventory = await dashboardService.getAllInventory();
           successfulApiCalls = true;
@@ -68,7 +68,7 @@ export const useDashboardData = (refreshKey = 0) => {
           inventory = [];
         }
         
-        // Try to fetch patients
+        // fetch patients
         try {
           patients = await dashboardService.getAllPatients();
           successfulApiCalls = true;
@@ -78,7 +78,7 @@ export const useDashboardData = (refreshKey = 0) => {
           patients = [];
         }
         
-        // Try to fetch patient age distribution
+        // fetch patient age distribution
         try {
           patientAgeData = await dashboardService.getPatientAgeDistribution();
           successfulApiCalls = true;
@@ -88,7 +88,7 @@ export const useDashboardData = (refreshKey = 0) => {
           patientAgeData = [];
         }
         
-        // Try to fetch appointments
+        // fetch appointments
         try {
           appointments = await dashboardService.getAllAppointments();
           successfulApiCalls = true;
@@ -98,7 +98,7 @@ export const useDashboardData = (refreshKey = 0) => {
           appointments = [];
         }
         
-        // Try to fetch today's appointments specifically
+        // fetch today's appointments specifically
         try {
           todayAppointments = await dashboardService.getAppointmentsByDate(todayDate);
           successfulApiCalls = true;
@@ -108,7 +108,7 @@ export const useDashboardData = (refreshKey = 0) => {
           todayAppointments = [];
         }
         
-        // Try to fetch low stock items
+        // fetch low stock items
         try {
           lowStockItems = await dashboardService.getLowStockItems();
           successfulApiCalls = true;
@@ -118,7 +118,7 @@ export const useDashboardData = (refreshKey = 0) => {
           lowStockItems = [];
         }
         
-        // If no API call succeeded, throw an error
+        
         if (!successfulApiCalls) {
           throw new Error("All API calls failed. Check authentication and API availability.");
         }
@@ -126,19 +126,19 @@ export const useDashboardData = (refreshKey = 0) => {
         // Process revenue data by month
         const revenueByMonth = processRevenueData(payments);
         
-        // Calculate summary statistics
+        
         const stats = calculateStats(patients, appointments, payments, inventory, lowStockItems, todayAppointments);
         
         setDashboardData({
           revenueData: revenueByMonth,
-          patientAgeDistribution: patientAgeData, // Set the patient age distribution
+          patientAgeDistribution: patientAgeData, 
           stats
         });
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError(err.message || "Failed to fetch dashboard data");
         
-        // Return empty data instead of fallback data
+        
         setDashboardData({
           revenueData: [],
           patientAgeDistribution: [], // Empty array for patient age distribution
@@ -164,7 +164,7 @@ export const useDashboardData = (refreshKey = 0) => {
 
 // Process payments data to get monthly revenue
 const processRevenueData = (payments) => {
-  // Group payments by month and sum amounts
+  
   const monthlyRevenue = {};
   
   payments.forEach(payment => {
@@ -188,7 +188,7 @@ const processRevenueData = (payments) => {
 
 // Calculate summary statistics
 const calculateStats = (patients, appointments, payments, inventory, lowStockItems, todayAppointments) => {
-  // Total patients
+  
   const totalPatients = patients.length;
   
   // Appointments this week
@@ -205,7 +205,7 @@ const calculateStats = (patients, appointments, payments, inventory, lowStockIte
   // Today's appointments count
   const appointmentsToday = todayAppointments.length;
   
-  // Today's revenue instead of monthly revenue
+  
   const todayStart = new Date(today);
   todayStart.setHours(0, 0, 0, 0);
   
@@ -259,7 +259,7 @@ export const useInventoryStatus = (refreshKey = 0) => {
         
         setInventoryStatus({
           lowStock,
-          expiring: [] // Empty array instead of dummy data
+          expiring: [] 
         });
       } catch (err) {
         console.error("Error fetching inventory status:", err);
@@ -270,7 +270,7 @@ export const useInventoryStatus = (refreshKey = 0) => {
     };
     
     fetchInventoryStatus();
-  }, [refreshKey]); // Add refreshKey dependency
+  }, [refreshKey]); 
   
   return { loading, error, inventoryStatus };
 };
@@ -292,7 +292,7 @@ export const useUpcomingAppointments = (refreshKey = 0) => {
           appointmentsData = await dashboardService.getAllAppointments();
         } catch (error) {
           console.log("Failed to fetch appointments:", error.message);
-          appointmentsData = []; // Empty array instead of dummy data
+          appointmentsData = [];
         }
         
         setAppointments(appointmentsData);
@@ -305,7 +305,7 @@ export const useUpcomingAppointments = (refreshKey = 0) => {
     };
     
     fetchAppointments();
-  }, [refreshKey]); // Add refreshKey dependency
+  }, [refreshKey]); 
   
   return { loading, error, appointments };
 };

@@ -137,12 +137,12 @@ const PaymentList = () => {
     }
   };
 
-  // Apply filters
+  
   const applyFilters = () => {
     fetchPayments();
   };
 
-  // Reset filters
+  
   const resetFilters = () => {
     setFilterType("all");
     setStatusFilter("");
@@ -211,7 +211,7 @@ const PaymentList = () => {
     
     // Handle numeric values
     if (name === "doctorFee" || name === "medicinesCost" || name === "totalAmount") {
-      // Convert string to number but keep it as state value
+      
       setEditFormData({
         ...editFormData,
         [name]: value,
@@ -257,11 +257,11 @@ const PaymentList = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Close modal
+      
       setEditModalOpen(false);
       showNotification("Payment updated successfully");
       
-      // Refresh payments list
+      
       fetchPayments();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -271,7 +271,7 @@ const PaymentList = () => {
     }
   };
 
-  // Get status color
+  
   const getStatusColor = (status) => {
     switch (status?.toUpperCase()) {
       case "COMPLETED":

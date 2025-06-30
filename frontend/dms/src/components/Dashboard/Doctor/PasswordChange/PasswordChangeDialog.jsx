@@ -109,7 +109,7 @@ const PasswordChangeDialog = ({ open, handleClose }) => {
 
   // Handle submit
   const handleSubmit = async () => {
-    // Reset messages
+    
     setSuccessMessage("");
     setErrorMessage("");
 
@@ -135,14 +135,14 @@ const PasswordChangeDialog = ({ open, handleClose }) => {
 
       if (response.data.statusCode === 200) {
         setSuccessMessage(response.data.message || "Password changed successfully");
-        // Reset form
+        
         setPasswordData({
           currentPassword: "",
           newPassword: "",
           confirmPassword: ""
         });
         
-        // Close dialog after short delay
+        
         setTimeout(() => {
           handleClose();
         }, 2000);

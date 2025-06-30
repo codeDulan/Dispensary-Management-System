@@ -17,7 +17,7 @@ import DoctorSidebar from "../../Sidebar/DoctorSidebar";
 import UserService from "../../../../../services/UserService";
 import axios from "axios";
 
-// Modified initialization without medicineId (we'll handle it separately)
+
 const initialValues = {
   batchNumber: "",
   expiryDate: "",
@@ -69,7 +69,7 @@ const AddInventory = () => {
           },
         });
         
-        // Process data to ensure weight property exists
+        
         const processedData = response.data.map(medicine => ({
           ...medicine,
           weight: medicine.weight || null
@@ -108,7 +108,7 @@ const AddInventory = () => {
       await UserService.addInventoryItem(inventoryData);
       alert("Inventory item added successfully!");
       resetForm();
-      setSelectedMedicine(null); // Clear selected medicine
+      setSelectedMedicine(null); 
     } catch (error) {
       console.error("Create Inventory Error:", error);
       alert(error.response?.data?.message || "Failed to add inventory item");

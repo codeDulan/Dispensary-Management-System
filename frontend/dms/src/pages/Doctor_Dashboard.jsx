@@ -1,4 +1,3 @@
-// Updated Dashboard component with improved contrast for cards and charts
 
 import React, { useState, useEffect } from "react";
 import { ColorModeContext, useMode } from "../theme.js";
@@ -43,7 +42,7 @@ import {
   useInventoryStatus,
   useUpcomingAppointments,
 } from "../hooks/useDashboardData";
-import UserService from "../services/UserService"; // Import your existing UserService
+import UserService from "../services/UserService";
 
 // Dashboard widget components
 const RevenueChart = ({ data = [] }) => {
@@ -107,7 +106,7 @@ const RevenueChart = ({ data = [] }) => {
   );
 };
 
-// PatientAgeDistribution with only percentage labels - minimal change
+// PatientAgeDistribution with only percentage labels
 
 const PatientAgeDistribution = ({ data = [] }) => {
   const theme = useTheme();
@@ -115,7 +114,7 @@ const PatientAgeDistribution = ({ data = [] }) => {
     ? { bgColor: '#1F2A40', textColor: '#e0e0e0', gridColor: '#3d3d3d' }
     : { bgColor: '#ffffff', textColor: '#141414', gridColor: '#c2c2c2' };
   
-  // Use hardcoded colors to ensure they always work
+  
   const CHART_COLORS = [
     '#4cceac', // greenAccent
     '#6870fa', // blueAccent 
@@ -147,7 +146,7 @@ const PatientAgeDistribution = ({ data = [] }) => {
               cx="50%" 
               cy="50%" 
               labelLine={false}
-              label={({ percent }) => `${(percent * 100).toFixed(0)}%`} // Show only percentages
+              label={({ percent }) => `${(percent * 100).toFixed(0)}%`} 
               outerRadius={80} 
               fill="#8884d8" 
               dataKey="value"
@@ -169,7 +168,7 @@ const PatientAgeDistribution = ({ data = [] }) => {
   );
 };
 
-// Stats Card Component - Updated with professional icons and improved contrast
+// Stats Card Component
 const StatsCard = ({ title, value, subtitle, icon, loading = false }) => {
   const theme = useTheme();
   const colors =
@@ -270,7 +269,7 @@ const Dashboard = () => {
     day: "numeric",
   });
 
-  // Force refresh function
+  
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
@@ -278,7 +277,7 @@ const Dashboard = () => {
   // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
-      // Check if user is authenticated and is a doctor using your UserService
+      
       const authenticated = UserService.isAuthenticated();
       const doctorRole = UserService.isDoctor();
 
@@ -354,7 +353,7 @@ const Dashboard = () => {
                 <LoadingIndicator />
               ) : (
                 <>
-                  {/* Stats Overview - With professional icons */}
+                  {/* Stats Overview */}
                   <Grid container spacing={3} mb={4}>
                     <Grid item xs={12} sm={6} md={3}>
                       <StatsCard

@@ -11,22 +11,22 @@ import UserService from '../../services/UserService';
 const Signup = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    // Account Information
+    
     email: '',
     password: '',
     confirmPassword: '',
     
-    // Personal Information
+    
     firstName: '',
     lastName: '',
     dateOfBirth: '',
     gender: '',
     
-    // Health Information (optional)
+    
     weight: '',
     medicalNotes: '',
     
-    // Contact Information
+    
     phone: '',
     city: '',
     address: ''

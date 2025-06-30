@@ -1,7 +1,6 @@
-// src/services/dashboardService.js
+
 import UserService from './UserService';
 
-// Dashboard data service that uses your existing UserService
 const dashboardService = {
   // PAYMENTS
   async getPayments() {

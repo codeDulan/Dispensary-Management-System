@@ -82,7 +82,7 @@ const Prescription = () => {
     severity: "success",
   });
 
-  // API base URL - adjust according to your backend configuration
+  
   const API_BASE_URL = "http://localhost:8080/api";
 
   // Medical dosage instructions options
@@ -259,7 +259,7 @@ const Prescription = () => {
     if (prescription.items && prescription.items.length > 0) {
       setEditableMedicines(
         prescription.items.map((item) => {
-          // Convert item to an editable format
+          
           return {
             id: item.id,
             inventoryItemId: item.inventoryItemId,
@@ -268,9 +268,9 @@ const Prescription = () => {
             quantity: item.quantity,
             dosageInstructions: item.dosageInstructions || "",
             daysSupply: item.daysSupply ? String(item.daysSupply) : "7",
-            isNew: false, // Flag to identify existing medicines
-            // Fetch medicine details including available quantity will be done when editing
-            oldQuantity: item.quantity, // Store original quantity for inventory adjustment calculation
+            isNew: false, 
+            
+            oldQuantity: item.quantity, 
             oldDaysSupply: item.daysSupply,
             oldDosageInstructions: item.dosageInstructions,
           };
@@ -355,8 +355,7 @@ const Prescription = () => {
       return;
     }
 
-    // Check if there's enough inventory for new medicines
-    // or for increased quantities in existing medicines
+    
     for (let medicine of editableMedicines) {
       if (medicine.isNew) {
         // For new medicines, check total quantity against available
@@ -382,9 +381,7 @@ const Prescription = () => {
           // Need to check if there's enough additional inventory
           const additionalQty = newTotalQty - oldTotalQty;
 
-          // Need to fetch current available quantity
-          // This might need an API call if not already available
-          // For now we'll assume we don't have this info and show a warning
+          
           showNotification(
             `Increasing medicine quantity may require additional inventory check for ${medicine.medicineName}`,
             "warning"
@@ -446,7 +443,7 @@ const Prescription = () => {
 
   // Helper function to get doses per day based on dosage instructions
   const getDosesPerDay = (dosageInstructions) => {
-    if (!dosageInstructions) return 1; // Default to 1 if no instructions
+    if (!dosageInstructions) return 1; 
 
     const instruction = String(dosageInstructions || "").toUpperCase();
 
@@ -474,7 +471,7 @@ const Prescription = () => {
     ) {
       return 4;
     } else {
-      return 1; // Default for other instructions
+      return 1; 
     }
   };
 
@@ -516,12 +513,12 @@ const Prescription = () => {
 
   // Check if quantity is sufficient
   const isQuantitySufficient = (med) => {
-    if (!med.isNew) return true; // Skip check for existing medicines
+    if (!med.isNew) return true; 
     const totalQty = calculateTotalQuantity(med);
     return totalQty <= med.availableQuantity;
   };
 
-  // Validate quantity input (only numbers)
+  
   const validateQuantity = (value) => {
     return value === "" || /^[0-9]+$/.test(value);
   };

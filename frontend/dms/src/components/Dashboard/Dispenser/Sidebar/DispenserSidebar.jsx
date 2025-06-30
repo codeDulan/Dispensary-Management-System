@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -14,9 +14,9 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import UserIcon from "../../../../assets/dispenser.jpg";
-import UserService from "../../../../services/UserService"; // Added UserService import
+import UserService from "../../../../services/UserService"; 
 
-// Modified Item component to accept onClick prop
+
 const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -64,12 +64,12 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
-  const navigate = useNavigate(); // Added useNavigate hook
+  const navigate = useNavigate(); 
 
   // Logout handler function
   const handleLogout = () => {
-    UserService.logout(); // Call the logout method from UserService
-    navigate("/login", { replace: true }); // Redirect to login page with replace:true
+    UserService.logout(); 
+    navigate("/login", { replace: true }); 
   };
 
   return (
@@ -165,23 +165,23 @@ const Sidebar = () => {
                 height: "calc(100vh - 300px)",
                 paddingLeft: "5px",
                  
-                // Custom Scrollbar Styles
+               
                 "&::-webkit-scrollbar": {
-                  width: "8px", // Width of the scrollbar
+                  width: "8px", 
                 },
                 "&::-webkit-scrollbar-track": {
-                  background: colors.primary[400], // Track color
-                  borderRadius: "4px", // Rounded corners for the track
+                  background: colors.primary[400], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb": {
-                  background: colors.greenAccent[500], // Thumb color
-                  borderRadius: "4px", // Rounded corners for the thumb
+                  background: colors.greenAccent[500], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb:hover": {
-                  background: colors.greenAccent[400], // Thumb color on hover
+                  background: colors.greenAccent[400], 
                 },
-                // Firefox Scrollbar Styles
-                scrollbarWidth: "thin", // Firefox scrollbar width
+                
+                scrollbarWidth: "thin", 
                 scrollbarColor: `${colors.greenAccent[500]} ${colors.primary[400]}`, // Firefox thumb and track color
               }}
             >
@@ -212,7 +212,7 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
               
-              {/* Modified Logout Item - now uses onClick without Link */}
+              
               <Item
                 title="Logout"
                 to="/logout" // This is just for styling

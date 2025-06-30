@@ -21,7 +21,7 @@ const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const colors = tokens(theme.palette.mode);
   
   
-  // If onClick is provided, use it, otherwise use the default behavior
+  
   const handleClick = onClick ? () => onClick() : () => setSelected(to);
   
   return (
@@ -67,8 +67,8 @@ const Sidebar = () => {
   
   // Logout handler function
   const handleLogout = () => {
-    UserService.logout(); // Call the logout method from UserService
-    navigate("/login", {replace:true}); // Redirect to login page
+    UserService.logout(); 
+    navigate("/login", {replace:true}); 
   };
 
   return (
@@ -168,23 +168,23 @@ const Sidebar = () => {
                 height: "calc(100vh - 300px)",
                 paddingLeft: "5px",
 
-                // Custom Scrollbar Styles
+                
                 "&::-webkit-scrollbar": {
-                  width: "8px", // Width of the scrollbar
+                  width: "8px", 
                 },
                 "&::-webkit-scrollbar-track": {
-                  background: colors.primary[400], // Track color
-                  borderRadius: "4px", // Rounded corners for the track
+                  background: colors.primary[400], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb": {
-                  background: colors.greenAccent[500], // Thumb color
-                  borderRadius: "4px", // Rounded corners for the thumb
+                  background: colors.greenAccent[500], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb:hover": {
-                  background: colors.greenAccent[400], // Thumb color on hover
+                  background: colors.greenAccent[400], 
                 },
-                // Firefox Scrollbar Styles
-                scrollbarWidth: "thin", // Firefox scrollbar width
+                
+                scrollbarWidth: "thin", 
                 scrollbarColor: `${colors.greenAccent[500]} ${colors.primary[400]}`, // Firefox thumb and track color
               }}
             >

@@ -121,7 +121,7 @@ class UserService{
 
 
   //MEDICINE RELATED SERVICES
-  // Create a new medicine (doctor only)
+  // Create a new medicine
 static async createMedicine(medicineData) {
   try {
     const token = localStorage.getItem("token");
@@ -205,7 +205,7 @@ static async addInventoryItem(inventoryData) {
   // Register patient by doctor
   static async doctorRegisterPatient(patientData) {
     try {
-      const token = localStorage.getItem("token"); // ✅ get the token
+      const token = localStorage.getItem("token"); 
   
       const response = await axios.post(
         `${UserService.BASE_URL}/api/patients/doctor-register`,
@@ -213,7 +213,7 @@ static async addInventoryItem(inventoryData) {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ✅ attach token
+            Authorization: `Bearer ${token}`, 
           },
         }
       );
@@ -244,7 +244,7 @@ static async patientLogin(email, password) {
 
     // Save token and role to localStorage
     localStorage.setItem("token", response.data.token);
-    localStorage.setItem("role", "PATIENT"); // or use response.data.role if available
+    localStorage.setItem("role", "PATIENT"); 
 
     return response.data;
   } catch (err) {
@@ -259,7 +259,7 @@ static isCustomer() {
 }
 
 
-// Fetch patient profile info (e.g., name)
+// Fetch patient profile info
 static async getPatientProfile() {
   try {
     const token = localStorage.getItem("token");
@@ -268,7 +268,7 @@ static async getPatientProfile() {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data; // should contain { name: "..." }
+    return response.data; 
   } catch (err) {
     throw err;
   }
@@ -276,8 +276,6 @@ static async getPatientProfile() {
 
 
 //Patient Profile Update
-// Add these methods to UserService.js
-
 // Get patient's full profile
 static async getPatientFullProfile() {
   try {
@@ -330,10 +328,6 @@ static async changePatientPassword(passwordData) {
     throw err;
   }
 }
-
-
-  
-
 
 
 }

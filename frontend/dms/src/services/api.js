@@ -1,10 +1,9 @@
-// src/services/api.js
 
 import axios from 'axios';
 
-// Create axios instance with base URL
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // You can change this URL to match your backend
+  baseURL: 'http://localhost:8080/api', 
 });
 
 // Add auth token to requests
@@ -14,8 +13,7 @@ api.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     } else {
-      // For testing with the doctor dashboard, we add a hardcoded token
-      // REMOVE THIS IN PRODUCTION!
+      
       config.headers['Authorization'] = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRvY3RvciIsInJvbGUiOiJET0NUT1IiLCJpYXQiOjE1MTYyMzkwMjJ9.4Adtg3xFD_KgQUIBqxVFtJ5FXUzd-W1_Fd9n59IAreaU';
     }
     return config;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import "react-pro-sidebar/dist/css/styles.css";
 import { tokens } from "../../../../theme";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -23,7 +23,7 @@ const Item = ({ title, to, icon, selected, setSelected, onClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
-  // Handle click based on whether onClick is provided
+
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -68,13 +68,13 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState(window.location.pathname);
   const [patientName, setPatientName] = useState("");
-  const navigate = useNavigate(); // Added useNavigate hook
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchName = async () => {
       try {
         const data = await UserService.getPatientProfile();
-        setPatientName(data.firstName); // ✅ Or data.name depending on your response
+        setPatientName(data.firstName); 
       } catch (err) {
         console.error("Failed to fetch patient profile", err);
       }
@@ -85,8 +85,8 @@ const Sidebar = () => {
 
   // Logout handler function
   const handleLogout = () => {
-    UserService.logout(); // Call the logout method from UserService
-    navigate("/login", { replace: true }); // Redirect to login page with replace:true
+    UserService.logout(); 
+    navigate("/login", { replace: true }); 
   };
 
   return (
@@ -184,21 +184,21 @@ const Sidebar = () => {
                  
                 // Custom Scrollbar Styles
                 "&::-webkit-scrollbar": {
-                  width: "8px", // Width of the scrollbar
+                  width: "8px", 
                 },
                 "&::-webkit-scrollbar-track": {
-                  background: colors.primary[400], // Track color
-                  borderRadius: "4px", // Rounded corners for the track
+                  background: colors.primary[400], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb": {
-                  background: colors.greenAccent[500], // Thumb color
-                  borderRadius: "4px", // Rounded corners for the thumb
+                  background: colors.greenAccent[500], 
+                  borderRadius: "4px", 
                 },
                 "&::-webkit-scrollbar-thumb:hover": {
-                  background: colors.greenAccent[400], // Thumb color on hover
+                  background: colors.greenAccent[400], 
                 },
-                // Firefox Scrollbar Styles
-                scrollbarWidth: "thin", // Firefox scrollbar width
+                
+                scrollbarWidth: "thin", 
                 scrollbarColor: `${colors.greenAccent[500]} ${colors.primary[400]}`, // Firefox thumb and track color
               }}
             >
