@@ -18,13 +18,13 @@ java:S1452Y"&Remove usage of generic wildcard type.(¤¯8­©ÛÎì2
 N
 java:S1481c",Remove this unused "success" local variable.(ôåº„ıÿÿÿÿ8®©ÛÎì2
 `
-java:S1854­"BRemove this useless assignment to local variable "updatedPatient".(ÙòÅ—8¶©ÛÎì2
+java:S1854¬"BRemove this useless assignment to local variable "updatedPatient".(ÙòÅ—8¶©ÛÎì2
 D
-java:S1452©"&Remove usage of generic wildcard type.(…¢¼’8¶©ÛÎì2
+java:S1452¨"&Remove usage of generic wildcard type.(…¢¼’8¶©ÛÎì2
 Q
-java:S1481­"3Remove this unused "updatedPatient" local variable.(ÙòÅ—8·©ÛÎì2
+java:S1481¬"3Remove this unused "updatedPatient" local variable.(ÙòÅ—8·©ÛÎì2
 D
-java:S1452·"&Remove usage of generic wildcard type.(Ä‚˜¢8¸©ÛÎì2
+java:S1452¶"&Remove usage of generic wildcard type.(Ä‚˜¢8¸©ÛÎì2
 d
 java:S1128"HRemove this unused import 'org.springframework.security.oauth2.jwt.Jwt'.(’¹•98¸©ÛÎì2
 Z

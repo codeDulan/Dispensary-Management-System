@@ -2,6 +2,7 @@
 ~
 java:S13195"cThe type of "claims" should be an interface such as "Map" rather than the implementation "HashMap".(¼þï™ýÿÿÿÿ
 b	java:S116"NRename this field "Key" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(À³…
+J	java:S108t")Either remove or fill this block of code.(Æ¸Û‚øÿÿÿÿ8éÏ—åû2
 ]
 java:S1128";Remove this unused import 'lombok.RequiredArgsConstructor'.(ÑØŽúøÿÿÿÿ8ªÜå¶ä2
 d

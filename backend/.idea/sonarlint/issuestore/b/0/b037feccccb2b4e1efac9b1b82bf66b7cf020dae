@@ -6,5 +6,4 @@ java:S6204"RReplace this usage of 'Stream.collect(Collectors.toList())' with '
 g
 java:S3776L"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(ãÎót
 i
-java:S6204£"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(™ô®π
-R	java:S125ù"<This block of commented-out lines of code should be removed.(Ãª—˙
+java:S6204ü"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(™ô®π

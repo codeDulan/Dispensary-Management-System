@@ -127,7 +127,7 @@ const Inventory = () => {
       const expiry = new Date(item.expiryDate);
       const diffTime = expiry - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 30 && diffDays > 0;
+      return diffDays <= 2 && diffDays > 0;
     });
 
     // Only trigger check if we found critical items AND we haven't checked recently (in the last hour)
@@ -311,14 +311,14 @@ const Inventory = () => {
     return `Rs. ${parseFloat(amount).toFixed(2)}`;
   };
 
-  // Determine if an item is expiring soon (within 30 days)
+  // Determine if an item is expiring soon (within 90 days)
   const isExpiringSoon = (expiryDate) => {
     if (!expiryDate) return false;
     const today = new Date();
     const expiry = new Date(expiryDate);
     const diffTime = expiry - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 30 && diffDays > 0;
+    return diffDays <= 2 && diffDays > 0;
   };
 
   // Determine if an item is expired
@@ -537,8 +537,8 @@ const Inventory = () => {
                   startIcon={<WarningAmberOutlinedIcon />}
                   onClick={() => {
                     const apiPath = searchQuery
-                      ? "/expiring?days=30&search=" + searchQuery
-                      : "/expiring?days=30";
+                      ? "/expiring?days=2&search=" + searchQuery
+                      : "/expiring?days=2";
                     fetchInventoryItems(apiPath);
                   }}
                 >

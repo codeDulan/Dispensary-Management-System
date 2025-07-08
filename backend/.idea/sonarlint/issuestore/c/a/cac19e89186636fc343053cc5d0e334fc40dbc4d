@@ -1,6 +1,6 @@
 
 q
-java:S1192ª"NDefine a constant instead of duplicating this literal ". Available: " 3 times.(›Ë‰êúÿÿÿÿ8ä‚ì2
+java:S1192£"NDefine a constant instead of duplicating this literal ". Available: " 3 times.(›Ë‰êúÿÿÿÿ8ä‚ì2
 o
 java:S6204%"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8úÌåÈî2
 o
@@ -14,4 +14,4 @@ java:S6204S"RReplace this usage of 'Stream.collect(Collectors.toList())' with '
 o
 java:S6204`"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹8ÍåÈî2
 u
-java:S3776Î"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ÌêœÛÿÿÿÿÿ8·ä‚ì2
+java:S3776Ç"RRefactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.(ÌêœÛÿÿÿÿÿ8·ä‚ì2

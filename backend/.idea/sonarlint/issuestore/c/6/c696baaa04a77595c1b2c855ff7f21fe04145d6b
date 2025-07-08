@@ -5,10 +5,10 @@ e
 java:S1192+"HDefine a constant instead of duplicating this literal "PATIENT" 4 times.(€Ş‘8†ìöÃî2
 d
 java:S1192-"GDefine a constant instead of duplicating this literal "DOCTOR" 4 times.(êÆÇÙ8†ìöÃî2
-|
-java:S3305#"ZInject this field value directly into "securityFilterChain", the only method that uses it.(ŠôË‘ûÿÿÿÿ8†ìöÃî2
 
 java:S3305 "]Inject this field value directly into "authenticationProvider", the only method that uses it.(…ó™îùÿÿÿÿ8†ìöÃî2
+|
+java:S3305#"ZInject this field value directly into "securityFilterChain", the only method that uses it.(ŠôË‘ûÿÿÿÿ8†ìöÃî2
 l
 java:S1128"ORemove this unused import 'org.springframework.security.oauth2.jwt.JwtDecoder'.(¸½œÚ8–ìöÃî2
 r

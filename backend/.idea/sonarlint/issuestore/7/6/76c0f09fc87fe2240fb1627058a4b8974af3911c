@@ -1,5 +1,21 @@
 
-{
-java:S1192#"YDefine a constant instead of duplicating this literal "Time slot already booked" 3 times.(ÎŸÅûÿÿÿÿ8•ú•Îì2
-k
-java:S1192"NDefine a constant instead of duplicating this literal "Invalid token" 5 times.(Ç‹Ü¡8—ú•Îì2
+…
+java:S1192£"bDefine a constant instead of duplicating this literal "Appointment not found with ID: {}" 3 times.(¥®ùüÿÿÿÿ8¯¸ºƒü2
+€
+java:S1192."^Define a constant instead of duplicating this literal "Time slot already booked for " 4 times.(»ØüÓıÿÿÿÿ8¯¸ºƒü2
+‚
+java:S1192%"`Define a constant instead of duplicating this literal "Patient not found for email: {}" 5 times.(İÕçÿûÿÿÿÿ8¯¸ºƒü2
+e
+java:S1192="HDefine a constant instead of duplicating this literal "PENDING" 3 times.(Åè‚È8¯¸ºƒü2
+‹
+java:S1192'"iDefine a constant instead of duplicating this literal "Patient not found for the provided token" 5 times.(˜—Èÿúÿÿÿÿ8¯¸ºƒü2
+ƒ
+java:S1192¤"`Define a constant instead of duplicating this literal "Appointment not found with ID: " 3 times.(»æ­úÿÿÿÿÿ8¯¸ºƒü2
+†
+java:S2229ô"c"reorganizeQueueNumbers's" @Transactional requirement is incompatible with the one for this method.(¢¡îæúÿÿÿÿ8¿¸ºƒü2
+
+java:S2229Å"c"reorganizeQueueNumbers's" @Transactional requirement is incompatible with the one for this method.(ëªğ…8¿¸ºƒü2
+^
+java:S1854›";Remove this useless assignment to local variable "patient".(Ïãù¬ıÿÿÿÿ8Î¸ºƒü2
+O
+java:S1481›",Remove this unused "patient" local variable.(Ïãù¬ıÿÿÿÿ8Î¸ºƒü2
